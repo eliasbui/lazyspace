@@ -3,6 +3,7 @@
 
 pub mod hash;
 pub mod openin;
+pub mod preview;
 pub mod rename;
 pub mod templates;
 
@@ -11,6 +12,7 @@ use crate::ipc::Dispatcher;
 pub fn register(d: &mut Dispatcher) {
     hash::register(d);
     openin::register(d);
+    preview::register(d);
     rename::register(d);
     templates::register(d);
 }
@@ -28,7 +30,7 @@ mod tests {
     fn every_feature_registers_without_panicking() {
         let mut d = Dispatcher::new();
         register(&mut d);
-        for area in ["hash", "openin", "rename", "templates"] {
+        for area in ["hash", "openin", "preview", "rename", "templates"] {
             assert!(d.areas().contains(&area), "{area}");
         }
     }

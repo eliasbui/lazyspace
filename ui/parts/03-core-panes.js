@@ -466,6 +466,7 @@ class Pane {
         names.forEach((n) => tab.sel.add(n));
         tab.anchor = tab.lead = tab.byName.get(names[0]);
         this.scrollTo(tab.lead);
+        Panes.selectionChanged(this);
       }
     }
     if (tab.pendingRename && tab.byName.has(tab.pendingRename)) {
@@ -837,6 +838,7 @@ const Panes = (() => {
     pane.el.classList.add("focus");
     Toolbar.update();
     Sidebar.mark();
+    emit("selection", { pane });
   }
 
   // The tab of the focused pane.
