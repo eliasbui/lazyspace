@@ -69,12 +69,35 @@ impl Dispatcher {
             return;
         };
         let args = if request.args.is_null() { json!({}) } else { request.args };
-        let reply = match self.call(app, window, &request.method, args) {
-            Ok(data) => json!({ "id": request.id, "ok": true, "data": data }),
-            Err(error) => json!({ "id": request.id, "ok": false, "error": error }),
-        };
-        app.post(window, reply);
+        app.request = Some((window, request.id));
+        let result = self.call(app, window, &request.method, args);
+        app.request = None;
+        if matches!(&result, Ok(Value::String(s)) if s == DEFERRED) {
+            return;
+        }
+        app.post(window, reply(request.id, result));
     }
+}
+
+fn reply(id: u64, result: Result<Value, String>) -> Value {
+    match result {
+        Ok(data) => json!({ "id": id, "ok": true, "data": data }),
+        Err(error) => json!({ "id": id, "ok": false, "error": error }),
+    }
+}
+
+/// What a handler returns when `defer` answers for it.
+const DEFERRED: &str = "\u{0}deferred";
+
+/// Answers the request being handled from a thread of its own with what `work` returns, so a call that waits on a
+/// server or on a large copy does not hold up every window. Outside a request (in a test), `work` runs at once.
+pub fn defer(app: &mut App, work: impl FnOnce() -> Result<Value, String> + Send + 'static) -> Result<Value, String> {
+    let Some((window, id)) = app.request.take() else { return work() };
+    let proxy = app.proxy.clone();
+    std::thread::spawn(move || {
+        proxy.send(crate::UserEvent::Post { window: Some(window), message: reply(id, work()) });
+    });
+    Ok(Value::String(DEFERRED.into()))
 }
 
 /// The arguments of a method as the type it expects; a missing field or one of the wrong type is an error to show.

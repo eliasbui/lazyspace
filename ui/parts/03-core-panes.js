@@ -25,6 +25,8 @@ const fileUri = (path) => `file://${path.split("/").map(encodeURIComponent).join
 const encodePath = (path) => path.split("/").map((p) => encodeURIComponent(p).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)).join("/");
 // The place `inside` in the archive at `path` (archive:///path/a.zip!/inside).
 const archiveUri = (path, inside) => `archive://${encodePath(path)}!/${encodePath(inside)}`.replace(/\/$/, "");
+// The place at `path` where `uri` is: on the same disk, server or connection.
+const withPath = (uri, path) => uri.replace(/^([a-z0-9+-]+:\/\/[^/]*).*$/, "$1") + encodePath(path);
 
 let tabSeq = 1;
 
@@ -293,14 +295,25 @@ class Pane {
     this.path.querySelector('[data-act="back"]').disabled = !tab.back.length;
     this.path.querySelector('[data-act="forward"]').disabled = !tab.forward.length;
     if (this.crumbs.querySelector(".address")) return;
-    // A place of a feature (the shelf) is one crumb with its own name.
-    if (placeNames[schemeOf(tab.uri)]) {
-      this.crumbs.innerHTML = `<span class="sep">${icon("triangle.right")}</span><button class="crumb" data-uri="${esc(tab.uri)}"><span>${esc(placeName(tab.uri))}</span></button>`;
-      return;
-    }
-    // Inside an archive: the crumbs of the archive's folder, the archive itself, then the folders inside it.
-    const inArchive = tab.uri?.startsWith("archive://");
-    const full = pathOf(tab.uri || "");
+    const sep = `<span class="sep">${icon("triangle.right")}</span>`;
+    // A place of a feature (the shelf, a server) has crumbs of its own.
+    const own = placeCrumbs[schemeOf(tab.uri)];
+    const items = own ? own(tab.uri) : this.diskCrumbs(tab.uri || "");
+    this.crumbs.innerHTML =
+      sep +
+      items
+        .map(([uri, name, iconKey]) => {
+          const img = iconKey ? `<img src="lazy://icon/${14 * pixelRatio()}/${encodeURIComponent(iconKey)}" alt="">` : "";
+          return `<button class="crumb" data-uri="${esc(uri)}">${img}<span>${esc(name)}</span></button>`;
+        })
+        .join(sep);
+  }
+
+  // The crumbs of a place on this Mac, from the home folder or the disk, and of an archive and the folders inside it:
+  // [uri, name, icon] from the top down.
+  diskCrumbs(uri) {
+    const inArchive = uri.startsWith("archive://");
+    const full = pathOf(uri);
     const cut = inArchive ? full.indexOf("!") : -1;
     const path = cut >= 0 ? full.slice(0, cut) : full;
     const home = S.places.home ? pathOf(S.places.home) : null;
@@ -314,9 +327,7 @@ class Pane {
       let at = "";
       for (const part of path.split("/").filter(Boolean)) crumbs.push([(at = `${at}/${part}`), part]);
     }
-    const sep = `<span class="sep">${icon("triangle.right")}</span>`;
-    const uriOf = (p) => fileUri(p);
-    const items = crumbs.map(([p, name, first]) => [uriOf(p), name, first ? `path:${p}` : null]);
+    const items = crumbs.map(([p, name, first]) => [fileUri(p), name, first ? `path:${p}` : null]);
     if (cut >= 0) {
       // The archive's crumb opens its top; each folder inside it opens that folder.
       items[items.length - 1][0] = archiveUri(path, "");
@@ -324,14 +335,7 @@ class Pane {
       let at = "";
       for (const part of full.slice(cut + 1).split("/").filter(Boolean)) items.push([archiveUri(path, (at = at ? `${at}/${part}` : part)), part, null]);
     }
-    this.crumbs.innerHTML =
-      sep +
-      items
-        .map(([uri, name, iconKey]) => {
-          const img = iconKey ? `<img src="lazy://icon/${14 * pixelRatio()}/${encodeURIComponent(iconKey)}" alt="">` : "";
-          return `<button class="crumb" data-uri="${esc(uri)}">${img}<span>${esc(name)}</span></button>`;
-        })
-        .join(sep);
+    return items;
   }
 
   renderHead() {
@@ -363,7 +367,7 @@ class Pane {
     const showMessage = tab.error || (!tab.loading && tab.count === 0) || (tab.loading && !tab.generation);
     this.message.hidden = !showMessage;
     if (tab.error) {
-      this.message.innerHTML = `<p>${esc(String(tab.error).replace(/^LZ-PASSWORD:/, ""))}</p>`;
+      this.message.innerHTML = `<p>${esc(String(tab.error).replace(/^LZ-[A-Z]+:/, ""))}</p>`;
     } else if (showMessage) {
       this.message.innerHTML = `<p>${esc(tab.loading ? t("loading") : tab.filter ? t("noMatch") : t("emptyFolder"))}</p>`;
     }
@@ -1081,7 +1085,7 @@ const Panes = (() => {
       }
       if (path === "/") return;
       const parent = path.slice(0, path.lastIndexOf("/")) || "/";
-      pane.navigate(fileUri(parent), { select: [path.split("/").pop()] });
+      pane.navigate(withPath(uri, parent), { select: [path.split("/").pop()] });
     },
     rename(pane) {
       const tab = pane.tab;

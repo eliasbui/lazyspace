@@ -160,6 +160,8 @@ pub struct App {
     focused: Option<WindowId>,
     menu_bar: Option<menus::MenuBar>,
     update_checked: bool,
+    /// The window and id of the request being handled, for `ipc::defer` to answer it later.
+    request: Option<(WindowId, u64)>,
 }
 
 impl App {
@@ -179,6 +181,7 @@ impl App {
             focused: None,
             menu_bar: None,
             update_checked: false,
+            request: None,
         }
     }
 

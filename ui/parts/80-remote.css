@@ -1,0 +1,14 @@
+.rm-grid { display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; align-items: center; margin-top: 12px; font-size: 12px; color: var(--secondary); }
+.rm-row { display: contents; }
+.rm-row[hidden] { display: none; }
+.rm-grid label { text-align: right; white-space: nowrap; }
+.rm-grid input:not([type="checkbox"]), .rm-grid select { width: 100%; max-width: none; height: 28px; padding: 0 8px; border: 0; border-radius: 8px; outline: none; background: var(--field-bg); color: var(--label); box-shadow: 0 0 0 0.5px var(--field-stroke); }
+.rm-grid input:focus { box-shadow: 0 0 0 1px var(--accent), 0 0 0 3.5px color-mix(in srgb, var(--accent) 30%, transparent); }
+.rm-grid input[type="checkbox"] { justify-self: start; }
+.rm-grid select:disabled { opacity: 0.6; }
+.rm-help { margin-top: 10px; font-size: 12px; line-height: 1.5; color: var(--secondary); }
+.rm-help p { margin: 0 0 6px; }
+.rm-command { display: flex; align-items: center; gap: 8px; }
+.rm-command code { flex: 1; padding: 5px 8px; border-radius: 6px; background: var(--field); color: var(--label); font: 12px ui-monospace, Menlo, monospace; user-select: text; }
+.rm-note { min-height: 18px; margin-top: 8px; font-size: 12px; color: var(--red); white-space: pre-wrap; overflow-wrap: anywhere; }
+.rm-note.good { color: var(--green, #2a9d4b); }

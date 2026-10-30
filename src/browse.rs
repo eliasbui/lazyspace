@@ -5,7 +5,7 @@
 use crate::{
     App, Proxy, UserEvent, clipboard,
     fswatch::FsWatch,
-    ipc::{Dispatcher, args, event},
+    ipc::{Dispatcher, args, defer, event},
     jobs::{Answer, Then},
     native::{icons, trash, workspace},
     protocol,
@@ -94,6 +94,12 @@ pub(crate) fn targets(app: &App, window: WindowId, value: &Value) -> Result<Vec<
         return Err(tr("Chưa chọn mục nào", "Nothing is selected").into());
     }
     Ok(uris)
+}
+
+/// Runs `work` at once for a place on this Mac, else from a thread of its own: a server may be slow to answer, and the
+/// windows must not wait for it.
+fn off_main(app: &mut App, uri: &Uri, work: impl FnOnce() -> Result<Value, String> + Send + 'static) -> Result<Value, String> {
+    if uri.local_path().is_some() { work() } else { defer(app, work) }
 }
 
 fn local_paths(uris: &[Uri]) -> Result<Vec<PathBuf>, String> {
@@ -365,13 +371,13 @@ pub fn register(d: &mut Dispatcher) {
         }
         Ok(json!({ "items": complete(&args::<Complete>(a)?.text) }))
     });
-    d.on("fs.stat", |_, _, a| {
+    d.on("fs.stat", |app, _, a| {
         #[derive(Deserialize)]
         struct Stat {
             uri: String,
         }
         let uri = Uri::parse(&args::<Stat>(a)?.uri)?;
-        serde_json::to_value(registry().get(&uri)?.stat(&uri)?).map_err(|e| e.to_string())
+        off_main(app, &uri.clone(), move || serde_json::to_value(registry().get(&uri)?.stat(&uri)?).map_err(|e| e.to_string()))
     });
     d.on("fs.mkdir", |app, _, a| {
         #[derive(Deserialize)]
@@ -381,18 +387,25 @@ pub fn register(d: &mut Dispatcher) {
         }
         let a: Mkdir = args(a)?;
         let folder = Uri::parse(&a.uri)?;
-        let name = match a.name {
-            Some(name) => name,
-            None => new_folder_name(&folder)?,
+        let make = move || {
+            let name = match a.name {
+                Some(name) => name,
+                None => new_folder_name(&folder)?,
+            };
+            vfs::valid_name(&name)?;
+            let target = folder.join(&name);
+            let provider = registry().get(&target)?;
+            provider.mkdir(&target)?;
+            Ok::<_, String>((name, target.clone(), provider.stat(&target)?))
         };
-        vfs::valid_name(&name)?;
-        let target = folder.join(&name);
-        let provider = registry().get(&target)?;
-        provider.mkdir(&target)?;
+        if Uri::parse(&a.uri)?.local_path().is_none() {
+            return defer(app, move || serde_json::to_value(make()?.2).map_err(|e| e.to_string()));
+        }
+        let (name, target, entry) = make()?;
         if let Some(path) = target.local_path() {
             app.browse.push_undo(Undo::Made { title: format!("{} \"{name}\"", tr("Tạo thư mục", "New Folder")), made: vec![path] });
         }
-        serde_json::to_value(provider.stat(&target)?).map_err(|e| e.to_string())
+        serde_json::to_value(entry).map_err(|e| e.to_string())
     });
     d.on("fs.create_file", |app, _, a| {
         #[derive(Deserialize)]
@@ -405,17 +418,21 @@ pub fn register(d: &mut Dispatcher) {
         let a: Create = args(a)?;
         vfs::valid_name(&a.name)?;
         let target = Uri::parse(&a.uri)?.join(&a.name);
-        let provider = registry().get(&target)?;
-        if provider.stat(&target).is_ok() {
-            return Err(format!("\"{}\": {}", a.name, tr("đã có một mục cùng tên", "an item with that name is already there")));
-        }
-        let mut writer = provider.write(&target)?;
-        std::io::Write::write_all(&mut writer, a.text.as_bytes()).map_err(|e| e.to_string())?;
-        writer.commit()?;
-        if let Some(path) = target.local_path() {
-            app.browse.push_undo(Undo::Made { title: format!("{} \"{}\"", tr("Tạo tệp", "New File"), a.name), made: vec![path] });
-        }
-        serde_json::to_value(provider.stat(&target)?).map_err(|e| e.to_string())
+        let (name, at) = (a.name.clone(), target.clone());
+        let make = move || {
+            let provider = registry().get(&target)?;
+            if provider.stat(&target).is_ok() {
+                return Err(format!("\"{}\": {}", a.name, tr("đã có một mục cùng tên", "an item with that name is already there")));
+            }
+            let mut writer = provider.write(&target)?;
+            std::io::Write::write_all(&mut writer, a.text.as_bytes()).map_err(|e| e.to_string())?;
+            writer.commit()?;
+            serde_json::to_value(provider.stat(&target)?).map_err(|e| e.to_string())
+        };
+        let Some(path) = at.local_path() else { return defer(app, make) };
+        let entry = make()?;
+        app.browse.push_undo(Undo::Made { title: format!("{} \"{name}\"", tr("Tạo tệp", "New File")), made: vec![path] });
+        Ok(entry)
     });
     d.on("fs.rename", |app, _, a| {
         #[derive(Deserialize)]
@@ -427,15 +444,20 @@ pub fn register(d: &mut Dispatcher) {
         vfs::valid_name(&a.name)?;
         let from = Uri::parse(&a.uri)?;
         let to = from.parent().ok_or_else(|| tr("Không đổi tên được ổ đĩa", "A disk cannot be renamed here").to_owned())?.join(&a.name);
-        if from == to {
-            return serde_json::to_value(registry().get(&from)?.stat(&from)?).map_err(|e| e.to_string());
+        let (source, target) = (from.clone(), to.clone());
+        let rename = move || {
+            let provider = registry().get(&from)?;
+            if from != to {
+                provider.rename(&from, &to)?;
+            }
+            serde_json::to_value(provider.stat(&to)?).map_err(|e| e.to_string())
+        };
+        let (Some(old), Some(new)) = (source.local_path(), target.local_path()) else { return defer(app, rename) };
+        let entry = rename()?;
+        if old != new {
+            app.browse.push_undo(Undo::Moves { title: format!("{} \"{}\"", tr("Đổi tên", "Rename"), source.name()), moves: vec![(new, old)] });
         }
-        let provider = registry().get(&from)?;
-        provider.rename(&from, &to)?;
-        if let (Some(old), Some(new)) = (from.local_path(), to.local_path()) {
-            app.browse.push_undo(Undo::Moves { title: format!("{} \"{}\"", tr("Đổi tên", "Rename"), from.name()), moves: vec![(new, old)] });
-        }
-        serde_json::to_value(provider.stat(&to)?).map_err(|e| e.to_string())
+        Ok(entry)
     });
     d.on("fs.copy", |app, window, a| {
         #[derive(Deserialize)]
@@ -525,7 +547,7 @@ pub fn register(d: &mut Dispatcher) {
         Ok(json!({ "job": job }))
     });
     d.on("fs.undo_title", |app, _, _| Ok(json!(app.browse.undo.last().map(|u| u.title().to_owned()))));
-    d.on("fs.read_text", |_, _, a| {
+    d.on("fs.read_text", |app, _, a| {
         #[derive(Deserialize)]
         struct Read {
             uri: String,
@@ -534,14 +556,16 @@ pub fn register(d: &mut Dispatcher) {
         }
         let a: Read = args(a)?;
         let uri = Uri::parse(&a.uri)?;
-        let provider = registry().get(&uri)?;
-        let entry = provider.stat(&uri)?;
-        let mut bytes = Vec::new();
-        std::io::Read::read_to_end(&mut std::io::Read::take(provider.read(&uri)?, a.max.min(16 << 20)), &mut bytes).map_err(|e| e.to_string())?;
-        let truncated = entry.size > bytes.len() as u64;
-        Ok(json!({ "text": String::from_utf8_lossy(&bytes), "truncated": truncated, "mtime": entry.mtime, "size": entry.size }))
+        off_main(app, &uri.clone(), move || {
+            let provider = registry().get(&uri)?;
+            let entry = provider.stat(&uri)?;
+            let mut bytes = Vec::new();
+            std::io::Read::read_to_end(&mut std::io::Read::take(provider.read(&uri)?, a.max.min(16 << 20)), &mut bytes).map_err(|e| e.to_string())?;
+            let truncated = entry.size > bytes.len() as u64;
+            Ok(json!({ "text": String::from_utf8_lossy(&bytes), "truncated": truncated, "mtime": entry.mtime, "size": entry.size }))
+        })
     });
-    d.on("fs.write_text", |_, _, a| {
+    d.on("fs.write_text", |app, _, a| {
         #[derive(Deserialize)]
         struct Write {
             uri: String,
@@ -550,16 +574,18 @@ pub fn register(d: &mut Dispatcher) {
         }
         let a: Write = args(a)?;
         let uri = Uri::parse(&a.uri)?;
-        let provider = registry().get(&uri)?;
-        if let (Some(expected), Ok(now)) = (a.mtime, provider.stat(&uri)) {
-            if now.mtime != expected {
-                return Err(tr("Tệp đã bị sửa ở nơi khác từ lúc mở; hãy mở lại", "The file changed elsewhere since it was opened; open it again").into());
+        off_main(app, &uri.clone(), move || {
+            let provider = registry().get(&uri)?;
+            if let (Some(expected), Ok(now)) = (a.mtime, provider.stat(&uri)) {
+                if now.mtime != expected {
+                    return Err(tr("Tệp đã bị sửa ở nơi khác từ lúc mở; hãy mở lại", "The file changed elsewhere since it was opened; open it again").into());
+                }
             }
-        }
-        let mut writer = provider.write(&uri)?;
-        std::io::Write::write_all(&mut writer, a.text.as_bytes()).map_err(|e| e.to_string())?;
-        writer.commit()?;
-        serde_json::to_value(provider.stat(&uri)?).map_err(|e| e.to_string())
+            let mut writer = provider.write(&uri)?;
+            std::io::Write::write_all(&mut writer, a.text.as_bytes()).map_err(|e| e.to_string())?;
+            writer.commit()?;
+            serde_json::to_value(provider.stat(&uri)?).map_err(|e| e.to_string())
+        })
     });
     d.on("clipboard.copy", |app, window, a| {
         let paths = local_paths(&targets(app, window, &a)?)?;
@@ -618,10 +644,20 @@ pub fn register(d: &mut Dispatcher) {
         Ok(Value::Null)
     });
     d.on("native.open", |app, window, a| {
-        // An item inside an archive or on a server opens from a copy on this Mac.
-        let paths: Vec<PathBuf> = targets(app, window, &a)?.iter().map(vfs::materialize).collect::<Result<_, _>>()?;
-        workspace::open(&paths)?;
-        Ok(Value::Null)
+        let uris = targets(app, window, &a)?;
+        if let Ok(paths) = local_paths(&uris) {
+            workspace::open(&paths)?;
+            return Ok(Value::Null);
+        }
+        // An item inside an archive or on a server opens from a copy on this Mac, made off the main thread.
+        if uris.iter().any(|u| u.scheme != "archive") {
+            app.post(window, event("toast", json!(tr("Đang mở bản sao tạm; sửa trong đó không được lưu ngược lên máy chủ", "Opening a temporary copy; changes to it are not saved back to the server"))));
+        }
+        defer(app, move || {
+            let paths: Vec<PathBuf> = uris.iter().map(vfs::materialize).collect::<Result<_, _>>()?;
+            workspace::open(&paths)?;
+            Ok(Value::Null)
+        })
     });
     d.on("native.open_with", |app, window, a| {
         #[derive(Deserialize)]

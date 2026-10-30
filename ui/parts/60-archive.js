@@ -91,6 +91,7 @@ const Archiver = (() => {
     const found = Panes.findTab(d.view);
     if (!found) return;
     const [pane, tab] = found;
+    if (!tab.uri?.startsWith("archive://")) return;
     const password = await LZ.prompt(t("archivePasswordTitle"), { text: String(d.error).replace(/^LZ-PASSWORD:/, ""), secret: true });
     if (password == null) return;
     LZ.call("archive.password", { uri: tab.uri, password })

@@ -23,6 +23,7 @@ const Stash = (() => {
   const STASH = "stash://";
   let count = 0;
   placeNames.stash = () => t("stash");
+  placeCrumbs.stash = (uri) => [[uri, t("stash"), null]];
 
   // The main window's pieces.
   const section = LZ.sidebar.section({
@@ -33,6 +34,8 @@ const Stash = (() => {
       Sidebar.mark();
     },
   });
+  // The shelf reads as one more favourite, right under them, rather than as an item of the section above it.
+  section.el.parentElement.prepend(section.el);
 
   function changed(d) {
     count = d.count;

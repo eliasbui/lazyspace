@@ -126,7 +126,14 @@ pub fn register(d: &mut Dispatcher) {
             id: String,
         }
         let a: Create = args(a)?;
-        let target = create(&Uri::parse(&a.uri)?, &a.id, &folder())?;
+        let into = Uri::parse(&a.uri)?;
+        if into.local_path().is_none() {
+            return crate::ipc::defer(app, move || {
+                let target = create(&into, &a.id, &folder())?;
+                serde_json::to_value(registry().get(&target)?.stat(&target)?).map_err(|e| e.to_string())
+            });
+        }
+        let target = create(&into, &a.id, &folder())?;
         if let Some(path) = target.local_path() {
             app.browse.push_undo(Undo::Made { title: format!("{} \"{}\"", tr("Tạo tệp", "New File"), target.name()), made: vec![path] });
         }

@@ -102,5 +102,5 @@ const Sidebar = (() => {
     Panes.saveSoon();
   }
 
-  return { start, render, mark, toggle, width: () => $("app").style.getPropertyValue("--side-w") };
+  return { start, render, mark, toggle, loadVolumes, width: () => $("app").style.getPropertyValue("--side-w") };
 })();

@@ -16,12 +16,23 @@ function pathOf(uri) {
   }
 }
 const nameOf = (uri) => pathOf(uri).split("/").filter(Boolean).pop() || "/";
-// The names of places that are not folders of a disk (the shelf), by scheme; features add theirs.
+// The names, and the crumbs of the path bar ([uri, name, icon] from the top down), of places that are not folders of
+// a disk (the shelf, a server), by scheme; features add theirs.
 const placeNames = {};
+const placeCrumbs = {};
 const schemeOf = (uri) => (typeof uri === "string" ? uri.split("://")[0] : "");
+// The part between `scheme://` and the path, decoded: the id of a server's connection.
+function authorityOf(uri) {
+  const raw = (uri.split("://")[1] || "").split("/")[0];
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw;
+  }
+}
 // What a place is called in a title, a tab and the path bar.
 const placeName = (uri) => (placeNames[schemeOf(uri)] ? placeNames[schemeOf(uri)](uri) : nameOf(uri));
-const samePlace = (a, b) => !!a && !!b && a.split("://")[0] === b.split("://")[0] && pathOf(a) === pathOf(b);
+const samePlace = (a, b) => !!a && !!b && schemeOf(a) === schemeOf(b) && authorityOf(a) === authorityOf(b) && pathOf(a) === pathOf(b);
 
 const locale = () => (lang === "vi" ? "vi-VN" : "en-US");
 let dateFormats = {};

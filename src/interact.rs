@@ -21,6 +21,14 @@ use std::{
 use tao::window::WindowId;
 use wry::DragDropEvent;
 
+/// Shows the items in Quick Look's panel over `window`, or hides the panel.
+fn look(app: &mut App, window: WindowId, paths: &[PathBuf], index: usize) -> Result<Value, String> {
+    let surface = app.surfaces.get(&window).ok_or_else(|| tr("Cửa sổ đã đóng", "The window is closed").to_owned())?;
+    let ns_window = native::ns_window(&surface.window).ok_or_else(|| "no window".to_owned())?;
+    quicklook::toggle(main_thread()?, ns_window, paths, index);
+    Ok(Value::Null)
+}
+
 fn main_thread() -> Result<MainThreadMarker, String> {
     MainThreadMarker::new().ok_or_else(|| "not on the main thread".to_owned())
 }
@@ -43,10 +51,19 @@ pub fn register(d: &mut Dispatcher) {
             index: usize,
         }
         let index = args::<Look>(a.clone())?.index;
-        let paths: Vec<PathBuf> = browse::targets(app, window, &a).unwrap_or_default().iter().filter_map(|u| crate::vfs::materialize(u).ok()).collect();
-        let surface = app.surfaces.get(&window).ok_or_else(|| tr("Cửa sổ đã đóng", "The window is closed").to_owned())?;
-        let ns_window = native::ns_window(&surface.window).ok_or_else(|| "no window".to_owned())?;
-        quicklook::toggle(main_thread()?, ns_window, &paths, index);
+        let uris = browse::targets(app, window, &a).unwrap_or_default();
+        let paths: Option<Vec<PathBuf>> = uris.iter().map(crate::vfs::Uri::local_path).collect();
+        if let Some(paths) = paths {
+            return look(app, window, &paths, index);
+        }
+        // Copies of items in an archive or on a server are made off the main thread; a large one is left out, as
+        // the side preview leaves it.
+        let proxy = app.proxy.clone();
+        std::thread::spawn(move || {
+            let small = |u: &crate::vfs::Uri| crate::vfs::registry().get(u).and_then(|p| p.stat(u)).is_ok_and(|e| e.size <= 256 << 20);
+            let paths: Vec<PathBuf> = uris.iter().filter(|u| u.local_path().is_some() || small(u)).filter_map(|u| crate::vfs::materialize(u).ok()).collect();
+            proxy.send(crate::UserEvent::Main(Box::new(move |app: &mut App| drop(look(app, window, &paths, index)))));
+        });
         Ok(Value::Null)
     });
     d.on("menu.show", |app, window, a| {
