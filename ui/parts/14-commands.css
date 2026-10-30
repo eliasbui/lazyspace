@@ -1,0 +1,11 @@
+.panel.palette { width: min(560px, calc(100vw - 48px)); padding: 10px; }
+.cmd-input { width: 100%; height: 34px; padding: 0 12px; border: 0; border-radius: 9px; outline: none; background: var(--field-bg); color: var(--label); font-size: 14px; box-shadow: 0 0 0 0.5px var(--field-stroke); }
+.cmd-input:focus { box-shadow: 0 0 0 1px var(--accent), 0 0 0 3.5px color-mix(in srgb, var(--accent) 30%, transparent); }
+.cmd-list { max-height: min(420px, 60vh); margin-top: 8px; overflow-y: auto; }
+.cmd-group { padding: 8px 10px 3px; font-size: 11px; font-weight: 600; color: var(--secondary); }
+.cmd { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 30px; padding: 0 10px; border-radius: 7px; font-size: 13px; }
+.cmd.on { background: var(--accent); color: #fff; }
+.cmd-keys { display: flex; gap: 4px; flex: none; }
+.cmd kbd { padding: 1px 6px; border-radius: 5px; background: var(--field); color: var(--secondary); font: 11px ui-monospace, Menlo, monospace; }
+.cmd.on kbd { background: rgba(255, 255, 255, 0.22); color: #fff; }
+.cmd-none { margin: 16px 10px; color: var(--secondary); font-size: 13px; }

@@ -603,13 +603,17 @@ pub fn register(d: &mut Dispatcher) {
         #[derive(Deserialize)]
         struct Paste {
             to: String,
+            /// Moves what was copied rather than copying it, as Finder's Move Item Here.
+            #[serde(default, rename = "move")]
+            mv: bool,
         }
-        let to = Uri::parse(&args::<Paste>(a)?.to)?;
+        let a: Paste = args(a)?;
+        let to = Uri::parse(&a.to)?;
         let paths = clipboard::read();
         if paths.is_empty() {
             return Err(tr("Bảng nhớ tạm không có tệp nào", "There are no files on the clipboard").into());
         }
-        let mv = app.browse.cut.applies(clipboard::change_count(), &paths);
+        let mv = a.mv || app.browse.cut.applies(clipboard::change_count(), &paths);
         if mv {
             app.browse.cut = clipboard::Cut::default();
         }

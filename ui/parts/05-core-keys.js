@@ -84,7 +84,8 @@ const KEYMAPS = {
 };
 
 const Keys = (() => {
-  const extra = {};
+  // The keys features add, for both keymaps or for one.
+  const extra = { all: {}, mac: {}, windows: {} };
   const PUNCT = { Period: ".", Comma: ",", BracketLeft: "[", BracketRight: "]", Slash: "/", Backslash: "\\", Minus: "-", Equal: "=", Semicolon: ";", Quote: "'", Backquote: "`" };
 
   // The chord of a key event: modifiers in a fixed order, then the key by its place on the keyboard, so Shift+. is
@@ -95,7 +96,8 @@ const Keys = (() => {
     return `${e.metaKey ? "Cmd+" : ""}${e.ctrlKey ? "Ctrl+" : ""}${e.altKey ? "Alt+" : ""}${e.shiftKey ? "Shift+" : ""}${key}`;
   }
 
-  const map = () => ({ ...KEYMAPS[S.settings.keymap === "windows" ? "windows" : "mac"], ...extra });
+  const keymap = () => (S.settings.keymap === "windows" ? "windows" : "mac");
+  const map = () => ({ ...KEYMAPS[keymap()], ...extra.all, ...extra[keymap()] });
 
   // Moves in the list: the arrows, Home, End and the pages, by one row in a list and by a line of icons in a grid.
   function moveKey(pane, e) {
@@ -151,8 +153,9 @@ const Keys = (() => {
   return {
     chord,
     map,
-    add(chords) {
-      Object.assign(extra, chords);
+    add(chords, only = "all") {
+      Object.assign(extra[only] || extra.all, chords);
     },
+    keymap,
   };
 })();
