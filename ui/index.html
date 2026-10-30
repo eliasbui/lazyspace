@@ -90,37 +90,11 @@
         --red: #ff453a;
         --shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
       }
-      /* Liquid Glass (beta), the first layer: the sidebar, the toolbar's capsules and the sheets turn to frosted glass
-         with a light along their top edge, over a soft coloured backdrop the content lets through. It is the whole
-         effect before macOS 26, and what stays when the native layer (src/glass.rs) is not there. */
-      :root.glass {
-        --window: rgba(255, 255, 255, 0.62);
-        --sidebar: rgba(255, 255, 255, 0.4);
-        --sidebar-stroke: rgba(255, 255, 255, 0.6);
-        --capsule: rgba(255, 255, 255, 0.5);
-        --capsule-stroke: rgba(255, 255, 255, 0.65);
-        --panel: rgba(250, 250, 252, 0.74);
-        --group: rgba(255, 255, 255, 0.55);
-        --rim: rgba(255, 255, 255, 0.8);
-        --field-bg: rgba(255, 255, 255, 0.7);
-      }
-      :root.glass.dark {
-        --window: rgba(28, 29, 34, 0.6);
-        --sidebar: rgba(44, 46, 54, 0.4);
-        --sidebar-stroke: rgba(255, 255, 255, 0.12);
-        --capsule: rgba(60, 62, 72, 0.45);
-        --capsule-stroke: rgba(255, 255, 255, 0.12);
-        --panel: rgba(36, 38, 44, 0.74);
-        --group: rgba(255, 255, 255, 0.06);
-        --rim: rgba(255, 255, 255, 0.22);
-        --field-bg: rgba(255, 255, 255, 0.07);
-      }
-
       * { box-sizing: border-box; }
       [hidden] { display: none !important; }
       html, body { height: 100%; margin: 0; }
       body {
-        font: 13px/1.3 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+        font: 13px/1.3 var(--ui-font, -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif);
         color: var(--label);
         background: var(--window);
         overflow: hidden;
@@ -134,29 +108,65 @@
       svg { display: block; flex: none; }
       :focus { outline: none; }
       :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 1px; }
-      [data-slot]:empty { display: none; }
 
-      .backdrop { display: none; position: fixed; inset: -15%; z-index: -1; filter: blur(70px) saturate(140%); }
-      .glass .backdrop {
-        display: block;
-        background:
-          radial-gradient(38% 40% at 16% 20%, #7cc0ff 0%, transparent 62%),
-          radial-gradient(36% 38% at 86% 14%, #c3a2ff 0%, transparent 62%),
-          radial-gradient(44% 44% at 74% 86%, #5fe0ff 0%, transparent 64%),
-          radial-gradient(40% 40% at 22% 88%, #9af5d4 0%, transparent 62%);
+      /* Liquid Glass (beta), as Finder has it on macOS 26: the window is glass the desktop shows through (src/glass.rs
+         puts the system's glass, or a vibrancy material before macOS 26, behind the page), the sidebar and the
+         toolbar's capsules float on it as panes of their own, and the files lie on a card of the window's colour, a
+         little see-through, so they read as on a plain window. Nothing is painted behind the glass: what tints it is
+         the wallpaper. */
+      :root.glass {
+        --window: rgba(246, 246, 248, 0.34);
+        --content: rgba(255, 255, 255, 0.86);
+        --content-stroke: rgba(255, 255, 255, 0.7);
+        --sidebar: rgba(255, 255, 255, 0.36);
+        --sidebar-stroke: rgba(255, 255, 255, 0.55);
+        --capsule: rgba(255, 255, 255, 0.5);
+        --capsule-stroke: rgba(255, 255, 255, 0.6);
+        --capsule-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.06);
+        --panel: rgba(246, 246, 248, 0.84);
+        --group: rgba(255, 255, 255, 0.72);
+        --rim: rgba(255, 255, 255, 0.85);
+        --field-bg: rgba(255, 255, 255, 0.7);
+        --menu: rgba(250, 250, 252, 0.88);
       }
-      .glass.dark .backdrop { opacity: 0.45; }
-      .glass .sidebar, .glass .capsule, .glass .panel, .glass .toast, .glass .banner, .glass .jobs {
-        -webkit-backdrop-filter: blur(30px) saturate(190%); backdrop-filter: blur(30px) saturate(190%);
+      :root.glass.dark {
+        --window: rgba(28, 28, 30, 0.4);
+        --content: rgba(30, 30, 32, 0.84);
+        --content-stroke: rgba(255, 255, 255, 0.08);
+        --sidebar: rgba(40, 40, 44, 0.34);
+        --sidebar-stroke: rgba(255, 255, 255, 0.12);
+        --capsule: rgba(70, 70, 76, 0.42);
+        --capsule-stroke: rgba(255, 255, 255, 0.14);
+        --capsule-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        --panel: rgba(36, 36, 40, 0.82);
+        --group: rgba(255, 255, 255, 0.06);
+        --rim: rgba(255, 255, 255, 0.24);
+        --field-bg: rgba(255, 255, 255, 0.07);
+        --menu: rgba(44, 44, 48, 0.88);
       }
-      .glass .sidebar, .glass .capsule, .glass .panel { box-shadow: inset 0 1px 0 var(--rim), 0 0 0 0.5px var(--capsule-stroke), 0 8px 28px rgba(20, 30, 60, 0.12); }
-      /* The second layer: the app has put the system's own glass behind the page and asks for it under the sidebar,
-         the capsules and the sheet, so the page draws nothing of its own there. */
+      .glass body { background: var(--window); }
+      /* The files' card: inset in the window as the sidebar is, so the two read as a pair on the glass. */
+      .glass .workspace {
+        margin: 0 8px 8px 0; border-radius: 14px; overflow: hidden; background: var(--content);
+        box-shadow: 0 0 0 0.5px var(--content-stroke), 0 2px 10px rgba(0, 0, 0, 0.06);
+      }
+      .glass .status { box-shadow: none; }
+      /* The panes of glass: frosted by the page itself before macOS 26, with a light along their top edge. */
+      .glass .sidebar, .glass .capsule, .glass .panel, .glass .toast, .glass .banner, .glass .jobs, .glass .suggest {
+        -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%);
+      }
+      .glass .sidebar, .glass .capsule, .glass .panel { box-shadow: inset 0 1px 0 var(--rim), 0 0 0 0.5px var(--capsule-stroke), 0 8px 28px rgba(0, 0, 0, 0.1); }
+      .glass .sidebar { background: var(--sidebar); }
+      /* With the system's glass (src/glass.rs lays a pane of it under each of these), the page only tints them a
+         little so text keeps its contrast over a bright or busy wallpaper; the glass draws its own edge and light. */
       .glass.native, .glass.native body { background: transparent; }
-      .glass.native .backdrop { display: none; }
-      .glass.native .sidebar, .glass.native .capsule, .glass.native .panel {
-        background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none;
-      }
+      .glass.native .sidebar, .glass.native .capsule { -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+      .glass.native .sidebar { background: color-mix(in srgb, var(--content) 22%, transparent); }
+      .glass.native .capsule { background: transparent; }
+      /* A sheet lies over the page itself, which the system's glass behind the page cannot blur: the page frosts it,
+         over a deeper dim. */
+      .glass .modal { background: rgba(0, 0, 0, 0.22); }
+      .glass .set-nav { background: color-mix(in srgb, var(--sidebar) 60%, transparent); }
 
       .app { display: grid; grid-template-columns: var(--side-w, 220px) minmax(0, 1fr); height: 100%; }
       .app.no-sidebar { grid-template-columns: 0 minmax(0, 1fr); }
@@ -311,6 +321,8 @@
       .list:focus-visible { outline: none; }
       .list::-webkit-scrollbar { width: 11px; }
       .list::-webkit-scrollbar-thumb { background: var(--track); border-radius: 8px; border: 3px solid transparent; background-clip: padding-box; }
+      /* The thumb shows while the pointer is over the list, as macOS shows it while scrolling. */
+      .list:not(:hover)::-webkit-scrollbar-thumb { background: transparent; }
       .sizer { position: relative; width: 100%; }
       .row {
         position: absolute; left: 0; right: 0; height: 24px; display: grid; grid-template-columns: var(--cols); align-items: center; border-radius: 6px;
@@ -449,7 +461,6 @@
     </style>
   </head>
   <body>
-    <div class="backdrop"></div>
     <div class="app" id="app">
       <aside class="sidebar" id="sidebar">
         <div class="side-top drag"></div>
@@ -499,10 +510,20 @@
     </div>
 
     <div class="sheets">
+      <!-- Settings as System Settings lays them out: a list of pages with a search on the left (ui/parts/16-settings.js
+           builds it from the group titles below, including those parts add), the open page on the right. -->
       <div class="modal" id="settingsSheet">
-        <div class="panel" role="dialog" aria-labelledby="settingsTitle">
-          <h2 id="settingsTitle" data-t="settings"></h2>
-
+        <div class="panel settings" role="dialog" aria-labelledby="settingsTitle">
+          <nav class="set-nav">
+            <label class="set-search"><span id="settingsSearchIcon"></span><input id="settingsSearch" type="search" data-tp="searchSettings" spellcheck="false" /></label>
+            <div class="set-list" id="settingsNav"></div>
+          </nav>
+          <section class="set-main">
+            <header class="set-head">
+              <h2 id="settingsTitle" data-t="settings"></h2>
+              <button class="push primary" id="settingsDone" data-t="done"></button>
+            </header>
+            <div class="set-body" id="settingsBody">
           <div class="group-title" data-t="general"></div>
           <div class="group">
             <div class="item">
@@ -552,8 +573,9 @@
               <div class="control"><label class="switch"><input type="checkbox" id="autoUpdate" /><span class="knob"></span></label></div>
             </div>
           </div>
-
-          <div class="buttons"><button class="push primary" id="settingsDone" data-t="done"></button></div>
+            <p class="set-none" id="settingsNone" data-t="noSettingMatch" hidden></p>
+            </div>
+          </section>
         </div>
       </div>
 

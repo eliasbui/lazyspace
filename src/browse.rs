@@ -699,6 +699,7 @@ pub fn register(d: &mut Dispatcher) {
         workspace::eject(Path::new(&args::<Eject>(a)?.path))?;
         Ok(Value::Null)
     });
+    d.on("native.fonts", |_, _, _| Ok(json!(workspace::font_families())));
     d.on("native.home", |_, _, _| {
         let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("/"));
         let place = |p: Option<PathBuf>| p.map(|p| Uri::file(&p).to_string());

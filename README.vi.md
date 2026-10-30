@@ -52,8 +52,11 @@ thao tác tệp chạy thành một tác vụ có tiến độ, có thể hủy 
   trong Cài đặt.
 - **Dung lượng thư mục ngay trong danh sách**, tính ở chế độ nền.
 - **Máy chủ.** SFTP (có khóa SSH, ssh-agent và kiểm tra khóa của máy chủ), FTP và FTPS, Amazon S3, Aliyun OSS và dịch
-  vụ tương thích S3 như MinIO, cùng ổ chia sẻ SMB, AFP, NFS và WebDAV do macOS gắn. Google Drive, Dropbox, OneDrive và
-  các đám mây khác đi qua [rclone](https://rclone.org) khi đã cài. Mật khẩu chỉ nằm trong Keychain.
+  vụ tương thích S3 như MinIO, cùng ổ chia sẻ SMB, AFP, NFS và WebDAV do macOS gắn. Mật khẩu chỉ nằm trong Keychain.
+- **Đám mây.** Mục Đám mây của thanh bên hiện iCloud Drive và thư mục của các app Google Drive, OneDrive, Dropbox, Box
+  chính hãng. Không cài các app đó vẫn đăng nhập được Google Drive, OneDrive, Dropbox và các đám mây khác ngay trong
+  LazySpace: trình duyệt mở ra để đăng nhập qua [rclone](https://rclone.org), và rclone được cài bằng Homebrew nếu
+  chưa có.
 - **Tệp nén mở như thư mục.** Zip (cả mật khẩu AES), 7z (cả mật khẩu và tên mã hóa), RAR, tar với gzip, xz hoặc bzip2,
   ISO và nhiều loại khác mở như thư mục chỉ đọc. Giải nén giữ mọi tệp trong thư mục đích. Nén thành zip, 7z hoặc tar,
   có mật khẩu và chia nhỏ khi định dạng cho phép.
@@ -63,7 +66,8 @@ thao tác tệp chạy thành một tác vụ có tiến độ, có thể hủy 
 - **Lệnh và phím tắt.** Command-P liệt kê mọi lệnh kèm phím tắt, tìm theo tên tiếng Việt hay tiếng Anh, gõ không dấu
   vẫn được. F5 và F6 chép và chuyển sang khung kia, Command-U đổi chỗ hai khung, Command-Shift-T mở lại tab vừa đóng.
 - **Màu sắc của bạn.** Sáng, tối hoặc theo hệ thống, các màu nhấn của Mac, biểu tượng thanh bên xám hoặc có màu, biểu
-  tượng từ 48 tới 128 điểm, và ba cỡ chữ cho danh sách.
+  tượng từ 48 tới 128 điểm, ba cỡ chữ cho danh sách, và phông chữ của cả cửa sổ: phông hệ thống, SF Pro Rounded, New
+  York, SF Mono hoặc bất kỳ phông nào đã cài trên máy. Cài đặt chia trang như System Settings, có ô tìm kiếm.
 - **Liquid Glass (beta).** Thanh bên, thanh công cụ và các bảng thành kính mờ trên màn hình nền, dùng kính gốc của
   macOS 26 khi có.
 - **Hoàn tác.** Chuyển, đổi tên, tạo mới và đưa vào Thùng rác đều hoàn tác được bằng Command-Z.
@@ -161,7 +165,8 @@ Cài đặt, workspace, kết nối đã lưu (không kèm bí mật) và vị t
 
 ## Giới hạn đã biết
 
-- Đám mây cần rclone (`brew install rclone`); thêm tài khoản sẽ mở Terminal, nơi rclone đăng nhập bằng trình duyệt.
+- Đăng nhập đám mây trong LazySpace cần rclone; LazySpace cài nó bằng Homebrew, nên máy chưa có Homebrew thì phải cài
+  Homebrew (brew.sh) hoặc rclone (rclone.org/install) trước.
 - Aliyun OSS đi qua giao diện tương thích S3 và chưa thử trên tài khoản thật; tải lên S3 là một yêu cầu, tối đa 5 GB.
 - Không mở RAR có mật khẩu, và không tạo zip chia thành các phần `.z01`.
 - Ứng dụng ký ad hoc: sau khi cập nhật, macOS có thể hỏi lại quyền thư mục, và Keychain có thể hỏi một lần để bản mới

@@ -53,9 +53,12 @@ operation runs as a job you can watch, cancel and undo. It speaks English and Vi
   Settings.
 - **Folder sizes in the list**, worked out in the background.
 - **Servers.** SFTP (with keys, ssh-agent and a check of the server's key), FTP and FTPS, Amazon S3, Aliyun OSS and
-  S3-compatible services such as MinIO, and SMB, AFP, NFS and WebDAV shares mounted by macOS. Google Drive, Dropbox,
-  OneDrive and other clouds come through [rclone](https://rclone.org) when it is installed. Passwords stay in the
+  S3-compatible services such as MinIO, and SMB, AFP, NFS and WebDAV shares mounted by macOS. Passwords stay in the
   Keychain.
+- **Clouds.** The sidebar's Cloud section shows iCloud Drive and the folders of the Google Drive, OneDrive, Dropbox and
+  Box apps. Without those apps, Google Drive, OneDrive, Dropbox and other clouds are signed in to from LazySpace
+  itself: the browser opens to sign in through [rclone](https://rclone.org), which is installed with Homebrew when it
+  is missing.
 - **Archives as folders.** Zip (with AES passwords), 7z (with passwords and encrypted names), RAR, tar with gzip, xz or
   bzip2, ISO and more open as read-only folders. Extraction keeps every file inside the folder it goes to. Compress to
   zip, 7z or tar, with a password and split volumes where the format allows.
@@ -67,7 +70,9 @@ operation runs as a job you can watch, cancel and undo. It speaks English and Vi
   without accents. F5 and F6 copy and move to the other pane, Command-U swaps the panes, Command-Shift-T reopens a
   closed tab.
 - **Your colours.** Light, dark or as the system, the Mac's accent colours, the sidebar's icons in grey or in colour,
-  icons from 48 to 128 points, and three text sizes for lists.
+  icons from 48 to 128 points, three text sizes for lists, and the font of the whole window: the system's, SF Pro
+  Rounded, New York, SF Mono or any font installed on the Mac. Settings come in pages, as in System Settings, with a
+  search.
 - **Liquid Glass (beta).** The sidebar, toolbar and sheets turn to glass over the desktop, with the native glass of
   macOS 26 where it exists.
 - **Undo.** Moves, renames, new items and the Trash are undone with Command-Z.
@@ -165,7 +170,8 @@ for the update check (which a switch in Settings turns off). Nothing else leaves
 
 ## Known limits
 
-- Clouds need rclone (`brew install rclone`); adding one opens Terminal, where rclone signs in with your browser.
+- Signing in to a cloud from LazySpace needs rclone, which LazySpace installs with Homebrew; without Homebrew, install
+  Homebrew (brew.sh) or rclone (rclone.org/install) first.
 - Aliyun OSS goes through its S3-compatible interface and was not tried on a real account; S3 uploads are single
   requests of at most 5 GB.
 - RAR archives with a password are not opened, and zip files split into `.z01` parts are not made.

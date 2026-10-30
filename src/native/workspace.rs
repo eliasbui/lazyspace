@@ -5,7 +5,7 @@
 use crate::tr;
 use block2::RcBlock;
 use objc2::{msg_send, rc::Retained, runtime::AnyObject};
-use objc2_app_kit::{NSWorkspace, NSWorkspaceOpenConfiguration};
+use objc2_app_kit::{NSFontManager, NSWorkspace, NSWorkspaceOpenConfiguration};
 use objc2_foundation::{
     NSArray, NSBundle, NSError, NSFileManager, NSGlobalDomain, NSString, NSURL, NSURLVolumeAvailableCapacityForImportantUsageKey, NSURLVolumeIsEjectableKey,
     NSURLVolumeIsInternalKey, NSURLVolumeLocalizedNameKey, NSURLVolumeTotalCapacityKey, NSUserDefaults, NSVolumeEnumerationOptions,
@@ -169,6 +169,15 @@ pub fn set_folder_app(app: Option<&Path>) -> Result<(), String> {
         Ok(Some(error)) => Err(error),
         Err(_) => Err(tr("macOS không trả lời khi đổi ứng dụng mở thư mục", "macOS did not answer when the app for folders was changed").into()),
     }
+}
+
+/// The font families installed on the Mac, by name, for the choice of the app's text in Settings; the ones whose name
+/// starts with a dot are the system's private ones. Asked on the main thread, as the page's requests are; none elsewhere.
+pub fn font_families() -> Vec<String> {
+    let Some(mtm) = objc2::MainThreadMarker::new() else { return Vec::new() };
+    let mut families: Vec<String> = NSFontManager::sharedFontManager(mtm).availableFontFamilies().iter().map(|f| f.to_string()).filter(|f| !f.starts_with('.')).collect();
+    families.sort_by_key(|f| f.to_lowercase());
+    families
 }
 
 /// Opens Finder's Get Info window of the item; the path goes in as an argument of the script, not into its text.

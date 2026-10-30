@@ -92,6 +92,9 @@ pub struct Settings {
     pub icon_size: u32,
     /// The size of the text of lists: "small", "medium" or "large".
     pub text_size: String,
+    /// The family of the app's text: empty for the system's, one of the system's own designs ("ui-rounded",
+    /// "ui-serif", "ui-monospace"), or a family installed on the Mac by name.
+    pub font: String,
     pub check_updates: bool,
     /// LazySpace in place of Finder: the Mac's file viewer and the app for folders (src/features/viewer.rs). What the
     /// user asked for; the system's own defaults say whether it holds.
@@ -120,6 +123,7 @@ impl Default for Settings {
             sidebar_icons: "mono".into(),
             icon_size: 64,
             text_size: "medium".into(),
+            font: String::new(),
             check_updates: true,
             file_viewer: false,
             favourites: Vec::new(),
@@ -170,6 +174,10 @@ impl Settings {
             if !allowed.contains(&value) {
                 return Err(format!("{} {key}: {value}", tr("Giá trị không hợp lệ cho", "Not a valid value for")));
             }
+        }
+        // The family goes into a CSS value in quotes: no quote, backslash or control character can end it early.
+        if self.font.chars().count() > 64 || self.font.chars().any(|c| c == '"' || c == '\\' || c.is_control()) {
+            return Err(format!("{} font: {}", tr("Giá trị không hợp lệ cho", "Not a valid value for"), self.font));
         }
         if ![48, 64, 96, 128].contains(&self.icon_size) {
             return Err(format!("{} icon_size: {}", tr("Giá trị không hợp lệ cho", "Not a valid value for"), self.icon_size));
@@ -250,6 +258,8 @@ mod tests {
         assert!(settings.patched(&json!({"colour": "red"})).is_err(), "a key nobody knows");
         assert!(settings.patched(&json!({"glass": "yes"})).is_err(), "a wrong type");
         assert!(settings.patched(&json!({"theme": "sepia"})).is_err(), "a choice that does not exist");
+        assert!(settings.patched(&json!({"font": "Avenir Next"})).is_ok() && settings.patched(&json!({"font": "ui-rounded"})).is_ok());
+        assert!(settings.patched(&json!({"font": "x\", serif; } body { color: red"})).is_err(), "a quote would end the family");
         assert!(settings.patched(&json!(["glass"])).is_err(), "not an object");
     }
 
