@@ -166,6 +166,35 @@ pub fn rename_io(from: &Path, to: &Path) -> io::Result<()> {
     if unsafe { renamex_np(cf.as_ptr(), ct.as_ptr(), flags) } == 0 { Ok(()) } else { Err(io::Error::last_os_error()) }
 }
 
+/// Renames many items at once without losing one when names trade places (a to b, b to a): every source first goes
+/// to a temporary name beside it, then each temporary name to its target. A failure puts everything back as it was.
+pub fn rename_all(pairs: &[(PathBuf, PathBuf)]) -> Result<(), String> {
+    let pairs: Vec<&(PathBuf, PathBuf)> = pairs.iter().filter(|(from, to)| from != to).collect();
+    let stamp = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_or(0, |d| d.as_nanos());
+    let temp_of = |i: usize, from: &Path| from.with_file_name(format!(".lz-rename-{}-{stamp}-{i}", std::process::id()));
+    let temps: Vec<PathBuf> = pairs.iter().enumerate().map(|(i, (from, _))| temp_of(i, from)).collect();
+    for (i, (from, _)) in pairs.iter().enumerate() {
+        if let Err(e) = rename(from, &temps[i]) {
+            for j in (0..i).rev() {
+                let _ = rename(&temps[j], &pairs[j].0);
+            }
+            return Err(e);
+        }
+    }
+    for (i, (_, to)) in pairs.iter().enumerate() {
+        if let Err(e) = rename(&temps[i], to) {
+            for j in (0..i).rev() {
+                let _ = rename(&pairs[j].1, &temps[j]);
+            }
+            for (j, (from, _)) in pairs.iter().enumerate() {
+                let _ = rename(&temps[j], from);
+            }
+            return Err(e);
+        }
+    }
+    Ok(())
+}
+
 /// Removes a file, or a folder and all it holds, looking at `cancel` between items.
 pub fn delete(path: &Path, cancel: &AtomicBool) -> Result<(), String> {
     let meta = fs::symlink_metadata(path).map_err(|e| error(path, &e))?;
@@ -318,6 +347,20 @@ pub(crate) mod tests {
         assert!(!a.exists() && t.0.join("c.txt").exists());
         rename(&t.0.join("c.txt"), &t.0.join("C.txt")).unwrap();
         assert!(fs::read_dir(&t.0).unwrap().any(|e| e.unwrap().file_name() == "C.txt"));
+    }
+
+    #[test]
+    fn rename_all_trades_names_and_puts_back_on_failure() {
+        let t = Temp::new("rename-all");
+        let (a, b) = (t.file("a.txt", "A"), t.file("b.txt", "B"));
+        rename_all(&[(a.clone(), b.clone()), (b.clone(), a.clone())]).unwrap();
+        assert_eq!((fs::read_to_string(&a).unwrap(), fs::read_to_string(&b).unwrap()), ("B".into(), "A".into()));
+        let c = t.file("c.txt", "C");
+        t.file("taken.txt", "T");
+        assert!(rename_all(&[(a.clone(), t.0.join("new.txt")), (c.clone(), t.0.join("taken.txt"))]).is_err());
+        assert!(a.exists() && c.exists() && !t.0.join("new.txt").exists(), "everything is back as it was");
+        assert_eq!(fs::read_to_string(t.0.join("taken.txt")).unwrap(), "T");
+        assert_eq!(fs::read_dir(&t.0).unwrap().count(), 4, "no temporary name is left");
     }
 
     #[test]

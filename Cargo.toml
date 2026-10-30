@@ -44,6 +44,8 @@ sha2 = "0.10"
 md-5 = "0.10"
 sha1 = "0.10"
 crc32fast = "1"
+# Batch rename with regular expressions.
+regex = "1"
 # The window icon is decoded from PNG at startup; the home and the well-known folders.
 png = "0.18"
 dirs = "7"

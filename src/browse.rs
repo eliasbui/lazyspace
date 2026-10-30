@@ -63,12 +63,14 @@ pub enum Undo {
     Moves { title: String, moves: Vec<(PathBuf, PathBuf)> },
     /// Items that were made (copies, a new folder): they go to the Trash.
     Made { title: String, made: Vec<PathBuf> },
+    /// Items renamed together (a batch rename): they go back in two phases, as they came.
+    Renames { title: String, pairs: Vec<(PathBuf, PathBuf)> },
 }
 
 impl Undo {
     pub fn title(&self) -> &str {
         match self {
-            Undo::Moves { title, .. } | Undo::Made { title, .. } => title,
+            Undo::Moves { title, .. } | Undo::Made { title, .. } | Undo::Renames { title, .. } => title,
         }
     }
 }
@@ -700,6 +702,10 @@ fn run_undo(undo: &Undo, ctx: &crate::jobs::Ctx) -> Result<Value, String> {
                 }
                 ctx.progress(i as u64 + 1, moves.len() as u64, "");
             }
+        }
+        Undo::Renames { pairs, .. } => {
+            vfs::local::rename_all(pairs)?;
+            ctx.progress(1, 1, "");
         }
         Undo::Made { made, .. } => {
             for (i, path) in made.iter().enumerate() {
