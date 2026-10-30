@@ -6,12 +6,12 @@ LZ.words({
   vi: {
     stash: "Khay tạm", stashShow: "Hiện hoặc ẩn khay tạm", stashAdd: "Thêm vào khay tạm", stashRemove: "Bỏ khỏi khay", stashClear: "Dọn khay",
     stashPaste: "Lấy từ bảng nhớ tạm", stashEmpty: "Thả tệp, ảnh, liên kết hay văn bản vào đây", stashClose: "Đóng khay", stashAdded: "Đã thêm {0} mục vào khay",
-    revealFinder: "Hiện trong Finder", openItem: "Mở",
+    revealFinder: "Hiện trong Finder", openItem: "Mở", downloadLanes: "Tải bằng Lanes", lanesSent: "Đã gửi {0} liên kết cho Lanes",
   },
   en: {
     stash: "Stash", stashShow: "Show or hide the shelf", stashAdd: "Add to Shelf", stashRemove: "Remove from Shelf", stashClear: "Clear the Shelf",
     stashPaste: "Take from the Clipboard", stashEmpty: "Drop files, pictures, links or text here", stashClose: "Close the Shelf", stashAdded: "{0} items added to the shelf",
-    revealFinder: "Show in Finder", openItem: "Open",
+    revealFinder: "Show in Finder", openItem: "Open", downloadLanes: "Download with Lanes", lanesSent: "{0} links sent to Lanes",
   },
 });
 LZ.icons.add({
@@ -45,6 +45,14 @@ const Stash = (() => {
   }
   LZ.on("stash.changed", changed);
 
+  // Links kept as files go to Lanes, the download manager by the same author, when it is installed.
+  let hasLanes = false;
+  const isLink = (uri) => /\.(webloc|url|txt)$/i.test(uri);
+  const download = (uris) =>
+    LZ.call("lanes.send", { uris: uris.filter(isLink) })
+      .then((d) => LZ.toast(t("lanesSent", d.sent)))
+      .catch(LZ.say);
+
   const add = (uris) =>
     LZ.call("stash.add", { uris })
       .then((d) => d.added && S.window.role === "main" && LZ.toast(t("stashAdded", d.added)))
@@ -57,7 +65,10 @@ const Stash = (() => {
   LZ.menu.add({ id: "stashRemove", label: "stashRemove", icon: "tray.and.arrow.up", group: 46, order: 2, when: (c) => c.count > 0 && c.tab.uri === STASH, run: (c) => LZ.call("stash.remove", { uris: c.entries.map((e) => e.uri) }).catch(LZ.say) });
   LZ.menu.add({ id: "stashClear", label: "stashClear", icon: "trash", group: 46, order: 3, when: (c) => c.count === 0 && c.tab.uri === STASH, run: () => LZ.call("stash.clear").catch(LZ.say) });
 
+  LZ.menu.add({ id: "downloadLanes", label: "downloadLanes", icon: "arrow.down.circle", group: 47, order: 1, when: (c) => hasLanes && c.count > 0 && (isLocal(c.tab.uri) || c.tab.uri === STASH) && c.entries.some((e) => isLink(e.uri)), run: (c) => download(c.entries.map((e) => e.uri)) });
+
   LZ.on("app.hello", () => {
+    LZ.call("lanes.available").then((on) => (hasLanes = !!on)).catch(() => {});
     LZ.call("stash.count")
       .then((n) => {
         count = n;
@@ -110,6 +121,7 @@ const Stash = (() => {
             { id: "open", label: t("openItem"), icon: "arrow.up.forward.app" },
             { id: "reveal", label: t("revealFinder"), icon: "macwindow" },
             { id: "revealHere", label: t("revealHere"), icon: "folder" },
+            ...(hasLanes && uris.some(isLink) ? [{ id: "lanes", label: t("downloadLanes"), icon: "arrow.down.circle" }] : []),
             { separator: true },
             { id: "remove", label: t("stashRemove"), icon: "tray.and.arrow.up" },
           ],
@@ -120,6 +132,7 @@ const Stash = (() => {
         else if (choice === "reveal") LZ.call("native.reveal", { uris }).catch(LZ.say);
         // The shelf has no panes: the app shows the items in a main window, opening one if none is open.
         else if (choice === "revealHere") Viewer.reveal(null, uris);
+        else if (choice === "lanes") download(uris);
         else if (choice === "remove") LZ.call("stash.remove", { uris }).catch(LZ.say);
       });
       // Text, links and pictures from a browser come as an HTML5 drop (files come through the app, as `drop`).

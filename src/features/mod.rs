@@ -9,6 +9,7 @@ pub mod git;
 pub mod hash;
 pub mod history;
 pub mod index;
+pub mod lanes;
 pub mod menuedit;
 pub mod openin;
 pub mod preview;
@@ -34,6 +35,7 @@ pub fn register(d: &mut Dispatcher) {
     history::register(d);
     index::register(d);
     menuedit::register(d);
+    lanes::register(d);
     openin::register(d);
     preview::register(d);
     remote::register(d);
@@ -98,7 +100,7 @@ mod tests {
     fn every_feature_registers_without_panicking() {
         let mut d = Dispatcher::new();
         register(&mut d);
-        for area in ["archive", "desktop", "hash", "menuedit", "openin", "preview", "remote", "rename", "stash", "sync", "templates", "viewer", "workspaces"] {
+        for area in ["archive", "desktop", "hash", "lanes", "menuedit", "openin", "preview", "remote", "rename", "stash", "sync", "templates", "viewer", "workspaces"] {
             assert!(d.areas().contains(&area), "{area}");
         }
     }
