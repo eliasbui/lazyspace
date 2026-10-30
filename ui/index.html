@@ -526,6 +526,10 @@
               <div class="label">LazySpace <span id="version">-</span><small id="updateNote"></small></div>
               <div class="control"><button class="push" id="checkUpdate" data-t="checkUpdate"></button></div>
             </div>
+            <div class="item">
+              <div class="label"><span data-t="autoUpdate"></span><small data-t="autoUpdateHint"></small></div>
+              <div class="control"><label class="switch"><input type="checkbox" id="autoUpdate" /><span class="knob"></span></label></div>
+            </div>
           </div>
 
           <div class="buttons"><button class="push primary" id="settingsDone" data-t="done"></button></div>
@@ -618,6 +622,7 @@
           glassHint: "Thanh bên, thanh công cụ và các bảng thành kính mờ, như macOS 26. Bật hoặc tắt sẽ mở lại cửa sổ.",
           foldersFirst: "Thư mục lên đầu", foldersFirstHint: "Khi sắp xếp theo tên, thư mục luôn đứng trước tệp.",
           folderSizes: "Tính dung lượng thư mục", folderSizesHint: "Cột Kích thước hiện dung lượng của từng thư mục, tính dần ở chế độ nền.",
+          autoUpdate: "Tự kiểm tra bản mới", autoUpdateHint: "Hỏi GitHub một lần mỗi lần mở ứng dụng.",
           checkUpdate: "Kiểm tra cập nhật", checking: "Đang kiểm tra bản mới...", upToDate: "Bạn đang dùng bản mới nhất.",
           updateOut: "Có bản LazySpace {0}. Bạn đang dùng {1}.", update: "Cập nhật", updating: "Đang tải...", updatingPct: "Đang tải {0}%",
           updateReady: "Đã tải xong bản mới. Khởi động lại để dùng.", restart: "Khởi động lại",
@@ -631,6 +636,7 @@
           glassHint: "The sidebar, the toolbar and the sheets turn to frosted glass, as in macOS 26. Turning it on or off reopens the window.",
           foldersFirst: "Folders on top", foldersFirstHint: "When sorting by name, folders always come before files.",
           folderSizes: "Calculate folder sizes", folderSizesHint: "The Size column shows the size of each folder, worked out in the background.",
+          autoUpdate: "Check for new versions", autoUpdateHint: "Asks GitHub once each time the app opens.",
           checkUpdate: "Check for Updates", checking: "Checking for a new version...", upToDate: "You have the latest version.",
           updateOut: "LazySpace {0} is out. You have {1}.", update: "Update", updating: "Downloading...", updatingPct: "Downloading {0}%",
           updateReady: "The new version is ready. Restart to use it.", restart: "Restart",
@@ -711,6 +717,7 @@
       $("language").addEventListener("change", () => setSetting({ language: $("language").value }));
       $("foldersFirst").addEventListener("change", () => setSetting({ sort: { foldersFirst: $("foldersFirst").checked } }));
       $("folderSizes").addEventListener("change", () => setSetting({ folder_sizes: $("folderSizes").checked }));
+      $("autoUpdate").addEventListener("change", () => setSetting({ check_updates: $("autoUpdate").checked }));
 
       // Sheets: one open at a time, closed by Escape or a click beside it (unless it waits for an answer).
       function openSheet(id) {
@@ -771,6 +778,7 @@
         $("glass").checked = s.glass;
         $("foldersFirst").checked = s.sort?.foldersFirst !== false;
         $("folderSizes").checked = !!s.folder_sizes;
+        $("autoUpdate").checked = s.check_updates !== false;
         paintLook();
       }
 

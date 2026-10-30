@@ -1155,3 +1155,29 @@ phải tạo thư mục mới, kéo tệp từ cửa sổ chính thả lên desk
 | Cột dung lượng thư mục với `/` hoặc ổ mạng rất chậm. | Tắt mặc định; chỉ tính cho thư mục của volume cục bộ khi `capabilities.sizes`; ổ mạng mount qua NetFS có `sizes: false`. |
 | Hai pane cùng mở một thư mục nhận hai lần re-list. | `fswatch` map path tới nhiều view; listing chạy một lần và chia sẻ `Arc<Vec<Entry>>` giữa các view cùng `(uri, showHidden)`, sắp xếp riêng theo chỉ số. |
 | Chế độ "columns" (Miller) không trong danh sách của người dùng. | Không làm; list và icons đủ với danh sách yêu cầu. |
+
+## 17. Sai khác so với thiết kế khi làm
+
+Ghi lại sau khi làm xong W1 tới W9, để người đọc mã không phải đoán.
+
+- Không có worker song song: mọi phần do một người làm tuần tự trên `main`, nên không có stub hay neo dependency của F3
+  (mục 15); mỗi tính năng tự đăng ký trong `src/features/mod.rs`.
+- `ipc::defer` (mới): handler trả lời từ một luồng riêng khi phải chờ ổ đĩa hay máy chủ (`fs.stat`, `fs.mkdir`,
+  `fs.rename`, `fs.read_text`, `fs.write_text`, `native.open` và Quick Look với mục không ở trên máy, `remote.*`), nên
+  cửa sổ không đứng khi máy chủ chậm.
+- Địa chỉ máy chủ: authority của mọi scheme máy chủ là id của kết nối đã lưu (`sftp://<id>/path`, `ftp://<id>/path`,
+  `s3://<id>/bucket/key`), không phải `user@host`; tên hiển thị lấy từ kết nối. rclone dùng tên remote của rclone làm
+  authority (`rclone://<remote>/path`) và không lưu trong `connections.json`. WebDAV là hai scheme `dav` và `davs`.
+- SFTP: khóa máy chủ chưa từng gặp phải được người dùng xác nhận dấu vân tay (`LZ-HOSTKEY:`), rồi mới ghi vào
+  `known_hosts` riêng của app; `~/.ssh/known_hosts` chỉ đọc; khóa đổi thì từ chối. Thứ tự đăng nhập: tệp khóa, mật
+  khẩu, ssh-agent, các khóa thường gặp trong `~/.ssh`.
+- FTP: một pool nhỏ kết nối điều khiển thay cho một luồng một kết nối; trình đọc và ghi giữ kết nối riêng tới khi xong.
+- Aliyun OSS đi qua endpoint tương thích S3 `s3.oss-<region>.aliyuncs.com` theo tài liệu của Alibaba Cloud, virtual
+  hosted; vẫn chưa thử trên tài khoản thật.
+- Desktop (W9): một cửa sổ trên màn hình chính (nơi Finder đặt biểu tượng), không phải mỗi màn hình một cửa sổ. Ô của
+  từng biểu tượng do Rust tính (`desktop.place`, `desktop.move`) và giữ theo tên trong `desktop.json`; trang chỉ vẽ.
+- Khay tạm mở bằng Command-Option-T; menu chuột phải có "Thêm vào khay tạm".
+- Thêm theo yêu cầu sau thiết kế: nhóm Cài đặt "Màu sắc và biểu tượng" (màu nhấn, biểu tượng thanh bên có màu, cỡ biểu
+  tượng, cỡ chữ) và bảng lệnh Command-P cùng các phím tắt hai khung (F5, F6, Command-U, Command-Shift-T).
+- An toàn: ảnh thu nhỏ hỏng chuyển sang biểu tượng qua một listener chung, không có handler viết trong markup; tên do
+  máy chủ trả về như `..` hay có dấu `/` bị bỏ qua khi liệt kê và khi chép.
