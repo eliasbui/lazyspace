@@ -302,7 +302,14 @@ pub fn register(d: &mut Dispatcher) {
         })
     });
     d.on("stash.count", |_, _, _| Ok(json!(load(&list_path()).len())));
-    d.on("stash.items", |_, _, _| serde_json::to_value(entries_of(&load(&list_path()))).map_err(|e| e.to_string()));
+    d.on("stash.items", |_, _, _| {
+        let items = load(&list_path());
+        // The shelf shows thumbnails of its items, wherever they are.
+        for item in &items {
+            crate::protocol::allow_also(Path::new(&item.path).parent().map(Path::to_path_buf));
+        }
+        serde_json::to_value(entries_of(&items)).map_err(|e| e.to_string())
+    });
     d.on("stash.show", |app, _, a| {
         #[derive(Deserialize)]
         struct Show {

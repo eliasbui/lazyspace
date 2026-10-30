@@ -17,6 +17,7 @@ const MAX: usize = 100;
 pub struct Workspace {
     pub id: String,
     pub name: String,
+    #[serde(default)]
     pub created: i64,
     /// The window as the page reports it with `panes.state`.
     pub state: Value,

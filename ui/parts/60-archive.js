@@ -20,6 +20,9 @@ const Archiver = (() => {
   const EXT = /\.(zip|7z|rar|tar|tgz|gz|tbz2?|bz2|txz|xz|lzma|tlz|iso|cab|cpio|xar|lha|lzh|jar|war|apk|ipa|cbz|cbr|z)$/i;
   const isArchive = (e) => e && e.kind === "file" && isLocal(e.uri) && EXT.test(e.name);
 
+  // The top of an archive is called by the archive's name, without the "!" its address ends in.
+  placeNames.archive = (uri) => nameOf(uri).replace(/!$/, "");
+
   // An archive opens as a folder.
   LZ.vfs.opener((entry) => (isArchive(entry) ? archiveUri(pathOf(entry.uri), "") : null));
 

@@ -85,7 +85,7 @@ const Preview = (() => {
       if (text?.dirty) return;
       shown = uri;
       text = null;
-      title.textContent = entry ? entry.name : nameOf(uri);
+      title.textContent = entry ? entry.name : placeName(uri);
       body.innerHTML = entry ? `<div class="pv-media"><img class="pv-icon" src="${iconUrl(entry, 128)}" alt=""></div>` : "";
       LZ.call("preview.info", { uri }).catch(() => {});
     }, 90);

@@ -50,7 +50,9 @@ const Stash = (() => {
       .then((d) => d.added && S.window.role === "main" && LZ.toast(t("stashAdded", d.added)))
       .catch(LZ.say);
 
-  LZ.toolbar.add({ id: "stash", side: "right", icon: "tray", label: "stashShow", run: () => LZ.call("stash.show", {}).catch(LZ.say) });
+  LZ.toolbar.add({ id: "stash", side: "right", icon: "tray", label: "stashShow", run: () => Panes.action("toggleShelf") });
+  Panes.actions.toggleShelf = () => LZ.call("stash.show", {}).catch(LZ.say);
+  Keys.add({ "Cmd+Alt+T": "toggleShelf" });
   LZ.menu.add({ id: "stashAdd", label: "stashAdd", icon: "tray.and.arrow.down", group: 46, order: 1, when: (c) => c.count > 0 && isLocal(c.tab.uri), run: (c) => add(c.entries.map((e) => e.uri)) });
   LZ.menu.add({ id: "stashRemove", label: "stashRemove", icon: "tray.and.arrow.up", group: 46, order: 2, when: (c) => c.count > 0 && c.tab.uri === STASH, run: (c) => LZ.call("stash.remove", { uris: c.entries.map((e) => e.uri) }).catch(LZ.say) });
   LZ.menu.add({ id: "stashClear", label: "stashClear", icon: "trash", group: 46, order: 3, when: (c) => c.count === 0 && c.tab.uri === STASH, run: () => LZ.call("stash.clear").catch(LZ.say) });

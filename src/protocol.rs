@@ -22,29 +22,33 @@ pub const SCHEME: &str = "lazy";
 /// The most bytes one ranged answer carries; the player asks again for the rest.
 const MAX_RANGE: u64 = 8 << 20;
 
-fn allowed() -> &'static Mutex<HashSet<PathBuf>> {
-    static ALLOWED: OnceLock<Mutex<HashSet<PathBuf>>> = OnceLock::new();
-    ALLOWED.get_or_init(|| Mutex::new(HashSet::new()))
+/// The folders whose files may be served: those open in a tab, which change as the tabs move, and those allowed for
+/// the rest of the run.
+fn allowed() -> &'static Mutex<(HashSet<PathBuf>, HashSet<PathBuf>)> {
+    static ALLOWED: OnceLock<Mutex<(HashSet<PathBuf>, HashSet<PathBuf>)>> = OnceLock::new();
+    ALLOWED.get_or_init(|| Mutex::new((HashSet::new(), HashSet::new())))
 }
 
-/// The folders whose files may be served: those open in a tab, and the stash.
+/// The folders open in a tab now.
 pub fn allow(folders: impl IntoIterator<Item = PathBuf>) {
     if let Ok(mut set) = allowed().lock() {
-        *set = folders.into_iter().collect();
+        set.0 = folders.into_iter().collect();
     }
 }
 
-/// Adds a folder to those served (the copy of an item previewed from inside an archive).
+/// Adds a folder to those served for the rest of the run: the copy of an item previewed from inside an archive, or
+/// the folder of an item the user put on the shelf.
 pub fn allow_also(folder: Option<PathBuf>) {
     if let (Some(folder), Ok(mut set)) = (folder, allowed().lock()) {
-        set.insert(folder);
+        set.1.insert(folder);
     }
 }
 
 /// Whether `path` is directly in an allowed folder, or is one.
 pub fn is_allowed(path: &Path) -> bool {
     let Ok(set) = allowed().lock() else { return false };
-    set.contains(path) || path.parent().is_some_and(|p| set.contains(p))
+    let has = |p: &Path| set.0.contains(p) || set.1.contains(p);
+    has(path) || path.parent().is_some_and(has)
 }
 
 pub fn handle(request: Request<Vec<u8>>, responder: RequestAsyncResponder) {
