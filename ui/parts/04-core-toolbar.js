@@ -13,14 +13,14 @@ const Toolbar = (() => {
     const pane = Panes.focused();
     const tab = pane?.tab;
     if (!tab) return;
-    $("title").textContent = tab.uri ? nameOf(tab.uri) : "LazySpace";
+    $("title").textContent = tab.uri ? placeName(tab.uri) : "LazySpace";
     $("tbBack").disabled = !tab.back.length;
     $("tbForward").disabled = !tab.forward.length;
     for (const b of $("tbView").querySelectorAll("[data-view]")) b.classList.toggle("on", b.dataset.view === tab.mode);
     $("tbNewFolder").disabled = !tab.capabilities.write;
     $("tbTrash").disabled = !tab.selCount();
     if (document.activeElement !== $("searchInput")) $("searchInput").value = tab.filter || "";
-    document.title = Panes.all().map((p) => (p.tab?.uri ? nameOf(p.tab.uri) : "")).filter(Boolean).join(" | ") || "LazySpace";
+    document.title = Panes.all().map((p) => (p.tab?.uri ? placeName(p.tab.uri) : "")).filter(Boolean).join(" | ") || "LazySpace";
   }
 
   $("tbBack").addEventListener("click", () => Panes.action("back"));

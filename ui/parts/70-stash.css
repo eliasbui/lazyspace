@@ -1,0 +1,25 @@
+.side-count { flex: none; min-width: 18px; padding: 0 6px; border-radius: 999px; font-size: 11px; font-weight: 600; color: var(--secondary); text-align: center; }
+.side-count:empty { display: none; }
+.side-count { background: var(--field); }
+
+/* The shelf's own window: a rounded basket on a clear window. */
+:root.shelf-mode, .shelf-mode body { background: transparent; }
+.shelf-mode .app, .shelf-mode .jobs, .shelf-mode .backdrop { display: none; }
+.shelf {
+  position: fixed; inset: 6px; display: flex; flex-direction: column; border-radius: 18px; background: var(--panel);
+  box-shadow: 0 0 0 0.5px var(--panel-stroke), 0 10px 30px rgba(0, 0, 0, 0.22); overflow: hidden;
+  -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%);
+}
+.shelf.over { box-shadow: 0 0 0 2px var(--accent), 0 10px 30px rgba(0, 0, 0, 0.22); }
+.shelf-head { flex: none; height: 38px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 14px; }
+.shelf-title { font-weight: 700; font-size: 13px; }
+.shelf-title b { margin-left: 4px; font-weight: 600; font-size: 11px; color: var(--secondary); }
+.shelf-tools { display: flex; gap: 2px; }
+.shelf-tools .mini svg { width: 14px; height: 14px; }
+.shelf-items { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); align-content: start; gap: 4px; padding: 4px 10px 12px; }
+.shelf-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 2px; border-radius: 10px; }
+.shelf-item img { width: 48px; height: 48px; object-fit: contain; }
+.shelf-item img.thumb { border-radius: 4px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); }
+.shelf-item span { max-width: 72px; font-size: 11px; text-align: center; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word; }
+.shelf-item.sel { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.shelf-empty { grid-column: 1 / -1; margin: 40px 16px; text-align: center; color: var(--secondary); font-size: 12px; line-height: 1.5; }

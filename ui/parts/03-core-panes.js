@@ -284,7 +284,7 @@ class Pane {
     }
     this.tabsEl.hidden = false;
     this.tabsEl.innerHTML = this.tabs
-      .map((tab, i) => `<div class="tab${i === this.active ? " on" : ""}" data-i="${i}"><button class="x" data-i="${i}" title="${esc(t("closeTab"))}">${icon("xmark")}</button><span>${esc(nameOf(tab.uri))}</span></div>`)
+      .map((tab, i) => `<div class="tab${i === this.active ? " on" : ""}" data-i="${i}"><button class="x" data-i="${i}" title="${esc(t("closeTab"))}">${icon("xmark")}</button><span>${esc(placeName(tab.uri))}</span></div>`)
       .join("");
   }
 
@@ -293,6 +293,11 @@ class Pane {
     this.path.querySelector('[data-act="back"]').disabled = !tab.back.length;
     this.path.querySelector('[data-act="forward"]').disabled = !tab.forward.length;
     if (this.crumbs.querySelector(".address")) return;
+    // A place of a feature (the shelf) is one crumb with its own name.
+    if (placeNames[schemeOf(tab.uri)]) {
+      this.crumbs.innerHTML = `<span class="sep">${icon("triangle.right")}</span><button class="crumb" data-uri="${esc(tab.uri)}"><span>${esc(placeName(tab.uri))}</span></button>`;
+      return;
+    }
     // Inside an archive: the crumbs of the archive's folder, the archive itself, then the folders inside it.
     const inArchive = tab.uri?.startsWith("archive://");
     const full = pathOf(tab.uri || "");

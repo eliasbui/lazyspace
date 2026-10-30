@@ -16,6 +16,11 @@ function pathOf(uri) {
   }
 }
 const nameOf = (uri) => pathOf(uri).split("/").filter(Boolean).pop() || "/";
+// The names of places that are not folders of a disk (the shelf), by scheme; features add theirs.
+const placeNames = {};
+const schemeOf = (uri) => (typeof uri === "string" ? uri.split("://")[0] : "");
+// What a place is called in a title, a tab and the path bar.
+const placeName = (uri) => (placeNames[schemeOf(uri)] ? placeNames[schemeOf(uri)](uri) : nameOf(uri));
 const samePlace = (a, b) => !!a && !!b && a.split("://")[0] === b.split("://")[0] && pathOf(a) === pathOf(b);
 
 const locale = () => (lang === "vi" ? "vi-VN" : "en-US");

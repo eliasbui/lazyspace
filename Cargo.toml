@@ -49,6 +49,8 @@ objc2-av-foundation = { version = "0.3", default-features = false, features = ["
 # 7z archives with a password, which the system's libarchive cannot read or write; every other archive goes through
 # libarchive itself (src/features/archive/libarchive.rs).
 sevenz-rust2 = { version = "0.24", default-features = false, features = ["compress", "aes256"] }
+# Pictures dragged from a browser onto the shelf arrive as base64.
+base64 = "0.22"
 # Batch rename with regular expressions.
 regex = "1"
 # The window icon is decoded from PNG at startup; the home and the well-known folders.

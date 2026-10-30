@@ -45,6 +45,8 @@ const WINDOW_ICON: &[u8] = include_bytes!("../assets/icon-256.png");
 /// The size of a main window that has no size saved, and the least it may be.
 const MAIN_SIZE: (f64, f64) = (1100.0, 720.0);
 const MAIN_MIN: (f64, f64) = (640.0, 420.0);
+/// The size of the floating shelf.
+const SHELF_SIZE: (f64, f64) = (264.0, 440.0);
 
 /// Whether the app speaks English rather than Vietnamese in its own words: the menus and messages it makes. The page
 /// keeps its own copy of its words (ui/index.html).
@@ -212,6 +214,16 @@ impl App {
             (Some(w), Some(h)) if role == Role::Main => Some((w.clamp(MAIN_MIN.0, 10000.0), h.clamp(MAIN_MIN.1, 10000.0))),
             _ => None,
         };
+        // The shelf sits on the right of the main screen, a little below its top, unless told where.
+        let options = if role == Role::Shelf && options.frame.is_none() {
+            let frame = target.primary_monitor().map(|m| {
+                let size = m.size().to_logical::<f64>(m.scale_factor());
+                [size.width - SHELF_SIZE.0 - 16.0, 90.0, SHELF_SIZE.0, SHELF_SIZE.1]
+            });
+            SurfaceOptions { frame, ..options }
+        } else {
+            options
+        };
         let (width, height) = options.frame.map(|f| (f[2], f[3])).or(saved_size).unwrap_or(MAIN_SIZE);
         let glass = self.settings.glass && role == Role::Main;
         let transparent = options.transparent || glass;
@@ -223,6 +235,7 @@ impl App {
             .with_theme(self.window_theme())
             .with_transparent(transparent)
             .with_always_on_top(options.always_on_top)
+            .with_visible_on_all_workspaces(role == Role::Shelf)
             .with_decorations(options.decorations);
         if let Some([x, y, ..]) = options.frame {
             builder = builder.with_position(LogicalPosition::new(x, y));
