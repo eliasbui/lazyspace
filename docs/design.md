@@ -800,6 +800,8 @@ phiên bản mới nhất.
   thread giả), `keymap` (bảng windows ánh xạ Ctrl+C), `contextmenu` (lọc `when`), `update` (các test của Lanes),
   `settings` (tệp cũ giữ giá trị), và của từng W (mục 15). Test không chạm AppKit; mã objc2 được bọc bởi hàm mỏng
   không có logic.
+- `scripts/check-ui.sh`: `node --check` cho mọi script nội tuyến của `ui/index.html` và từng `ui/parts/*.js`; chạy sau
+  mọi thay đổi trong `ui/`.
 - `scripts/smoke.sh`: `cargo build --release`, `scripts/bundle-macos.sh`, `open dist/LazySpace.app`, chờ 3 s,
   `pgrep -x lazyspace`, kiểm tra `~/Library/Application Support/LazySpace/settings.json` xuất hiện, `osascript -e
   'quit app "LazySpace"'`. Thoát khác 0 nếu bất kỳ bước nào hỏng.

@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>LazySpace</title>
+    <script>
+      // The app puts the language, the light or dark and the glass of the settings on the root (main.rs `page`); the
+      // classes the styles follow are set from them here, before the first frame, and again when the system changes.
+      (() => {
+        const root = document.documentElement;
+        const system = matchMedia("(prefers-color-scheme: dark)");
+        window.paintTheme = () => {
+          const theme = root.dataset.theme || "system";
+          root.classList.toggle("dark", theme === "dark" || (theme !== "light" && system.matches));
+          root.classList.toggle("glass", root.hasAttribute("data-glass"));
+        };
+        paintTheme();
+        system.addEventListener("change", paintTheme);
+      })();
+    </script>
+    <style>
+      /* macOS colours: the system's own where WebKit names them (the user's accent), Apple's values elsewhere. */
+      :root {
+        color-scheme: light;
+        --accent: #007aff;
+        --window: #ffffff;
+        --sidebar: rgba(242, 242, 245, 0.94);
+        --sidebar-stroke: rgba(0, 0, 0, 0.07);
+        --label: rgba(0, 0, 0, 0.88);
+        --secondary: rgba(0, 0, 0, 0.52);
+        --tertiary: rgba(0, 0, 0, 0.28);
+        --separator: rgba(0, 0, 0, 0.08);
+        --hover: rgba(0, 0, 0, 0.05);
+        --pressed: rgba(0, 0, 0, 0.1);
+        --selected: rgba(0, 0, 0, 0.07);
+        --glass: rgba(255, 255, 255, 0.78);
+        --glass-stroke: rgba(0, 0, 0, 0.08);
+        --field: rgba(0, 0, 0, 0.045);
+        --field-stroke: rgba(0, 0, 0, 0.12);
+        --field-bg: #ffffff;
+        --btn: #ffffff;
+        --btn-stroke: rgba(0, 0, 0, 0.13);
+        --panel: #f5f5f7;
+        --panel-stroke: rgba(0, 0, 0, 0.1);
+        --group: #ffffff;
+        --group-stroke: rgba(0, 0, 0, 0.06);
+        --track: rgba(0, 0, 0, 0.1);
+        --content: transparent;
+        --rim: transparent;
+        --red: #ff3b30;
+        --green: #28cd41;
+        --shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+      }
+      @supports (color: -apple-system-control-accent) {
+        :root { --accent: -apple-system-control-accent; }
+      }
+      /* Dark, when the user or the system asks for it (the root's class, set by the script in the head). */
+      :root.dark {
+        color-scheme: dark;
+        --window: #1e1e1e;
+        --sidebar: rgba(46, 46, 48, 0.94);
+        --sidebar-stroke: rgba(255, 255, 255, 0.07);
+        --label: rgba(255, 255, 255, 0.9);
+        --secondary: rgba(255, 255, 255, 0.55);
+        --tertiary: rgba(255, 255, 255, 0.28);
+        --separator: rgba(255, 255, 255, 0.08);
+        --hover: rgba(255, 255, 255, 0.06);
+        --pressed: rgba(255, 255, 255, 0.12);
+        --selected: rgba(255, 255, 255, 0.1);
+        --glass: rgba(58, 58, 60, 0.8);
+        --glass-stroke: rgba(255, 255, 255, 0.09);
+        --field: rgba(255, 255, 255, 0.08);
+        --field-stroke: rgba(255, 255, 255, 0.1);
+        --field-bg: rgba(255, 255, 255, 0.06);
+        --btn: rgba(255, 255, 255, 0.13);
+        --btn-stroke: rgba(255, 255, 255, 0.06);
+        --panel: #2a2a2c;
+        --panel-stroke: rgba(255, 255, 255, 0.1);
+        --group: rgba(255, 255, 255, 0.05);
+        --group-stroke: rgba(255, 255, 255, 0.05);
+        --track: rgba(255, 255, 255, 0.14);
+        --red: #ff453a;
+        --green: #32d74b;
+        --shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      }
+      /* Liquid Glass (beta), the first layer: the sidebar, the toolbar's capsules, the sheets and the groups of Settings
+         turn to frosted glass with a light along their top edge, over a soft coloured backdrop that the content lets
+         through. It is the whole effect before macOS 26, and what stays when the native layer is not there. */
+      :root.glass {
+        --window: #e8eef8;
+        --sidebar: rgba(255, 255, 255, 0.42);
+        --sidebar-stroke: rgba(255, 255, 255, 0.55);
+        --glass: rgba(255, 255, 255, 0.5);
+        --glass-stroke: rgba(255, 255, 255, 0.6);
+        --panel: rgba(250, 250, 252, 0.72);
+        --group: rgba(255, 255, 255, 0.55);
+        --group-stroke: rgba(255, 255, 255, 0.6);
+        --content: rgba(255, 255, 255, 0.55);
+        --rim: rgba(255, 255, 255, 0.75);
+        --field-bg: rgba(255, 255, 255, 0.7);
+      }
+      :root.glass.dark {
+        --window: #0f1117;
+        --sidebar: rgba(44, 46, 54, 0.42);
+        --sidebar-stroke: rgba(255, 255, 255, 0.12);
+        --glass: rgba(60, 62, 72, 0.45);
+        --glass-stroke: rgba(255, 255, 255, 0.12);
+        --panel: rgba(36, 38, 44, 0.72);
+        --group: rgba(255, 255, 255, 0.06);
+        --group-stroke: rgba(255, 255, 255, 0.1);
+        --content: rgba(24, 25, 30, 0.5);
+        --rim: rgba(255, 255, 255, 0.22);
+        --field-bg: rgba(255, 255, 255, 0.07);
+      }
+
+      * { box-sizing: border-box; }
+      [hidden] { display: none !important; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        font: 13px/1.38 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+        color: var(--label);
+        background: var(--window);
+        overflow: hidden;
+        cursor: default;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-font-smoothing: antialiased;
+      }
+      input, textarea { -webkit-user-select: text; user-select: text; }
+      button { font: inherit; color: inherit; cursor: default; }
+      svg { display: block; }
+      :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 1px; }
+      /* A slot nobody has filled takes no room. */
+      [data-slot]:empty { display: none; }
+
+      /* The coloured light under the glass. */
+      .backdrop { display: none; position: fixed; inset: -15%; z-index: -1; filter: blur(70px) saturate(140%); }
+      .glass .backdrop {
+        display: block;
+        background:
+          radial-gradient(38% 40% at 16% 20%, #7cc0ff 0%, transparent 62%),
+          radial-gradient(36% 38% at 86% 14%, #c3a2ff 0%, transparent 62%),
+          radial-gradient(44% 44% at 74% 86%, #5fe0ff 0%, transparent 64%),
+          radial-gradient(40% 40% at 22% 88%, #9af5d4 0%, transparent 62%);
+      }
+      .glass.dark .backdrop { opacity: 0.45; }
+      .glass .sidebar, .glass .capsule, .glass .panel, .glass .toast, .glass .banner, .glass .group {
+        -webkit-backdrop-filter: blur(30px) saturate(190%); backdrop-filter: blur(30px) saturate(190%);
+      }
+      .glass .sidebar, .glass .capsule, .glass .panel, .glass .group { box-shadow: inset 0 1px 0 var(--rim), 0 0 0 0.5px var(--glass-stroke), 0 8px 28px rgba(20, 30, 60, 0.12); }
+      .glass main { background: var(--content); }
+      /* The second layer: the app has put the system's own glass behind the page (src/glass.rs) and asks, through
+         glass.panes, for it under the sidebar, the capsules and the sheet, so the page draws nothing of its own there. */
+      .glass.native, .glass.native body { background: transparent; }
+      .glass.native .backdrop { display: none; }
+      .glass.native main { background: transparent; }
+      .glass.native .sidebar, .glass.native .capsule, .glass.native .panel {
+        background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none;
+      }
+
+      .app { display: grid; grid-template-columns: 228px minmax(0, 1fr); height: 100%; }
+
+      /* The sidebar floats inset in the window, as on macOS 26, and holds the window's buttons at its top. */
+      .sidebar {
+        margin: 8px 0 8px 8px;
+        border-radius: 18px;
+        background: var(--sidebar);
+        box-shadow: 0 0 0 0.5px var(--sidebar-stroke), 0 2px 10px rgba(0, 0, 0, 0.06);
+        display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+      }
+      .side-top { height: 44px; flex: none; }
+      nav { flex: 1; overflow-y: auto; padding: 0 10px 10px; }
+      .side-foot { flex: none; padding: 6px 10px 10px; border-top: 1px solid var(--separator); }
+      .nav-item {
+        display: flex; align-items: center; gap: 8px; width: 100%; height: 28px; padding: 0 8px;
+        border: 0; border-radius: 8px; background: transparent; text-align: left;
+      }
+      .nav-item:hover { background: var(--hover); }
+      .nav-item svg { width: 16px; height: 16px; color: var(--accent); flex: none; }
+
+      main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+      .toolbar { height: 52px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 20px; }
+      .address { flex: 1; min-width: 0; }
+      .capsule {
+        display: flex; align-items: center; gap: 2px; height: 34px; padding: 0 3px; flex: none;
+        border-radius: 999px; background: var(--glass); box-shadow: 0 0 0 0.5px var(--glass-stroke), var(--shadow);
+        -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
+      }
+      .tb {
+        height: 28px; min-width: 32px; padding: 0 7px; border: 0; border-radius: 999px; background: transparent;
+        display: flex; align-items: center; justify-content: center; gap: 5px; color: var(--label);
+      }
+      .tb:hover { background: var(--hover); }
+      .tb:active { background: var(--pressed); }
+      .tb:disabled { opacity: 0.35; background: transparent; }
+      .tb svg { width: 17px; height: 17px; }
+
+      .workspace { flex: 1; min-height: 0; display: flex; padding: 0 12px; }
+      .pane-grid { flex: 1; min-width: 0; display: grid; gap: 8px; grid-template-columns: 1fr; grid-template-rows: 1fr; }
+      .pane-grid[data-layout="h2"] { grid-template-columns: 1fr 1fr; }
+      .pane-grid[data-layout="v2"] { grid-template-rows: 1fr 1fr; }
+      .pane-grid[data-layout="grid"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+      .pane { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
+      .tabs { flex: none; display: flex; gap: 4px; }
+      .tabs:empty { display: none; }
+      .list { position: relative; flex: 1; min-height: 0; overflow-y: auto; }
+      .pane-overlay { position: absolute; inset: 0; pointer-events: none; }
+      .pane-overlay > * { pointer-events: auto; }
+      .status { flex: none; }
+      .status:empty { display: none; }
+      .empty { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; padding: 0 24px 40px; }
+      .empty h2 { margin: 0; font-size: 15px; font-weight: 600; }
+      .empty p { margin: 0; color: var(--secondary); max-width: 340px; }
+      .preview-slot { flex: none; }
+      .statusbar { flex: none; display: flex; align-items: center; gap: 12px; height: 26px; padding: 0 20px; font-size: 11px; color: var(--secondary); font-variant-numeric: tabular-nums; }
+
+      /* Buttons and fields as macOS draws them. */
+      .push {
+        height: 28px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--btn); color: var(--label);
+        font-weight: 500; white-space: nowrap; box-shadow: 0 0 0 0.5px var(--btn-stroke), 0 0.5px 1.5px rgba(0, 0, 0, 0.1);
+      }
+      .push:active { filter: brightness(0.94); }
+      .push.primary { background: var(--accent); color: #fff; box-shadow: 0 0.5px 1.5px rgba(0, 0, 0, 0.15); }
+      .push:disabled { opacity: 0.5; }
+      .beta { font-size: 9.5px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; color: #fff; background: #ff9500; padding: 1px 6px; border-radius: 999px; vertical-align: 1px; }
+
+      .switch { position: relative; width: 38px; height: 22px; flex: none; }
+      .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+      .knob { position: absolute; inset: 0; border-radius: 11px; background: var(--track); transition: background 0.2s ease; }
+      .knob::before {
+        content: ""; position: absolute; width: 20px; height: 20px; left: 1px; top: 1px; border-radius: 50%; background: #fff;
+        box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.25); transition: transform 0.2s cubic-bezier(0.3, 0.7, 0.4, 1);
+      }
+      .switch input:checked + .knob { background: var(--accent); }
+      .switch input:checked + .knob::before { transform: translateX(16px); }
+      .switch input:focus-visible + .knob { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 1px; }
+
+      .segmented { display: flex; padding: 2px; border-radius: 999px; background: var(--field); }
+      .seg { flex: 1; height: 24px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; font-weight: 500; white-space: nowrap; }
+      .seg.on { background: var(--btn); box-shadow: 0 0 0 0.5px var(--btn-stroke), 0 1px 2px rgba(0, 0, 0, 0.12); }
+      select {
+        height: 28px; padding: 0 8px; border: 0; border-radius: 8px; outline: none; background: var(--field-bg); color: var(--label);
+        font: inherit; min-width: 150px; max-width: 200px; box-shadow: 0 0 0 0.5px var(--field-stroke);
+      }
+
+      /* Sheets come down from the top of the window, over a dimmed one. */
+      .modal { position: fixed; inset: 0; z-index: 20; display: none; justify-content: center; align-items: flex-start; padding: 56px 16px 16px; background: rgba(0, 0, 0, 0.14); }
+      .modal.open { display: flex; }
+      .panel {
+        width: min(520px, 100%); max-height: 100%; overflow-y: auto; padding: 20px; border-radius: 22px; background: var(--panel);
+        box-shadow: 0 0 0 0.5px var(--panel-stroke), 0 22px 70px rgba(0, 0, 0, 0.3);
+        animation: sheet 0.24s cubic-bezier(0.32, 0.72, 0, 1);
+      }
+      @keyframes sheet { from { transform: translateY(-14px) scale(0.98); opacity: 0; } }
+      .panel h2 { margin: 0 0 4px; font-size: 15px; font-weight: 700; }
+      .buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+
+      /* Settings, grouped rows as in System Settings. */
+      .group-title { font-size: 12px; font-weight: 600; color: var(--secondary); margin: 16px 4px 6px; }
+      .group { background: var(--group); border-radius: 12px; box-shadow: 0 0 0 0.5px var(--group-stroke); }
+      .item { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 14px; min-height: 42px; }
+      .item + .item::before { content: ""; position: absolute; top: 0; left: 14px; right: 0; height: 1px; background: var(--separator); transform: scaleY(0.5); }
+      .item .label { flex: 1; min-width: 0; }
+      .item .label small { display: block; margin-top: 2px; font-size: 11px; line-height: 1.4; color: var(--secondary); }
+      .item .control { flex: none; display: flex; align-items: center; gap: 8px; }
+
+      .banner {
+        position: fixed; left: 50%; bottom: 16px; z-index: 30; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px);
+        padding: 8px 8px 8px 16px; border-radius: 999px; background: var(--glass); box-shadow: 0 0 0 0.5px var(--glass-stroke), 0 10px 30px rgba(0, 0, 0, 0.18);
+        -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+        transform: translate(-50%, 160%); transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+      }
+      .banner.show { transform: translate(-50%, 0); }
+      .toast {
+        position: fixed; left: 50%; top: 58px; z-index: 50; max-width: calc(100vw - 32px); padding: 8px 16px; border-radius: 999px;
+        background: var(--glass); box-shadow: 0 0 0 0.5px var(--glass-stroke), 0 8px 26px rgba(0, 0, 0, 0.16); font-weight: 500; text-align: center;
+        -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+        opacity: 0; transform: translate(-50%, -8px); transition: opacity 0.2s ease, transform 0.25s ease; pointer-events: none;
+      }
+      .toast.show { opacity: 1; transform: translate(-50%, 0); }
+      @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    </style>
+  </head>
+  <body>
+    <div class="backdrop"></div>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="side-top drag"></div>
+        <nav id="nav">
+          <div data-slot="sidebar.favourites"></div>
+          <div data-slot="sidebar.places"></div>
+          <div data-slot="sidebar.volumes"></div>
+          <div data-slot="sidebar.sections"></div>
+        </nav>
+        <div class="side-foot">
+          <div data-slot="sidebar.jobs"></div>
+          <button class="nav-item" id="openSettings">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 13a7.7 7.7 0 000-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 00-1.7-1l-.4-2.5h-4l-.4 2.5a7.6 7.6 0 00-1.7 1l-2.4-1-2 3.4L4.6 11a7.7 7.7 0 000 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1l.4 2.5h4l.4-2.5c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            <span data-t="settings"></span>
+          </button>
+        </div>
+      </aside>
+
+      <main>
+        <header class="toolbar drag">
+          <div class="capsule" data-slot="toolbar.history"></div>
+          <div class="capsule" data-slot="toolbar.left"></div>
+          <div class="address" data-slot="address"></div>
+          <div class="capsule" data-slot="toolbar.right"></div>
+          <div class="capsule" data-slot="toolbar.view"></div>
+          <div class="capsule" data-slot="toolbar.search"></div>
+        </header>
+
+        <div class="workspace">
+          <div class="pane-grid" data-layout="single">
+            <section class="pane" data-pane="p0">
+              <div class="tabs"></div>
+              <div class="list" role="listbox">
+                <div class="empty">
+                  <h2>LazySpace</h2>
+                  <p data-t="emptyText"></p>
+                </div>
+              </div>
+              <div class="pane-overlay" data-slot="pane.overlay"></div>
+              <div class="status"></div>
+            </section>
+          </div>
+        </div>
+        <div class="preview-slot" data-slot="preview" hidden></div>
+        <footer class="statusbar">
+          <span id="statusText"></span>
+          <span data-slot="status"></span>
+        </footer>
+      </main>
+    </div>
+
+    <div class="sheets">
+      <div class="modal" id="settingsSheet">
+        <div class="panel" role="dialog" aria-labelledby="settingsTitle">
+          <h2 id="settingsTitle" data-t="settings"></h2>
+
+          <div class="group-title" data-t="general"></div>
+          <div class="group">
+            <div class="item">
+              <div class="label"><span data-t="language"></span><small data-t="languageHint"></small></div>
+              <div class="control">
+                <select id="language"><option value="vi">Tiếng Việt</option><option value="en">English</option></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="group-title" data-t="appearance"></div>
+          <div class="group">
+            <div class="item">
+              <div class="label"><span data-t="theme"></span><small data-t="themeHint"></small></div>
+              <div class="control">
+                <div class="segmented" id="theme">
+                  <button type="button" class="seg" data-theme="system" data-t="system"></button>
+                  <button type="button" class="seg" data-theme="light" data-t="light"></button>
+                  <button type="button" class="seg" data-theme="dark" data-t="dark"></button>
+                </div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="label"><span>Liquid Glass</span> <span class="beta">beta</span><small data-t="glassHint"></small></div>
+              <div class="control"><label class="switch"><input type="checkbox" id="glass" /><span class="knob"></span></label></div>
+            </div>
+          </div>
+
+          <div data-slot="settings.sections"></div>
+
+          <div class="group-title" data-t="about"></div>
+          <div class="group">
+            <div class="item">
+              <div class="label">LazySpace <span id="version">-</span><small id="updateNote"></small></div>
+              <div class="control"><button class="push" id="checkUpdate" data-t="checkUpdate"></button></div>
+            </div>
+          </div>
+
+          <div class="buttons"><button class="push primary" id="settingsDone" data-t="done"></button></div>
+        </div>
+      </div>
+      <div data-slot="sheets"></div>
+    </div>
+
+    <div class="banner" id="banner">
+      <div id="bannerTxt"></div>
+      <button class="push primary" id="bannerBtn" data-t="update"></button>
+    </div>
+    <div class="toasts"><div class="toast" id="toast"></div></div>
+    <div id="templates"></div>
+
+    <script>
+      "use strict";
+      const $ = (id) => document.getElementById(id);
+      const root = document.documentElement;
+      const pending = new Map();
+      let seq = 1;
+
+      function call(method, args = {}) {
+        return new Promise((resolve, reject) => {
+          const id = seq++;
+          pending.set(id, { resolve, reject });
+          window.ipc.postMessage(JSON.stringify({ id, method, args }));
+        });
+      }
+
+      window.app = {
+        receive(msg) {
+          if (msg.id != null && pending.has(msg.id)) {
+            const { resolve, reject } = pending.get(msg.id);
+            pending.delete(msg.id);
+            msg.ok ? resolve(msg.data) : reject(msg.error);
+            return;
+          }
+          if (msg.event) events[msg.event]?.(msg.data);
+        },
+      };
+
+      // The page's words in both languages; {0} and {1} are what goes in them.
+      const WORDS = {
+        vi: {
+          settings: "Cài đặt", done: "Xong", general: "Chung", appearance: "Giao diện", about: "Giới thiệu",
+          language: "Ngôn ngữ", languageHint: "Ngôn ngữ của cửa sổ, menu và thông báo.",
+          theme: "Chế độ màu", themeHint: "Theo hệ thống, hoặc luôn sáng, luôn tối.", system: "Hệ thống", light: "Sáng", dark: "Tối",
+          glassHint: "Thanh bên, thanh công cụ và các bảng thành kính mờ trên nền màu, như macOS 26. Bật hoặc tắt sẽ mở lại cửa sổ.",
+          checkUpdate: "Kiểm tra cập nhật", checking: "Đang kiểm tra bản mới...", upToDate: "Bạn đang dùng bản mới nhất.",
+          updateOut: "Có bản LazySpace {0}. Bạn đang dùng {1}.", update: "Cập nhật", updating: "Đang tải...", updatingPct: "Đang tải {0}%",
+          updateReady: "Đã tải xong bản mới. Khởi động lại để dùng.", restart: "Khởi động lại",
+          emptyText: "Chưa mở thư mục nào.",
+        },
+        en: {
+          settings: "Settings", done: "Done", general: "General", appearance: "Appearance", about: "About",
+          language: "Language", languageHint: "The language of the window, the menus and the notifications.",
+          theme: "Colour mode", themeHint: "As the system, or always light or dark.", system: "System", light: "Light", dark: "Dark",
+          glassHint: "The sidebar, the toolbar and the sheets turn to frosted glass over a coloured backdrop, as in macOS 26. Turning it on or off reopens the window.",
+          checkUpdate: "Check for Updates", checking: "Checking for a new version...", upToDate: "You have the latest version.",
+          updateOut: "LazySpace {0} is out. You have {1}.", update: "Update", updating: "Downloading...", updatingPct: "Downloading {0}%",
+          updateReady: "The new version is ready. Restart to use it.", restart: "Restart",
+          emptyText: "No folder is open yet.",
+        },
+      };
+      let lang = root.lang === "en" ? "en" : "vi";
+      const t = (key, ...args) => (WORDS[lang][key] ?? WORDS.vi[key] ?? key).replace(/\{(\d)\}/g, (_, i) => args[i]);
+
+      // The static words of the page: data-t is an element's text, data-tp a placeholder, data-tt a button's title and
+      // label, data-tl a label for assistive technology.
+      function applyLang() {
+        root.lang = lang;
+        for (const el of document.querySelectorAll("[data-t]")) el.textContent = t(el.dataset.t);
+        for (const el of document.querySelectorAll("[data-tp]")) el.placeholder = t(el.dataset.tp);
+        for (const el of document.querySelectorAll("[data-tt]")) { el.title = t(el.dataset.tt); el.setAttribute("aria-label", t(el.dataset.tt)); }
+        for (const el of document.querySelectorAll("[data-tl]")) el.setAttribute("aria-label", t(el.dataset.tl));
+      }
+
+      // What the page knows of itself; the panes, tabs and selection are added by the parts that own them.
+      const S = {
+        window: { role: "main", id: 0 },
+        layout: "single",
+        panes: [],
+        focus: "p0",
+        viewMode: "list",
+        showHidden: false,
+        glassAvailable: false,
+        uri: null,
+      };
+
+      let toastTimer;
+      function toast(text) {
+        $("toast").textContent = text;
+        $("toast").classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => $("toast").classList.remove("show"), 3200);
+      }
+      const say = (error) => toast(String(error));
+
+      // The window is dragged by its toolbar and the top of the sidebar, and zoomed by a double click there, as the
+      // title bar the window no longer shows would.
+      document.addEventListener("mousedown", (e) => {
+        if (e.button !== 0 || !e.target.closest(".drag") || e.target.closest("button, input, label, a, select, [data-slot]:not(:empty)")) return;
+        call(e.detail === 2 ? "app.zoom" : "app.drag").catch(() => {});
+      });
+
+      // The native glass behind the page (src/glass.rs) is told where the page lets it show: the sidebar, the
+      // capsules and the sheet that is open, in points from the top left of the window.
+      let glassTimer;
+      function reportGlass() {
+        clearTimeout(glassTimer);
+        glassTimer = setTimeout(() => {
+          if (!S.glassAvailable || !root.classList.contains("glass")) return;
+          const panes = [];
+          for (const el of document.querySelectorAll(".sidebar, .capsule, .modal.open .panel")) {
+            const r = el.getBoundingClientRect();
+            if (r.width < 1 || r.height < 1) continue;
+            panes.push([r.x, r.y, r.width, r.height, parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0]);
+          }
+          call("glass.panes", { panes }).catch(() => {});
+        }, 60);
+      }
+      new ResizeObserver(reportGlass).observe(document.body);
+
+      function paintLook() {
+        paintTheme();
+        root.classList.toggle("native", S.glassAvailable && root.classList.contains("glass"));
+        reportGlass();
+      }
+
+      function showTheme(theme) {
+        root.dataset.theme = theme;
+        for (const seg of $("theme").children) seg.classList.toggle("on", seg.dataset.theme === theme);
+        paintLook();
+      }
+      function showGlass(on) {
+        root.toggleAttribute("data-glass", on);
+        $("glass").checked = on;
+        paintLook();
+      }
+      const setSetting = (patch) => call("settings.set", { patch }).catch(say);
+      $("theme").addEventListener("click", (e) => {
+        const seg = e.target.closest("[data-theme]");
+        if (seg) setSetting({ theme: seg.dataset.theme });
+      });
+      $("glass").addEventListener("change", () => setSetting({ glass: $("glass").checked }));
+      $("language").addEventListener("change", () => setSetting({ language: $("language").value }));
+
+      // Sheets: one open at a time, closed by Escape or a click beside it.
+      function openSheet(id) {
+        closeSheets();
+        $(id).classList.add("open");
+        setTimeout(reportGlass, 260);
+        reportGlass();
+      }
+      function closeSheets() {
+        for (const sheet of document.querySelectorAll(".modal.open")) sheet.classList.remove("open");
+        reportGlass();
+      }
+      $("openSettings").addEventListener("click", () => openSheet("settingsSheet"));
+      $("settingsDone").addEventListener("click", closeSheets);
+      document.querySelector(".sheets").addEventListener("mousedown", (e) => {
+        if (e.target.classList.contains("modal")) closeSheets();
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeSheets();
+      });
+
+      // Updates: the app checks once when it starts and tells of a newer version; the button asks again.
+      $("checkUpdate").addEventListener("click", () => {
+        $("updateNote").textContent = t("checking");
+        call("update.check", { manual: true }).catch(say);
+      });
+      $("bannerBtn").addEventListener("click", () => {
+        $("bannerBtn").textContent = t("updating");
+        $("bannerBtn").disabled = true;
+        call("update.install").catch(say);
+      });
+
+      function showSettings(s) {
+        lang = s.language === "en" ? "en" : "vi";
+        $("language").value = lang;
+        applyLang();
+        S.viewMode = s.view_mode;
+        S.showHidden = s.show_hidden;
+        showTheme(s.theme);
+        showGlass(s.glass);
+      }
+
+      const events = {
+        "app.hello"(d) {
+          S.window = { role: d.windowRole, id: d.windowId };
+          S.glassAvailable = !!d.glassAvailable;
+          S.uri = d.uri;
+          S.saved = d.layout;
+          $("version").textContent = d.version;
+          showSettings(d.settings);
+        },
+        "settings.changed": showSettings,
+        // The system's light or dark changed; only matters while the theme follows it.
+        "theme.changed": () => paintLook(),
+        // From the menu bar.
+        "menu.action"(d) {
+          if (d.id === "app.settings") openSheet("settingsSheet");
+        },
+        "update.available"(d) {
+          $("bannerTxt").textContent = t("updateOut", d.latest, d.current);
+          $("banner").classList.add("show");
+        },
+        "update.none"() {
+          $("updateNote").textContent = t("upToDate");
+        },
+        "update.progress"(percent) {
+          $("bannerBtn").textContent = t("updatingPct", percent);
+        },
+        "update.ready"() {
+          $("bannerTxt").textContent = t("updateReady");
+          $("bannerBtn").textContent = t("restart");
+          $("bannerBtn").disabled = false;
+          $("bannerBtn").onclick = () => call("update.relaunch").catch(say);
+        },
+        toast,
+      };
+
+      for (const seg of $("theme").children) seg.classList.toggle("on", seg.dataset.theme === (root.dataset.theme || "system"));
+      applyLang();
+      call("app.ready").catch(() => {});
+    </script>
+    <!--parts-->
+  </body>
+</html>

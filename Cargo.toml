@@ -1,0 +1,42 @@
+[package]
+name = "lazyspace"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.93"
+publish = false
+description = "A file manager for macOS with panes, archives, remote servers and a stash shelf"
+repository = "https://github.com/eliasbui/lazyspace"
+license = "MIT"
+
+[[bin]]
+name = "lazyspace"
+path = "src/main.rs"
+
+[dependencies]
+# The window and its web page, and the menu bar; the versions Lanes ships.
+tao = "0.37"
+wry = "0.57"
+muda = "0.21"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# The native layer: the glass behind the page, the web view's own settings, and work that must run on the main thread.
+objc2 = "0.6"
+objc2-foundation = "0.3"
+objc2-app-kit = "0.3"
+objc2-web-kit = "0.3"
+block2 = "0.6"
+dispatch2 = "0.3"
+# The update check: blocking HTTP, and the SHA-256 that GitHub publishes for a release.
+ureq = "3.4"
+sha2 = "0.10"
+# The window icon is decoded from PNG at startup; the home and the well-known folders.
+png = "0.18"
+dirs = "7"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+[profile.dev.package."*"]
+opt-level = 2
