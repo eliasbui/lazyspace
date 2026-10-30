@@ -774,13 +774,20 @@ pub fn register(d: &mut Dispatcher) {
         Ok(Value::Null)
     });
     d.on("native.volumes", |_, _, _| serde_json::to_value(workspace::volumes()).map_err(|e| e.to_string()));
-    d.on("native.eject", |_, _, a| {
+    d.on("native.eject", |app, _, a| {
         #[derive(Deserialize)]
         struct Eject {
             path: String,
+            /// Unmounted even while apps hold files open on it (src/native/workspace.rs).
+            #[serde(default)]
+            force: bool,
         }
-        workspace::eject(Path::new(&args::<Eject>(a)?.path))?;
-        Ok(Value::Null)
+        let Eject { path, force } = args(a)?;
+        // A disk takes a while to eject, longer while it is still being written; the windows go on meanwhile.
+        defer(app, move || {
+            let path = Path::new(&path);
+            if force { workspace::force_eject(path) } else { workspace::eject(path) }.map(|()| Value::Null)
+        })
     });
     d.on("native.fonts", |_, _, _| Ok(json!(workspace::font_families())));
     d.on("native.home", |_, _, _| {

@@ -62,6 +62,12 @@ thao tác tệp chạy thành một tác vụ có tiến độ, có thể hủy 
   từng byte sau khi chép.
 - **Mở trong LazySpace từ Finder.** Menu chuột phải của thư mục hay tệp trong Finder (và mục Dịch vụ của mọi ứng dụng)
   có "Mở trong LazySpace"; thả thư mục lên biểu tượng Dock để mở thành tab.
+- **Ổ đĩa, điện thoại và ảnh đĩa khi vừa cắm.** Thanh bên đổi ngay khi ổ được cắm hay rút, và một thông báo ở góc cửa
+  sổ cho biết thứ vừa cắm: ổ USB hay thẻ nhớ kèm dung lượng trống, có nút Mở và Đẩy ra; tệp DMG có ứng dụng bên trong
+  thì cài vào Ứng dụng bằng một nút (bản cũ vào Thùng rác, ảnh đĩa tự đẩy ra, tệp DMG bỏ vào Thùng rác được ngay); iPhone,
+  máy ảnh hay điện thoại Android, những thứ macOS không gắn thành ổ đĩa, kèm các ứng dụng đọc được chúng. Đẩy ra
+  (Command-E, hoặc menu của ổ) không làm đứng cửa sổ, nói rõ ứng dụng nào đang giữ ổ khi không đẩy ra được, và đẩy ra
+  bắt buộc được. Tab đang mở ổ vừa rút tự về thư mục nhà. Tắt thông báo được trong Cài đặt.
 - **Ghim thư mục.** Ghim bất kỳ thư mục nào vào thanh bên từ menu của nó, bỏ ghim ngay trên thanh bên.
 - **Màn hình nền do LazySpace hiện (tùy chọn).** Các mục của thư mục Màn hình nền trên hình nền, dưới mọi cửa sổ và ở
   mọi Space, mỗi biểu tượng nằm đúng chỗ bạn đặt, có menu chuột phải, phím tắt, Xem nhanh và kéo thả như một khung.
@@ -199,10 +205,10 @@ Test chỉ chạy trong thư mục tạm. Hai test nói chuyện với máy ch�
   bảng nhớ tạm và hoàn tác.
 - `src/jobs.rs` - thao tác dài có tiến độ, hủy được và hỏi người dùng khi cần.
 - `src/native/` - phần macOS qua objc2: biểu tượng và ảnh thu nhỏ, Xem nhanh, Thùng rác, kéo ra, menu chuột phải, cửa
-  sổ màn hình nền.
+  sổ màn hình nền, ổ đĩa và thiết bị USB vừa cắm (NSWorkspace, DiskArbitration, IOKit).
 - `src/features/` - mỗi tính năng một module: `archive/` (libarchive qua FFI và sevenz-rust2), `remote/` (SFTP trên
   russh, FTP trên suppaftp, S3 tự ký, NetFS, rclone, Keychain), `sync.rs`, `rename.rs`, `preview.rs`, `stash.rs`,
-  `desktop.rs`, `workspaces.rs`, `templates.rs`, `openin.rs`, `hash.rs`, `menuedit.rs`.
+  `desktop.rs`, `workspaces.rs`, `templates.rs`, `openin.rs`, `hash.rs`, `menuedit.rs`, `devices.rs`.
 - `ui/index.html` và `ui/parts/` - trang, ghép lúc build; mỗi tính năng thêm phần của mình qua `LZ`.
 - `docs/design.md` - tài liệu thiết kế.
 

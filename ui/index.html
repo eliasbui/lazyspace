@@ -582,6 +582,10 @@
               <div class="label"><span data-t="verifyCopies"></span><small data-t="verifyCopiesHint"></small></div>
               <div class="control"><label class="switch"><input type="checkbox" id="verifyCopies" /><span class="knob"></span></label></div>
             </div>
+            <div class="item">
+              <div class="label"><span data-t="notifyDevices"></span><small data-t="notifyDevicesHint"></small></div>
+              <div class="control"><label class="switch"><input type="checkbox" id="notifyDevices" /><span class="knob"></span></label></div>
+            </div>
           </div>
 
           <div class="group-title" data-t="appearance"></div>
@@ -715,6 +719,7 @@
           alwaysTabs: "Luôn hiện thanh tab", alwaysTabsHint: "Như File Explorer của Windows: thanh tab và nút tab mới hiện cả khi chỉ có một tab.",
           copyQueue: "Chép lần lượt", copyQueueHint: "Các lần chép và chuyển chờ nhau, chạy từng cái một thay vì cùng lúc; đỡ tranh ổ đĩa khi chép nhiều.",
           verifyCopies: "Kiểm tra lại sau khi chép", verifyCopiesHint: "Đọc lại từng tệp ở cả hai bên và so SHA-256; chậm hơn nhưng chắc bản sao đúng từng byte.",
+          notifyDevices: "Báo khi cắm ổ đĩa và thiết bị", notifyDevicesHint: "Ổ USB, thẻ nhớ, ảnh đĩa DMG, điện thoại hay máy ảnh vừa cắm hiện thành thông báo ở góc cửa sổ, kèm việc làm được với nó.",
           autoUpdate: "Tự kiểm tra bản mới", autoUpdateHint: "Hỏi GitHub một lần mỗi lần mở ứng dụng.",
           checkUpdate: "Kiểm tra cập nhật", checking: "Đang kiểm tra bản mới...", upToDate: "Bạn đang dùng bản mới nhất.",
           updateOut: "Có bản LazySpace {0}. Bạn đang dùng {1}.", update: "Cập nhật", updating: "Đang tải...", updatingPct: "Đang tải {0}%",
@@ -732,6 +737,7 @@
           alwaysTabs: "Always show the tab bar", alwaysTabsHint: "As in Windows' File Explorer: the tabs and the button for a new tab show even with one tab.",
           copyQueue: "Copy one at a time", copyQueueHint: "Copies and moves wait for each other and run one by one rather than all at once, so disks are not fought over.",
           verifyCopies: "Check copies afterwards", verifyCopiesHint: "Reads every file again on both sides and compares their SHA-256: slower, but sure the copy is the same to the byte.",
+          notifyDevices: "Tell when disks and devices are plugged in", notifyDevicesHint: "A USB drive, a memory card, a DMG disk image, a phone or a camera just plugged in shows as a note in the corner of the window, with what can be done with it.",
           autoUpdate: "Check for new versions", autoUpdateHint: "Asks GitHub once each time the app opens.",
           checkUpdate: "Check for Updates", checking: "Checking for a new version...", upToDate: "You have the latest version.",
           updateOut: "LazySpace {0} is out. You have {1}.", update: "Update", updating: "Downloading...", updatingPct: "Downloading {0}%",
@@ -796,6 +802,7 @@
       $("alwaysTabs").addEventListener("change", () => setSetting({ always_tabs: $("alwaysTabs").checked }));
       $("copyQueue").addEventListener("change", () => setSetting({ copy_queue: $("copyQueue").checked }));
       $("verifyCopies").addEventListener("change", () => setSetting({ verify_copies: $("verifyCopies").checked }));
+      $("notifyDevices").addEventListener("change", () => setSetting({ notify_devices: $("notifyDevices").checked }));
       $("autoUpdate").addEventListener("change", () => setSetting({ check_updates: $("autoUpdate").checked }));
 
       // Sheets: one open at a time, closed by Escape or a click beside it (unless it waits for an answer).
@@ -922,6 +929,7 @@
         $("alwaysTabs").checked = s.always_tabs !== false;
         $("copyQueue").checked = !!s.copy_queue;
         $("verifyCopies").checked = !!s.verify_copies;
+        $("notifyDevices").checked = s.notify_devices !== false;
         $("autoUpdate").checked = s.check_updates !== false;
         Update.paint();
         paintLook();

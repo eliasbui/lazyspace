@@ -32,6 +32,7 @@
     ["delete", "file", "Xóa hẳn", "Delete Immediately"],
     ["undo", "file", "Hoàn tác", "Undo"],
     ["getInfo", "file", "Lấy thông tin", "Get Info"],
+    ["eject", "file", "Đẩy ra", "Eject"],
     ["reveal", "file", "Hiện trong Finder", "Show in Finder"],
     ["revealHere", "file", "Hiện trong LazySpace", "Show in LazySpace"],
     ["copyPath", "file", "Sao chép đường dẫn", "Copy Path"],

@@ -109,6 +109,8 @@ pub struct Settings {
     pub copy_queue: bool,
     /// After a copy, each file is read again on both sides and their SHA-256 compared.
     pub verify_copies: bool,
+    /// A note in the window when a disk, a disk image, a phone or a camera is plugged in (src/features/devices.rs).
+    pub notify_devices: bool,
     /// The folders the user pinned to the sidebar, as URIs, in the order they show.
     pub favourites: Vec<String>,
     pub sidebar_sections: Value,
@@ -141,6 +143,7 @@ impl Default for Settings {
             columns: vec!["mtime".into(), "size".into(), "kind".into()],
             copy_queue: false,
             verify_copies: false,
+            notify_devices: true,
             favourites: Vec::new(),
             sidebar_sections: Value::Null,
             extra: Map::new(),

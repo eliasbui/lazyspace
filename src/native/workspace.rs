@@ -12,7 +12,10 @@ use objc2_foundation::{
 };
 use objc2_uniform_type_identifiers::UTTypeFolder;
 use serde::Serialize;
-use std::{path::Path, process::Command};
+use std::{
+    path::Path,
+    process::{Command, Stdio},
+};
 
 fn url_of(path: &Path) -> Retained<NSURL> {
     NSURL::fileURLWithPath(&NSString::from_str(&path.to_string_lossy()))
@@ -239,9 +242,78 @@ pub fn free_space(path: &Path) -> Option<i64> {
     number(values.objectForKey(key))
 }
 
-/// Unmounts the disk and lets it be unplugged; the error is the system's own sentence.
+/// Unmounts the disk and lets it be unplugged. The error is the system's own sentence, with the apps that hold files
+/// open on the disk when that is why.
 pub fn eject(path: &Path) -> Result<(), String> {
-    NSWorkspace::sharedWorkspace().unmountAndEjectDeviceAtURL_error(&url_of(path)).map_err(|e| e.localizedDescription().to_string())
+    NSWorkspace::sharedWorkspace().unmountAndEjectDeviceAtURL_error(&url_of(path)).map_err(|e| {
+        let said = e.localizedDescription().to_string();
+        match users_of(path) {
+            users if users.is_empty() => said,
+            users => format!("{said} ({}: {})", tr("đang dùng", "in use by"), users.join(", ")),
+        }
+    })
+}
+
+/// The apps with files open on the disk mounted at `path`, by name, as lsof sees them: this user's apps only.
+fn users_of(path: &Path) -> Vec<String> {
+    let Ok(out) = Command::new("/usr/sbin/lsof").args(["-w", "+c", "0", "-Fc", "--"]).arg(path).stdin(Stdio::null()).stderr(Stdio::null()).output() else { return Vec::new() };
+    let mut names: Vec<String> = String::from_utf8_lossy(&out.stdout).lines().filter_map(|l| l.strip_prefix('c')).map(str::to_owned).collect();
+    names.sort();
+    names.dedup();
+    names
+}
+
+/// Unmounts the disk even while apps hold files open on it, as Finder's Force Eject does, then ejects it: what those
+/// apps had not written yet is lost, so the page asks first.
+pub fn force_eject(path: &Path) -> Result<(), String> {
+    // The whole disk ("disk4" of "disk4s1"), so every volume on it goes and the disk can be ejected.
+    let whole = super::devices::disk_of(path).map(|d| whole_disk(&d.bsd)).filter(|w| !w.is_empty());
+    let diskutil = |args: &[&str]| -> Result<(), String> {
+        let out = Command::new("/usr/sbin/diskutil").args(args).stdin(Stdio::null()).output().map_err(|e| e.to_string())?;
+        if out.status.success() {
+            return Ok(());
+        }
+        let said = String::from_utf8_lossy(if out.stderr.is_empty() { &out.stdout } else { &out.stderr }).trim().to_owned();
+        Err(said.lines().last().unwrap_or_default().to_owned())
+    };
+    let path = path.to_string_lossy();
+    match &whole {
+        Some(whole) => diskutil(&["unmountDisk", "force", whole])?,
+        None => diskutil(&["unmount", "force", &path])?,
+    }
+    // Once unmounted the disk is safe to unplug; ejecting also detaches an image and stops a drive, and may fail on a
+    // disk that cannot be ejected at all.
+    if let Some(whole) = whole {
+        let _ = diskutil(&["eject", &whole]);
+    }
+    Ok(())
+}
+
+/// The whole disk a BSD device is part of: "disk4" of "disk4s1" or of "disk4s2s1".
+pub fn whole_disk(bsd: &str) -> String {
+    let Some(rest) = bsd.strip_prefix("disk") else { return String::new() };
+    let digits: String = rest.chars().take_while(char::is_ascii_digit).collect();
+    if digits.is_empty() { String::new() } else { format!("disk{digits}") }
+}
+
+/// Opens the app with the bundle identifier `id`, or brings it forward when it runs.
+pub fn open_app(id: &str) -> Result<(), String> {
+    let url = NSWorkspace::sharedWorkspace()
+        .URLForApplicationWithBundleIdentifier(&NSString::from_str(id))
+        .and_then(|u| u.path())
+        .ok_or_else(|| format!("{id}: {}", tr("không có ứng dụng này trên máy", "this app is not on this Mac")))?;
+    open(&[url.to_string()])
+}
+
+/// The name the Finder shows for the app with the bundle identifier `id`, in the Mac's language.
+pub fn app_name(id: &str) -> Option<String> {
+    let path = NSWorkspace::sharedWorkspace().URLForApplicationWithBundleIdentifier(&NSString::from_str(id))?.path()?;
+    Some(NSFileManager::defaultManager().displayNameAtPath(&path).to_string().trim_end_matches(".app").to_owned())
+}
+
+/// Whether an app runs from the bundle at `app`.
+pub fn app_running(app: &Path) -> bool {
+    NSWorkspace::sharedWorkspace().runningApplications().iter().any(|r| r.bundleURL().and_then(|u| u.path()).is_some_and(|p| Path::new(&p.to_string()) == app))
 }
 
 #[cfg(test)]
@@ -255,6 +327,22 @@ mod tests {
         assert_eq!(first.path, "/");
         assert!(first.total > 0 && first.free > 0 && first.free <= first.total);
         assert!(free_space(Path::new("/")).unwrap_or(0) > 0);
+    }
+
+    #[test]
+    fn a_partition_belongs_to_its_whole_disk() {
+        assert_eq!(whole_disk("disk4s1"), "disk4");
+        assert_eq!(whole_disk("disk12s2s1"), "disk12");
+        assert_eq!(whole_disk("disk3"), "disk3");
+        assert_eq!(whole_disk("disks1"), "");
+        assert_eq!(whole_disk(""), "");
+    }
+
+    #[test]
+    fn the_apps_that_read_phones_and_cameras_are_found_by_their_identifier() {
+        assert!(app_name("com.apple.finder").is_some_and(|n| !n.is_empty()));
+        assert_eq!(app_name("com.example.nothing-here"), None);
+        assert!(!app_running(Path::new("/nowhere/Nothing.app")));
     }
 
     #[test]

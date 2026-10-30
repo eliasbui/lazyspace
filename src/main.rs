@@ -310,7 +310,7 @@ impl App {
     }
 
     /// The main window that gets what the menu bar does: the one in front, else the oldest.
-    fn menu_target(&self) -> Option<WindowId> {
+    pub(crate) fn menu_target(&self) -> Option<WindowId> {
         let main = |window: &WindowId| self.surfaces.get(window).is_some_and(|s| s.role == Role::Main);
         self.focused.filter(main).or_else(|| self.surfaces.iter().filter(|(_, s)| s.role == Role::Main).min_by_key(|(_, s)| s.id.0).map(|(window, _)| *window))
     }

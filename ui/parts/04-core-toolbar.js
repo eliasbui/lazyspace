@@ -157,6 +157,7 @@ const Toolbar = (() => {
   const MENU = {
     "file.new_tab": "newTab",
     "file.new_folder": "newFolder",
+    "file.eject": "eject",
     "file.close_tab": "closeTab",
     "view.list": "viewList",
     "view.icons": "viewIcons",

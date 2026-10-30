@@ -63,6 +63,12 @@ operation runs as a job you can watch, cancel and undo. It speaks English and Vi
   afterwards.
 - **Open in LazySpace from Finder.** A folder or a file's menu in Finder (and Services in every app) has "Open in
   LazySpace"; folders dropped on the Dock icon open in tabs.
+- **Disks, phones and disk images as they are plugged in.** The sidebar follows a disk as it comes and goes, and a note
+  in the corner says what came: a USB drive or a memory card with its free space, to open or eject; a DMG with an app
+  inside, installed in Applications with one button (the copy there before goes to the Trash, the image is ejected and
+  the DMG can follow it); an iPhone, a camera or an Android phone, which macOS mounts as no disk, with the apps that
+  read it. Ejecting (Command-E, or a disk's menu) leaves the window free, names the apps that hold a disk that will not
+  eject, and can force it. Tabs on a disk that goes return home. Settings can turn the notes off.
 - **Pinned folders.** Any folder pinned to the sidebar from its menu, and taken out again from the sidebar.
 - **The desktop, by LazySpace (optional).** The Desktop folder's icons on the wallpaper, under every window and on
   every Space, each icon where you put it, with the context menu, keys, Quick Look and drag and drop of a pane.
@@ -205,10 +211,10 @@ The tests run in temporary folders only. Two tests talk to real servers and run 
   the file operations, the clipboard and undo.
 - `src/jobs.rs` - long operations with progress, cancel and questions to the user.
 - `src/native/` - the macOS parts through objc2: icons and thumbnails, Quick Look, the Trash, drag out, the context
-  menu, the desktop's window.
+  menu, the desktop's window, the disks and USB devices plugged in (NSWorkspace, DiskArbitration, IOKit).
 - `src/features/` - one module per feature: `archive/` (libarchive through FFI, and sevenz-rust2), `remote/` (SFTP on
   russh, FTP on suppaftp, S3 signed by hand, NetFS, rclone, the Keychain), `sync.rs`, `rename.rs`, `preview.rs`,
-  `stash.rs`, `desktop.rs`, `workspaces.rs`, `templates.rs`, `openin.rs`, `hash.rs`, `menuedit.rs`.
+  `stash.rs`, `desktop.rs`, `workspaces.rs`, `templates.rs`, `openin.rs`, `hash.rs`, `menuedit.rs`, `devices.rs`.
 - `ui/index.html` and `ui/parts/` - the page, joined at build time; each feature adds its part through `LZ`.
 - `docs/design.md` - the design, in Vietnamese.
 

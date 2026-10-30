@@ -64,7 +64,7 @@ const Sidebar = (() => {
     const eject = e.target.closest("[data-eject]");
     if (eject) {
       e.stopPropagation();
-      call("native.eject", { path: eject.dataset.eject }).then(loadVolumes, say);
+      Devices.eject(eject.dataset.eject);
       return;
     }
     const el = e.target.closest(".side-item[data-uri]");
@@ -78,19 +78,22 @@ const Sidebar = (() => {
     const pane = Panes.focused();
     if (el && pane) pane.newTab(el.dataset.uri, null, { background: true, at: pane.active + 1 });
   });
-  // A place's own menu, unless its section has one: open it here, in a new tab or window, or take a pinned folder out.
+  // A place's own menu, unless its section has one: open it here, in a new tab or window, take a pinned folder out, or
+  // eject a disk.
   $("sidebar").addEventListener("contextmenu", async (e) => {
     const el = e.target.closest(".side-item[data-uri]");
     if (!el || e.defaultPrevented) return;
     e.preventDefault();
     const uri = el.dataset.uri;
     const pinned = el.hasAttribute("data-pinned");
+    const disk = el.querySelector("[data-eject]")?.dataset.eject;
     const id = await LZ.choose(
       [
         { id: "open", label: t("m.open"), icon: "arrow.up.forward.app" },
         { id: "tab", label: t("m.openTab"), icon: "plus.rectangle.on.rectangle" },
         { id: "window", label: t("m.openWindow"), icon: "macwindow.badge.plus" },
         ...(pinned ? [{ separator: true }, { id: "unpin", label: t("unpin"), icon: "pin.slash" }] : []),
+        ...(disk ? [{ separator: true }, { id: "eject", label: t("eject"), icon: "eject" }] : []),
       ],
       e.clientX,
       e.clientY,
@@ -99,6 +102,7 @@ const Sidebar = (() => {
     else if (id === "tab") Panes.focused()?.newTab(uri);
     else if (id === "window") call("app.new_window", { uri }).catch(say);
     else if (id === "unpin") pin(uri, false);
+    else if (id === "eject") Devices.eject(disk);
   });
 
   // Pins a folder to the sidebar, or takes it out.
@@ -130,7 +134,8 @@ const Sidebar = (() => {
     addEventListener("mouseup", up);
   });
 
-  // Disks come and go while the app runs; they are asked for again when the window comes forward.
+  // Disks come and go while the app runs (ui/parts/32-devices.js); their free space is asked for again when the window
+  // comes forward.
   window.addEventListener("focus", loadVolumes);
 
   async function start() {
@@ -144,5 +149,5 @@ const Sidebar = (() => {
     Panes.saveSoon();
   }
 
-  return { start, render, mark, toggle, loadVolumes, pin, pinned, width: () => $("app").style.getPropertyValue("--side-w") };
+  return { start, render, mark, toggle, loadVolumes, volumes: () => volumes, pin, pinned, width: () => $("app").style.getPropertyValue("--side-w") };
 })();

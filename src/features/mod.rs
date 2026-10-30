@@ -4,6 +4,7 @@
 pub mod actions;
 pub mod archive;
 pub mod desktop;
+pub mod devices;
 pub mod disk;
 pub mod git;
 pub mod hash;
@@ -29,6 +30,7 @@ pub fn register(d: &mut Dispatcher) {
     actions::register(d);
     archive::register(d);
     desktop::register(d);
+    devices::register(d);
     disk::register(d);
     git::register(d);
     hash::register(d);
@@ -100,7 +102,7 @@ mod tests {
     fn every_feature_registers_without_panicking() {
         let mut d = Dispatcher::new();
         register(&mut d);
-        for area in ["archive", "desktop", "hash", "lanes", "menuedit", "openin", "preview", "remote", "rename", "stash", "sync", "templates", "viewer", "workspaces"] {
+        for area in ["archive", "desktop", "devices", "hash", "lanes", "menuedit", "openin", "preview", "remote", "rename", "stash", "sync", "templates", "viewer", "workspaces"] {
             assert!(d.areas().contains(&area), "{area}");
         }
     }

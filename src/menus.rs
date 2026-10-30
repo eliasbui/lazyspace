@@ -70,6 +70,8 @@ pub fn menu_bar() -> Option<MenuBar> {
             &item("file.new_tab", tr("Tab mới", "New Tab")),
             &item(NEW_FOLDER, tr("Thư mục mới", "New Folder")),
             &PredefinedMenuItem::separator(),
+            &item("file.eject", tr("Đẩy ra", "Eject")),
+            &PredefinedMenuItem::separator(),
             &item(CLOSE_TAB, tr("Đóng tab", "Close Tab")),
             &MenuItem::with_id(CLOSE_WINDOW, tr("Đóng cửa sổ", "Close Window"), true, key(Modifiers::META | Modifiers::SHIFT, Code::KeyW)),
         ],
