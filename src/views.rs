@@ -390,6 +390,33 @@ mod tests {
         assert_eq!(views.set_hidden("p0t0", window(), true).unwrap().1, 5);
     }
 
+    /// Run with `cargo test --release -- --ignored bench_list_100k --nocapture`: lists, sorts and serves rows of a
+    /// folder of 100 000 files, within the targets of design.md section 11.
+    #[test]
+    #[ignore]
+    fn bench_list_100k() {
+        use crate::vfs::local::{self, tests::Temp};
+        use std::time::Instant;
+        let t = Temp::new("bench-100k");
+        for i in 0..100_000 {
+            std::fs::File::create(t.0.join(format!("file {i}.txt"))).unwrap();
+        }
+        let started = Instant::now();
+        let entries = local::list(&t.0, &t.uri(), &std::sync::atomic::AtomicBool::new(false)).unwrap();
+        let listed = started.elapsed();
+        let mut views = Views::default();
+        let request = views.begin(window(), "b", t.uri(), Sort::default(), false, caps());
+        let started = Instant::now();
+        let generation = views.finish("b", request, entries, &kind).unwrap();
+        let sorted = started.elapsed();
+        let started = Instant::now();
+        let rows = views.rows("b", window(), 50_000, 200, generation, &kind).unwrap();
+        let served = started.elapsed();
+        println!("list {listed:?}, sort {sorted:?}, 200 rows {served:?}");
+        assert_eq!(rows["rows"].as_array().unwrap().len(), 200);
+        assert!(listed.as_millis() < 1000 && sorted.as_millis() < 1000 && served.as_millis() < 5, "list {listed:?}, sort {sorted:?}, rows {served:?}");
+    }
+
     #[test]
     fn an_older_listing_is_dropped_and_selections_resolve() {
         let mut views = listed(Sort::default());
