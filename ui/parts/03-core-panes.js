@@ -382,9 +382,11 @@ class Pane {
     this.per = per;
     this.rowH = rowH;
     const lines = Math.ceil(tab.count / per);
-    this.sizer.style.height = `${lines * rowH + (icons ? 8 : 0)}px`;
-    const firstLine = Math.max(0, Math.floor(this.list.scrollTop / rowH) - 2);
-    const lastLine = Math.ceil((this.list.scrollTop + height) / rowH) + 2;
+    // A pane that places its icons itself (the desktop) draws all of them where it says, in a list that does not scroll.
+    const placed = icons && !!this.placeAt;
+    this.sizer.style.height = placed ? `${height}px` : `${lines * rowH + (icons ? 8 : 0)}px`;
+    const firstLine = placed ? 0 : Math.max(0, Math.floor(this.list.scrollTop / rowH) - 2);
+    const lastLine = placed ? lines : Math.ceil((this.list.scrollTop + height) / rowH) + 2;
     const first = firstLine * per;
     const last = Math.min(tab.count, lastLine * per);
     const wanted = new Set();
@@ -412,6 +414,11 @@ class Pane {
 
   paint(el, i, tab, icons, per) {
     const e = tab.rows.get(i);
+    if (icons) {
+      const at = this.placeAt?.(i, e);
+      el.style.left = `${at ? at.left : (i % per) * CELL_W + Math.max(0, (this.list.clientWidth - 16 - per * CELL_W) / 2)}px`;
+      el.style.top = `${at ? at.top : Math.floor(i / per) * CELL_H + 6}px`;
+    }
     const sel = !!e && tab.isSel(e.name);
     const cut = !!e && Panes.cut.has(e.uri);
     const key = `${tab.generation}|${icons}|${per}|${(this.columns || []).length}|${e ? e.name : ""}|${sel}|${cut}|${e?.dirSize ?? ""}`;
@@ -420,8 +427,6 @@ class Pane {
     el.dataset.index = i;
     if (icons) {
       el.className = `cell-icon${sel ? " sel" : ""}${cut ? " cut" : ""}`;
-      el.style.left = `${(i % per) * CELL_W + Math.max(0, (this.list.clientWidth - 16 - per * CELL_W) / 2)}px`;
-      el.style.top = `${Math.floor(i / per) * CELL_H + 6}px`;
       if (!e) {
         el.innerHTML = "";
         return;
@@ -904,6 +909,7 @@ const Panes = (() => {
   }
 
   function saveSoon() {
+    if (S.window.role !== "main") return;
     clearTimeout(saveTimer);
     saveTimer = setTimeout(() => call("panes.state", { state: state() }).catch(() => {}), 500);
   }

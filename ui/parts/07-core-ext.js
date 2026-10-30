@@ -281,6 +281,8 @@ const LZ = (() => {
     const target = targetAt(d.x, d.y);
     light(null);
     if (!target) return;
+    // A feature may take a drop itself: the desktop moves its own icons where they are dropped.
+    if (Panes.onDrop?.(d, target)) return;
     call("fs.copy", { from: d.uris, to: target.uri, mode: d.mode }).catch(say);
   });
 })();

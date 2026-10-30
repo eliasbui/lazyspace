@@ -5,6 +5,7 @@
 pub mod drag;
 pub mod icons;
 pub mod menu;
+pub mod panel;
 pub mod quicklook;
 pub mod trash;
 pub mod workspace;

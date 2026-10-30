@@ -2,6 +2,7 @@
 //! here so none of them edits main.rs (design.md section 15).
 
 pub mod archive;
+pub mod desktop;
 pub mod hash;
 pub mod menuedit;
 pub mod openin;
@@ -17,6 +18,7 @@ use crate::ipc::Dispatcher;
 
 pub fn register(d: &mut Dispatcher) {
     archive::register(d);
+    desktop::register(d);
     hash::register(d);
     menuedit::register(d);
     openin::register(d);
@@ -80,7 +82,7 @@ mod tests {
     fn every_feature_registers_without_panicking() {
         let mut d = Dispatcher::new();
         register(&mut d);
-        for area in ["archive", "hash", "menuedit", "openin", "preview", "remote", "rename", "stash", "sync", "templates", "workspaces"] {
+        for area in ["archive", "desktop", "hash", "menuedit", "openin", "preview", "remote", "rename", "stash", "sync", "templates", "workspaces"] {
             assert!(d.areas().contains(&area), "{area}");
         }
     }

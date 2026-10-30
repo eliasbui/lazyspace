@@ -381,7 +381,7 @@ const Remote = (() => {
 
   Panes.actions.connectServer = () => show(null);
   Keys.add({ "Cmd+K": "connectServer" });
-  LZ.on("app.hello", load);
+  LZ.on("app.hello", () => S.window.role === "main" && load());
   // Clouds added in Terminal, and connections made in another window, show when the window comes forward.
   window.addEventListener("focus", () => S.window.role === "main" && load());
   return { load, open };

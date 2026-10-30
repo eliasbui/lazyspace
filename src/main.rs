@@ -238,7 +238,7 @@ impl App {
             .with_theme(self.window_theme())
             .with_transparent(transparent)
             .with_always_on_top(options.always_on_top)
-            .with_visible_on_all_workspaces(role == Role::Shelf)
+            .with_visible_on_all_workspaces(role != Role::Main)
             .with_decorations(options.decorations);
         if let Some([x, y, ..]) = options.frame {
             builder = builder.with_position(LogicalPosition::new(x, y));
@@ -269,6 +269,9 @@ impl App {
             .build(&window)
             .map_err(|e| e.to_string())?;
         let glass = if glass { GlassLayer::attach(&window, &webview) } else { GlassLayer::none() };
+        if role == Role::Desktop {
+            native::panel::pin_to_desktop(&window);
+        }
         self.surfaces.insert(window_id, Surface { glass, webview, window, id, role, options, ready: false, queued: Vec::new() });
         self.focused = Some(window_id);
         Ok(())
@@ -399,6 +402,10 @@ impl App {
 
     /// The layout the page of `window` reports, saved as `layout.json` with the size of the window.
     pub fn save_layout(&self, window: WindowId, mut state: Value) -> Result<(), String> {
+        // Only a main window's layout is the one the next main window comes back to.
+        if self.surfaces.get(&window).is_some_and(|s| s.role != Role::Main) {
+            return Ok(());
+        }
         let map = state.as_object_mut().ok_or(tr("Bố cục phải là một đối tượng", "The layout must be an object"))?;
         if let Some(surface) = self.surfaces.get(&window) {
             map.insert("window".into(), size_of(&surface.window));
@@ -425,7 +432,8 @@ impl App {
                 self.open_surface(Role::Main, SurfaceOptions::default());
             }
             menus::CLOSE_WINDOW => {
-                if let Some(id) = self.focused.and_then(|w| self.surfaces.get(&w)).map(|s| s.id) {
+                // The desktop goes away only when it is turned off in Settings.
+                if let Some(id) = self.focused.and_then(|w| self.surfaces.get(&w)).filter(|s| s.role != Role::Desktop).map(|s| s.id) {
                     self.close_surface(id);
                 }
             }

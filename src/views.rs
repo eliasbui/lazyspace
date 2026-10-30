@@ -178,6 +178,11 @@ impl Views {
         self.by_id.get(id).map(|v| v.entries.as_slice())
     }
 
+    /// The names of the items a tab shows, in its order: without the hidden ones unless they are shown, and filtered.
+    pub fn shown_names(&self, id: &str) -> Option<Vec<String>> {
+        self.by_id.get(id).map(|v| v.shown.iter().map(|&i| v.entries[i].name.clone()).collect())
+    }
+
     pub fn close(&mut self, id: &str, window: WindowId) {
         if self.by_id.get(id).is_some_and(|v| v.window == window) {
             self.by_id.remove(id);
