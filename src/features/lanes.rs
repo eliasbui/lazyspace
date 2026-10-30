@@ -9,7 +9,7 @@ use crate::{
     vfs::Uri,
 };
 use serde::Deserialize;
-use serde_json::{Value, json};
+use serde_json::json;
 use std::{
     fs::{self, OpenOptions},
     io::{self, Write},
@@ -93,6 +93,7 @@ pub fn register(d: &mut Dispatcher) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::Value;
 
     fn temp(name: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!("lazyspace-lanes-{name}-{}", std::process::id()));
