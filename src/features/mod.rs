@@ -6,6 +6,7 @@ pub mod menuedit;
 pub mod openin;
 pub mod preview;
 pub mod rename;
+pub mod sync;
 pub mod templates;
 pub mod workspaces;
 
@@ -17,6 +18,7 @@ pub fn register(d: &mut Dispatcher) {
     openin::register(d);
     preview::register(d);
     rename::register(d);
+    sync::register(d);
     templates::register(d);
     workspaces::register(d);
 }
@@ -34,7 +36,7 @@ mod tests {
     fn every_feature_registers_without_panicking() {
         let mut d = Dispatcher::new();
         register(&mut d);
-        for area in ["hash", "menuedit", "openin", "preview", "rename", "templates", "workspaces"] {
+        for area in ["hash", "menuedit", "openin", "preview", "rename", "sync", "templates", "workspaces"] {
             assert!(d.areas().contains(&area), "{area}");
         }
     }
