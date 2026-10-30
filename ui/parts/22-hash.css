@@ -1,0 +1,18 @@
+.hash-panel { width: min(640px, 100%); }
+.hash-compare {
+  width: 100%; height: 30px; margin: 6px 0 4px; padding: 0 10px; border: 0; border-radius: 8px; outline: none;
+  background: var(--field-bg); box-shadow: 0 0 0 0.5px var(--field-stroke); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+}
+.hash-compare:focus { box-shadow: 0 0 0 1px var(--accent), 0 0 0 3.5px color-mix(in srgb, var(--accent) 30%, transparent); }
+.hash-verdict { min-height: 18px; font-size: 12px; font-weight: 600; }
+.hash-verdict.yes { color: #28a745; }
+.hash-verdict.no { color: var(--red); }
+.hash-files { display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto; }
+.hash-file { padding: 10px 12px; border-radius: 12px; background: var(--group); box-shadow: 0 0 0 0.5px var(--group-stroke); }
+.hash-name { margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hash-name span { color: var(--secondary); font-size: 12px; }
+.hash-row { display: grid; grid-template-columns: 64px 1fr auto; gap: 8px; align-items: center; padding: 3px 6px; border-radius: 6px; }
+.hash-row span { color: var(--secondary); font-size: 11px; font-weight: 600; }
+.hash-row code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; word-break: break-all; -webkit-user-select: text; user-select: text; }
+.hash-row .push { height: 22px; padding: 0 10px; font-size: 11px; }
+.hash-row.match { background: color-mix(in srgb, #28a745 18%, transparent); }

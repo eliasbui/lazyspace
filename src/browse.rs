@@ -48,7 +48,7 @@ impl State {
         State { watch: FsWatch::none(), cut: clipboard::Cut::default(), undo: Vec::new(), sizes: HashMap::new() }
     }
 
-    fn push_undo(&mut self, undo: Undo) {
+    pub fn push_undo(&mut self, undo: Undo) {
         self.undo.push(undo);
         if self.undo.len() > UNDO_MAX {
             self.undo.remove(0);

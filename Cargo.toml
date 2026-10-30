@@ -40,6 +40,10 @@ notify-debouncer-full = "0.7"
 # The update check: blocking HTTP, and the SHA-256 that GitHub publishes for a release.
 ureq = "3.4"
 sha2 = "0.10"
+# The hashes of files: MD5, SHA-1, the SHA-2 family (with sha2 above) and CRC32, read in one pass.
+md-5 = "0.10"
+sha1 = "0.10"
+crc32fast = "1"
 # The window icon is decoded from PNG at startup; the home and the well-known folders.
 png = "0.18"
 dirs = "7"

@@ -91,7 +91,8 @@ const LZ = (() => {
       };
       on("menu.chosen", chosen);
       on("menu.closed", closed);
-      call("menu.show", { items: choices.map((c) => ({ id: c.id, label: c.label, icon: c.icon, checked: !!c.checked })), x, y }).catch(() => done(null));
+      const items = choices.map((c) => (c.separator ? { separator: true } : { id: c.id, label: c.label, icon: c.icon, checked: !!c.checked, enabled: c.enabled !== false }));
+      call("menu.show", { items, x, y }).catch(() => done(null));
     });
   }
 
@@ -151,7 +152,10 @@ const LZ = (() => {
       document.querySelector('[data-slot="sheets"]').appendChild(wrap);
       return wrap.firstElementChild;
     },
-    open: (id) => openSheet(id),
+    open: (id) => {
+      applyLang();
+      openSheet(id);
+    },
     close: () => closeSheets(),
   };
 

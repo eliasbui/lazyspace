@@ -117,6 +117,11 @@ impl Ctx {
         }
     }
 
+    /// Sends the page of the job's window an event of the job's own (a hash as soon as it is worked out).
+    pub fn emit(&self, name: &str, data: Value) {
+        self.post(event(name, data));
+    }
+
     fn post(&self, message: Value) {
         self.proxy.send(UserEvent::Post { window: self.window, message });
     }

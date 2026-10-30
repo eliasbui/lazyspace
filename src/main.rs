@@ -1,6 +1,7 @@
 mod browse;
 mod clipboard;
 mod contextmenu;
+mod features;
 mod fswatch;
 mod glass;
 mod interact;
@@ -482,6 +483,7 @@ fn main() {
     ipc::register_core(&mut dispatcher);
     browse::register(&mut dispatcher);
     interact::register(&mut dispatcher);
+    features::register(&mut dispatcher);
     let mut app = App::new(settings, settings_path, settings::layout_path(), proxy);
     app.menu_bar = menus::menu_bar();
 
