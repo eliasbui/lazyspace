@@ -11,6 +11,7 @@ mod netfs;
 mod rclone;
 mod s3;
 mod sftp;
+mod storage;
 
 pub use connections::Connection;
 
@@ -373,14 +374,27 @@ pub fn register(d: &mut Dispatcher) {
         sftp::approve(&Connection { host: a.host, port: a.port, ..Default::default() }, &a.fingerprint);
         Ok(Value::Null)
     });
-    d.on("remote.rclone_add", |app, _, a| {
+    // The folders of the clouds' own apps (src/features/remote/storage.rs).
+    d.on("remote.clouds", |_, _, _| {
+        let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("/"));
+        Ok(json!(storage::clouds(&home).into_iter().map(|c| json!({ "name": c.name, "account": c.account, "service": c.service, "uri": Uri::file(Path::new(&c.path)).to_string() })).collect::<Vec<_>>()))
+    });
+    // Signing in to a cloud through rclone, and installing rclone first, are jobs: they wait on the browser or on
+    // Homebrew, show in the jobs panel, and can be stopped there. The page hears `jobs.finished` with the job's id.
+    d.on("remote.rclone_add", |app, window, a| {
         #[derive(Deserialize)]
         struct Add {
             kind: String,
             name: String,
         }
         let a: Add = args(a)?;
-        defer(app, move || rclone::add(&a.kind, &a.name).map(|()| Value::Null))
+        let title = format!("{} {}", tr("Đăng nhập", "Signing in to"), a.name);
+        let job = app.jobs.spawn(&app.proxy, Some(window), "cloud", title, move |ctx| rclone::sign_in(ctx, &a.kind, &a.name), None);
+        Ok(json!({ "job": job }))
+    });
+    d.on("remote.rclone_install", |app, window, _| {
+        let job = app.jobs.spawn(&app.proxy, Some(window), "cloud", tr("Đang cài rclone", "Installing rclone").into(), rclone::install, None);
+        Ok(json!({ "job": job }))
     });
 }
 

@@ -8,7 +8,8 @@
 .rm-grid select:disabled { opacity: 0.6; }
 .rm-help { margin-top: 10px; font-size: 12px; line-height: 1.5; color: var(--secondary); }
 .rm-help p { margin: 0 0 6px; }
-.rm-command { display: flex; align-items: center; gap: 8px; }
-.rm-command code { flex: 1; padding: 5px 8px; border-radius: 6px; background: var(--field); color: var(--label); font: 12px ui-monospace, Menlo, monospace; user-select: text; }
+/* An offer to sign in to a cloud, in the Cloud section while it has none: quieter than a place. */
+.side-item.offer { color: var(--secondary); }
+.side-item.offer:hover { color: var(--label); }
 .rm-note { min-height: 18px; margin-top: 8px; font-size: 12px; color: var(--red); white-space: pre-wrap; overflow-wrap: anywhere; }
 .rm-note.good { color: var(--green, #2a9d4b); }

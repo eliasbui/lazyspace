@@ -1,6 +1,7 @@
-// Server connections (W8): the Servers section of the sidebar (saved connections, and the clouds rclone has), the
-// sheet that adds or edits a connection, and what a server asks for on the way in: a password, or trust in a key it
-// shows for the first time. Cmd+K opens the sheet, as Finder's "Connect to Server".
+// Server connections (W8): the Cloud section of the sidebar (the folders of the clouds' own apps, and the clouds rclone
+// signs in to from here), the Servers section (saved connections), the sheet that adds or edits a connection, and what
+// a server asks for on the way in: a password, or trust in a key it shows for the first time. Cmd+K opens the sheet,
+// as Finder's "Connect to Server".
 LZ.words({
   vi: {
     servers: "Máy chủ", connectServer: "Kết nối máy chủ", editServer: "Sửa kết nối", newServer: "Kết nối mới", serverKind: "Loại", serverName: "Tên",
@@ -12,9 +13,11 @@ LZ.words({
     connectionWorks: "Kết nối được", secretNotKept: "Keychain không giữ được mật khẩu; LazySpace chỉ nhớ nó tới khi thoát",
     passwordFor: "Mật khẩu cho \"{0}\"", trustTitle: "Máy chủ lần đầu gặp", trust: "Tin máy chủ này",
     trustText: "LazySpace chưa từng kết nối tới {0}. Dấu vân tay khóa của nó là:\n{1}\nHãy so với dấu vân tay mà người quản trị máy chủ cho bạn trước khi tin.",
-    hostKeyNew: "Máy chủ này chưa được tin.", cloudKind: "Dịch vụ", cloudName: "Tên (chữ không dấu)", openTerminal: "Mở Terminal để đăng nhập",
-    rcloneMissing: "Cần cài rclone để dùng Google Drive, Dropbox, OneDrive. Mở Terminal và chạy:", copyCommand: "Chép lệnh",
-    rcloneNext: "Hoàn tất đăng nhập trong Terminal; đám mây sẽ hiện trong mục Máy chủ.", rcloneNote: "rclone đăng nhập bằng trình duyệt và giữ tài khoản trong cấu hình của nó.",
+    hostKeyNew: "Máy chủ này chưa được tin.", cloudKind: "Dịch vụ", cloudName: "Tên (chữ không dấu)", signIn: "Đăng nhập",
+    rcloneNote: "Trình duyệt sẽ mở để bạn đăng nhập. rclone giữ tài khoản trong cấu hình của nó; chưa có rclone thì LazySpace cài bằng Homebrew trước.",
+    clouds: "Đám mây", addCloud: "Thêm đám mây", addService: "Thêm {0}", otherCloud: "Dịch vụ khác...", signInBrowser: "Đăng nhập trong trình duyệt vừa mở",
+    rcloneNeeded: "Cần rclone", installRclone: "Cài rclone",
+    rcloneNeededText: "LazySpace đăng nhập Google Drive, OneDrive, Dropbox qua rclone, một công cụ miễn phí và mã nguồn mở. Cài nó bằng Homebrew bây giờ?",
   },
   en: {
     servers: "Servers", connectServer: "Connect to Server", editServer: "Edit Connection", newServer: "New Connection", serverKind: "Kind", serverName: "Name",
@@ -26,9 +29,11 @@ LZ.words({
     connectionWorks: "The connection works", secretNotKept: "The Keychain could not keep the password; LazySpace remembers it until it quits",
     passwordFor: "Password for \"{0}\"", trustTitle: "A server never seen before", trust: "Trust This Server",
     trustText: "LazySpace has never connected to {0}. The fingerprint of its key is:\n{1}\nCompare it with the one the server's administrator gave you before trusting it.",
-    hostKeyNew: "This server is not trusted yet.", cloudKind: "Service", cloudName: "Name (plain letters)", openTerminal: "Open Terminal to Sign In",
-    rcloneMissing: "rclone is needed for Google Drive, Dropbox and OneDrive. Open Terminal and run:", copyCommand: "Copy Command",
-    rcloneNext: "Finish signing in in Terminal; the cloud then shows under Servers.", rcloneNote: "rclone signs in with the browser and keeps the account in its own configuration.",
+    hostKeyNew: "This server is not trusted yet.", cloudKind: "Service", cloudName: "Name (plain letters)", signIn: "Sign In",
+    rcloneNote: "The browser opens for you to sign in. rclone keeps the account in its own configuration; without rclone, LazySpace installs it with Homebrew first.",
+    clouds: "Cloud", addCloud: "Add a Cloud", addService: "Add {0}", otherCloud: "Other Service...", signInBrowser: "Sign in in the browser that opened",
+    rcloneNeeded: "rclone is needed", installRclone: "Install rclone",
+    rcloneNeededText: "LazySpace signs in to Google Drive, OneDrive and Dropbox through rclone, a free and open source tool. Install it with Homebrew now?",
   },
 });
 LZ.icons.add({
@@ -62,6 +67,8 @@ const Remote = (() => {
   const CLOUDS = { drive: "Google Drive", dropbox: "Dropbox", onedrive: "OneDrive", box: "Box", pcloud: "pCloud", mega: "MEGA", yandex: "Yandex Disk", koofr: "Koofr", jottacloud: "Jottacloud", sharefile: "ShareFile" };
   let conns = [];
   let rclone = { installed: false, remotes: [], kinds: [] };
+  // The folders of the clouds' own apps: { name, account, service, uri }.
+  let local = [];
   let loaded = null;
 
   const byId = (id) => conns.find((c) => c.id === id);
@@ -69,10 +76,12 @@ const Remote = (() => {
   const iconOf = (c) => (["s3", "oss"].includes(c.scheme) ? "bucket" : ["smb", "afp", "nfs", "dav", "davs"].includes(c.scheme) ? "share" : "server");
 
   function load() {
-    loaded = LZ.call("remote.list")
-      .then((d) => {
+    loaded = Promise.all([LZ.call("remote.list"), LZ.call("remote.clouds").catch(() => [])])
+      .then(([d, clouds]) => {
         conns = d.connections;
         rclone = d.rclone;
+        local = clouds;
+        cloudSection.refresh();
         section.refresh();
         for (const pane of Panes.all()) if (SERVER_SCHEMES.includes(schemeOf(pane.tab.uri))) pane.renderPath();
       })
@@ -92,6 +101,78 @@ const Remote = (() => {
     };
   }
 
+  // The Cloud section, above Servers: what the clouds' own apps keep on this Mac, then what rclone signed in to. With
+  // nothing yet it offers the two clouds most asked for, so signing in is found without opening a sheet.
+  const cloudSection = LZ.sidebar.section({
+    id: "cloud",
+    render(el) {
+      if (S.window.role !== "main") return;
+      const item = (uri, name, title) =>
+        `<button class="side-item" data-uri="${LZ.esc(uri)}"${title ? ` title="${LZ.esc(title)}"` : ""}><span class="ico" data-ico="icloud">${icon("icloud")}</span><span class="label">${LZ.esc(name)}</span></button>`;
+      const head = `<div class="side-head"><span>${LZ.esc(t("clouds"))}</span><span class="end" data-cl-add title="${LZ.esc(t("addCloud"))}">${icon("plus")}</span></div>`;
+      const items = [...local.map((c) => item(c.uri, c.name, c.account)), ...(rclone.remotes || []).map((r) => item(`rclone://${encodeURIComponent(r)}/`, r, "rclone"))];
+      const offers = ["drive", "onedrive"]
+        .map((kind) => `<button class="side-item offer" data-cl-kind="${kind}"><span class="ico">${icon("plus")}</span><span class="label">${LZ.esc(t("addService", CLOUDS[kind]))}</span></button>`)
+        .join("");
+      el.innerHTML = head + (items.length ? items.join("") : offers);
+      Sidebar.mark();
+    },
+  });
+
+  // Resolves with whether the job `id` went through once it ends; its error, if any, is shown by the jobs panel.
+  function finished(id) {
+    return new Promise((resolve) => {
+      const done = (d) => {
+        if (d.id !== id) return;
+        handlers["jobs.finished"] = handlers["jobs.finished"].filter((f) => f !== done);
+        resolve(!!d.ok);
+      };
+      LZ.on("jobs.finished", done);
+    });
+  }
+
+  // Signs in to a cloud through rclone, installing rclone first when it is not there, then opens the cloud in a tab.
+  async function signIn(kind, name = "") {
+    try {
+      if (!rclone.installed) {
+        if (!(await LZ.confirm(t("rcloneNeeded"), t("rcloneNeededText"), t("installRclone")))) return;
+        if (!(await finished((await LZ.call("remote.rclone_install")).job))) return;
+        await load();
+        if (!rclone.installed) return;
+      }
+      if (!name) {
+        const base = CLOUDS[kind].replace(/[^A-Za-z0-9]/g, "");
+        name = base;
+        for (let i = 2; rclone.remotes.includes(name); i++) name = `${base}${i}`;
+      }
+      const { job } = await LZ.call("remote.rclone_add", { kind, name });
+      LZ.toast(t("signInBrowser"));
+      if (!(await finished(job))) return;
+      await load();
+      Panes.open(`rclone://${encodeURIComponent(name)}/`);
+    } catch (e) {
+      LZ.say(e);
+    }
+  }
+
+  cloudSection.el.addEventListener("click", async (e) => {
+    const offer = e.target.closest("[data-cl-kind]");
+    if (offer) return signIn(offer.dataset.clKind);
+    const add = e.target.closest("[data-cl-add]");
+    if (!add) return;
+    const r = add.getBoundingClientRect();
+    const choice = await LZ.choose(
+      [...["drive", "onedrive", "dropbox"].map((kind) => ({ id: kind, label: CLOUDS[kind], icon: "icloud" })), { separator: true }, { id: "other", label: t("otherCloud"), icon: "ellipsis.circle" }],
+      r.left,
+      r.bottom + 4,
+    );
+    if (choice === "other") {
+      show(null);
+      q(".rm-kind").value = "rclone";
+      paint();
+    } else if (choice) signIn(choice);
+  });
+
   // The sidebar section.
   const section = LZ.sidebar.section({
     id: "remote",
@@ -104,8 +185,7 @@ const Remote = (() => {
           return `<button class="side-item" data-conn="${LZ.esc(c.id)}"><span class="ico" data-ico="${iconOf(c)}">${icon(iconOf(c))}</span><span class="label">${LZ.esc(c.name)}</span>${off}</button>`;
         })
         .join("");
-      const clouds = (rclone.remotes || []).map((r) => `<button class="side-item" data-uri="rclone://${encodeURIComponent(r)}/"><span class="ico" data-ico="icloud">${icon("icloud")}</span><span class="label">${LZ.esc(r)}</span></button>`).join("");
-      el.innerHTML = head + saved + clouds;
+      el.innerHTML = head + saved;
       mark();
     },
   });
@@ -233,8 +313,8 @@ const Remote = (() => {
       path: kind !== "rclone" && !s3,
       bucket: s3,
       guest: kind === "smb" || kind === "afp",
-      cloud: kind === "rclone" && rclone.installed,
-      cloudName: kind === "rclone" && rclone.installed,
+      cloud: kind === "rclone",
+      cloudName: kind === "rclone",
     };
     for (const el of panel.querySelectorAll(".rm-row")) el.hidden = el.dataset.f !== "kind" && !shown[el.dataset.f];
     const label = (f, word) => (panel.querySelector(`.rm-row[data-f="${f}"] label`).dataset.t = word);
@@ -247,12 +327,8 @@ const Remote = (() => {
     field("secret").placeholder = editing ? t("keepSecret") : "";
     field("path").placeholder = kind === "smb" || kind === "afp" ? "Public" : mounted ? "/" : `/ (${t("optional")})`;
     q('[data-rm="test"]').hidden = mounted || kind === "rclone";
-    q('[data-rm="save"]').dataset.t = kind === "rclone" ? "openTerminal" : "saveConnect";
-    q('[data-rm="save"]').disabled = kind === "rclone" && !rclone.installed;
-    const help = q(".rm-help");
-    if (kind === "rclone" && !rclone.installed) {
-      help.innerHTML = `<p>${LZ.esc(t("rcloneMissing"))}</p><div class="rm-command"><code>brew install rclone</code><button class="push" data-rm="copy" data-t="copyCommand"></button></div>`;
-    } else help.innerHTML = kind === "rclone" ? `<p>${LZ.esc(t("rcloneNote"))}</p>` : "";
+    q('[data-rm="save"]').dataset.t = kind === "rclone" ? "signIn" : "saveConnect";
+    q(".rm-help").innerHTML = kind === "rclone" ? `<p>${LZ.esc(t("rcloneNote"))}</p>` : "";
     q(".rm-note").textContent = "";
     applyLang();
   }
@@ -314,13 +390,8 @@ const Remote = (() => {
     const kind = q(".rm-kind").value;
     const note = q(".rm-note");
     if (kind === "rclone") {
-      const name = q(".rm-cloud-name").value.trim();
-      return LZ.call("remote.rclone_add", { kind: q(".rm-cloud").value, name })
-        .then(() => {
-          LZ.sheet.close();
-          LZ.toast(t("rcloneNext"));
-        })
-        .catch((e) => (note.textContent = String(e)));
+      LZ.sheet.close();
+      return signIn(q(".rm-cloud").value, q(".rm-cloud-name").value.trim());
     }
     if (kind === "s3c" && !field("endpoint").value.trim()) return (note.textContent = `${t("serverEndpoint")}?`);
     try {
@@ -340,7 +411,6 @@ const Remote = (() => {
     if (act === "cancel") LZ.sheet.close();
     else if (act === "test") test();
     else if (act === "save") save();
-    else if (act === "copy") LZ.call("clipboard.text", { text: "brew install rclone" }).then(() => LZ.toast(t("copied")), LZ.say);
   });
   panel.addEventListener("keydown", (e) => {
     if (e.key === "Enter" && e.target.matches("input")) save();
@@ -382,7 +452,8 @@ const Remote = (() => {
   Panes.actions.connectServer = () => show(null);
   Keys.add({ "Cmd+K": "connectServer" });
   LZ.on("app.hello", () => S.window.role === "main" && load());
-  // Clouds added in Terminal, and connections made in another window, show when the window comes forward.
+  // Clouds whose apps were signed in to meanwhile, and connections made in another window, show when the window comes
+  // forward.
   window.addEventListener("focus", () => S.window.role === "main" && load());
   return { load, open };
 })();

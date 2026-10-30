@@ -1,19 +1,23 @@
-//! Google Drive, Dropbox, OneDrive and the other clouds through rclone, when it is installed: rclone signs in to them
-//! with its own app ids, which LazySpace does not have. Its remotes are listed as rclone keeps them, and a place is
+//! Google Drive, Dropbox, OneDrive and the other clouds through rclone, which the app installs with Homebrew when asked:
+//! rclone signs in to them in the browser with its own app ids, which LazySpace does not have. Its remotes are listed as rclone keeps them, and a place is
 //! `rclone://<remote>/<path>`. Each call runs the rclone command, with arguments passed as they are, never through a
 //! shell; command names follow rclone's documentation (lsjson, cat, rcat, moveto, purge).
 
 use super::{entry, folder};
 use crate::{
+    jobs::Ctx,
     tr,
-    vfs::{Capabilities, Commit, Entry, Provider, Uri, cache_dir},
+    vfs::{Capabilities, Commit, Entry, Provider, Uri},
 };
 use serde::Deserialize;
+use serde_json::{Value, json};
 use std::{
     io::{self, Read, Write},
-    path::PathBuf,
+    path::{Path, PathBuf},
     process::{Child, ChildStdin, ChildStdout, Command, Stdio},
     sync::atomic::AtomicBool,
+    thread,
+    time::{Duration, Instant},
 };
 
 /// The clouds offered when adding an account, by rclone's name for them.
@@ -59,24 +63,98 @@ fn parse_remotes(text: &str) -> Vec<String> {
     text.lines().filter_map(|l| l.trim().strip_suffix(':')).filter(|n| valid_remote(n)).map(str::to_owned).collect()
 }
 
-/// Opens Terminal with `rclone config create <name> <kind>`, where rclone asks what it needs and signs in in the
-/// browser.
-pub fn add(kind: &str, name: &str) -> Result<(), String> {
+/// Signs in to a cloud without a terminal: `rclone config create <name> <kind>` opens the browser itself, waits on
+/// 127.0.0.1:53682 for the answer, and writes the remote with its token (and, for OneDrive, the drive it picked).
+/// Stopping the job stops rclone and drops what it may have half written; a name already taken is refused, so that
+/// never removes a remote the user had.
+pub fn sign_in(ctx: &Ctx, kind: &str, name: &str) -> Result<Value, String> {
     if !KINDS.contains(&kind) {
         return Err(tr("Không có loại đám mây này", "There is no such cloud").into());
     }
     if !valid_remote(name) || name.contains(' ') || name.contains('.') {
         return Err(tr("Tên chỉ gồm chữ không dấu, số, - và _", "A name may only have plain letters, digits, - and _").into());
     }
-    let rclone = binary().ok_or_else(missing)?;
-    let dir = cache_dir();
-    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-    let script = dir.join("rclone-add.command");
-    // The name and kind were checked to hold no quote; the program's path is quoted as a whole.
-    let body = format!("#!/bin/sh\nexec '{}' config create '{name}' '{kind}'\n", rclone.display().to_string().replace('\'', "'\\''"));
-    std::fs::write(&script, body).map_err(|e| e.to_string())?;
-    std::fs::set_permissions(&script, std::os::unix::fs::PermissionsExt::from_mode(0o755)).map_err(|e| e.to_string())?;
-    Command::new("/usr/bin/open").args(["-a", "Terminal"]).arg(&script).status().map_err(|e| e.to_string()).and_then(|s| if s.success() { Ok(()) } else { Err(tr("Không mở được Terminal", "Terminal could not be opened").into()) })
+    if remotes()?.iter().any(|r| r == name) {
+        return Err(format!("\"{name}\": {}", tr("đã có đám mây tên này", "a cloud of this name is already there")));
+    }
+    ctx.progress(0, 0, tr("Đăng nhập trong trình duyệt vừa mở", "Sign in in the browser that opened"));
+    let child = Command::new(binary().ok_or_else(missing)?).args(["config", "create", name, kind]).stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::piped()).spawn().map_err(|e| e.to_string())?;
+    let finished = wait(ctx, child, SIGN_IN_LIMIT).and_then(|()| match signed_in(&run(&["config", "dump"])?, name, kind) {
+        true => Ok(()),
+        false => Err(tr("Chưa đăng nhập xong: rclone không nhận được quyền truy cập", "Signing in did not finish: rclone got no access").into()),
+    });
+    if finished.is_err() {
+        let _ = run(&["config", "delete", name]);
+    }
+    finished.map(|()| json!({ "remote": name }))
+}
+
+/// How long a sign in may wait for the browser.
+const SIGN_IN_LIMIT: Duration = Duration::from_secs(600);
+
+/// Whether rclone's configuration (`config dump`) holds the remote `name` of `kind` with a token, and for OneDrive the
+/// drive to use: what a sign in that went through leaves.
+fn signed_in(dump: &str, name: &str, kind: &str) -> bool {
+    let Ok(config) = serde_json::from_str::<Value>(dump) else { return false };
+    let remote = &config[name];
+    let has = |key: &str| remote[key].as_str().is_some_and(|v| !v.is_empty());
+    remote["type"] == kind && has("token") && (kind != "onedrive" || has("drive_id"))
+}
+
+/// Installs rclone with Homebrew, which is where `binary` looks for it. Homebrew itself is not installed here: that
+/// asks for the administrator's password in a terminal.
+pub fn install(ctx: &Ctx) -> Result<Value, String> {
+    if binary().is_some() {
+        return Ok(Value::Null);
+    }
+    let brew = ["/opt/homebrew/bin/brew", "/usr/local/bin/brew"].map(PathBuf::from).into_iter().find(|p| p.is_file()).ok_or_else(|| {
+        tr(
+            "Chưa có Homebrew để cài rclone. Cài Homebrew từ brew.sh, hoặc rclone từ rclone.org/install, rồi thử lại.",
+            "Homebrew is not there to install rclone. Install Homebrew from brew.sh, or rclone from rclone.org/install, then try again.",
+        )
+        .to_owned()
+    })?;
+    ctx.progress(0, 0, "brew install rclone");
+    // An app opened from Finder has a short PATH; Homebrew needs its own folder on it.
+    let path = format!("{}:/usr/bin:/bin:/usr/sbin:/sbin", brew.parent().unwrap_or(Path::new("/")).display());
+    let child = Command::new(&brew)
+        .args(["install", "rclone"])
+        .env("PATH", path)
+        .env("HOMEBREW_NO_AUTO_UPDATE", "1")
+        .env("HOMEBREW_NO_INSTALL_CLEANUP", "1")
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|e| e.to_string())?;
+    wait(ctx, child, Duration::from_secs(900))?;
+    binary().map(|_| Value::Null).ok_or_else(missing)
+}
+
+/// Waits for a program the user may stop or that may hang, reading what it says on stderr as it goes so a full pipe
+/// never blocks it; its last line is the error when it fails.
+fn wait(ctx: &Ctx, mut child: Child, limit: Duration) -> Result<(), String> {
+    let mut stderr = child.stderr.take();
+    let said = thread::spawn(move || {
+        let mut text = Vec::new();
+        if let Some(stderr) = stderr.as_mut() {
+            let _ = stderr.read_to_end(&mut text);
+        }
+        text
+    });
+    let started = Instant::now();
+    loop {
+        if let Some(status) = child.try_wait().map_err(|e| e.to_string())? {
+            let said = said.join().unwrap_or_default();
+            return if status.success() { Ok(()) } else { Err(last_line(&said)) };
+        }
+        if ctx.cancelled() || started.elapsed() > limit {
+            let _ = child.kill();
+            let _ = child.wait();
+            return Err(if ctx.cancelled() { tr("Đã dừng", "Stopped") } else { tr("Hết thời gian chờ", "It took too long") }.into());
+        }
+        thread::sleep(Duration::from_millis(200));
+    }
 }
 
 /// rclone's name of a place: `remote:path/inside`.
@@ -250,6 +328,16 @@ impl Drop for Upload {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_sign_in_counts_only_with_a_token_and_for_onedrive_a_drive() {
+        let dump = r#"{"gd": {"type": "drive", "scope": "drive", "token": "{\"access_token\":\"x\"}"},
+                      "od": {"type": "onedrive", "token": "{}", "drive_id": "b!abc", "drive_type": "personal"},
+                      "half": {"type": "onedrive", "token": "{}"}, "none": {"type": "drive"}}"#;
+        assert!(signed_in(dump, "gd", "drive") && signed_in(dump, "od", "onedrive"));
+        assert!(!signed_in(dump, "half", "onedrive") && !signed_in(dump, "none", "drive") && !signed_in(dump, "gd", "dropbox"));
+        assert!(!signed_in(dump, "missing", "drive") && !signed_in("not json", "gd", "drive"));
+    }
 
     #[test]
     fn rclone_listings_and_remote_names_parse() {
