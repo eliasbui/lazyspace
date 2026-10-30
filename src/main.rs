@@ -1,7 +1,9 @@
 mod browse;
 mod clipboard;
+mod contextmenu;
 mod fswatch;
 mod glass;
+mod interact;
 mod ipc;
 mod jobs;
 mod menus;
@@ -244,6 +246,7 @@ impl App {
             })
             .with_asynchronous_custom_protocol(protocol::SCHEME.into(), |_, request, responder| protocol::handle(request, responder))
             .with_navigation_handler(allow_navigation)
+            .with_drag_drop_handler(interact::drop_handler(self.proxy.clone(), window_id))
             .with_new_window_req_handler(|_, _| NewWindowResponse::Deny)
             .with_devtools(cfg!(debug_assertions))
             .build(&window)
@@ -256,6 +259,7 @@ impl App {
 
     fn remove_surface(&mut self, id: SurfaceId) {
         let Some(key) = self.surfaces.iter().find(|(_, s)| s.id == id).map(|(key, _)| *key) else { return };
+        interact::window_closed(self, key);
         if self.focused == Some(key) {
             self.focused = None;
         }
@@ -477,6 +481,7 @@ fn main() {
     let mut dispatcher = Dispatcher::new();
     ipc::register_core(&mut dispatcher);
     browse::register(&mut dispatcher);
+    interact::register(&mut dispatcher);
     let mut app = App::new(settings, settings_path, settings::layout_path(), proxy);
     app.menu_bar = menus::menu_bar();
 

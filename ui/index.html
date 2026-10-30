@@ -218,11 +218,21 @@
       /* The panes: each with its own tabs, path bar, columns, rows and status. */
       .workspace { flex: 1; min-height: 0; display: flex; }
       .pane-grid { flex: 1; min-width: 0; display: grid; grid-template-columns: 1fr; grid-template-rows: 1fr; }
+      .pane-grid[data-layout="h2"] { grid-template-columns: 1fr 1fr; }
+      .pane-grid[data-layout="v2"] { grid-template-rows: 1fr 1fr; }
+      .pane-grid[data-layout="h3"] { grid-template-columns: 1fr 1fr 1fr; }
+      .pane-grid[data-layout="l1r2"], .pane-grid[data-layout="grid"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+      .pane-grid[data-layout="l1r2"] .pane:first-child { grid-row: 1 / span 2; }
       .pane { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: transparent; }
-      .pane + .pane { box-shadow: inset 1px 0 0 var(--separator); }
-      .pane-grid[data-layout="v2"] .pane + .pane, .pane-grid[data-layout="grid"] .pane:nth-child(n + 3) { box-shadow: inset 0 1px 0 var(--separator); }
-      .pane-grid[data-layout="grid"] .pane:nth-child(4) { box-shadow: inset 1px 1px 0 var(--separator); }
-      .pane-grid[data-layout="grid"] .pane:nth-child(2) { box-shadow: inset 1px 0 0 var(--separator); }
+      /* The lines between panes: on the left of every pane not in the first column, on top of every one not in the
+         first row. */
+      [data-layout="h2"] .pane + .pane, [data-layout="h3"] .pane + .pane, [data-layout="l1r2"] .pane:nth-child(2), [data-layout="grid"] .pane:nth-child(2) { box-shadow: inset 1px 0 0 var(--separator); }
+      [data-layout="v2"] .pane + .pane, [data-layout="grid"] .pane:nth-child(3) { box-shadow: inset 0 1px 0 var(--separator); }
+      [data-layout="l1r2"] .pane:nth-child(3), [data-layout="grid"] .pane:nth-child(4) { box-shadow: inset 1px 1px 0 var(--separator); }
+      .multi .pane:not(.focus) .pathbar, .multi .pane:not(.focus) .head { opacity: 0.55; }
+      .list.drop { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 8px; }
+      .side-item.drop, .tab.drop { box-shadow: inset 0 0 0 2px var(--accent); }
+      .cell-icon.drop .pic { box-shadow: 0 0 0 2px var(--accent); }
 
       .tabs { flex: none; display: flex; gap: 2px; padding: 0 8px 4px; }
       .tab {

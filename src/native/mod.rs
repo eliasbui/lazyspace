@@ -2,7 +2,10 @@
 //! and an NSImage as PNG. Code that uses AppKit is kept thin and holds no logic of its own, so the logic can be
 //! tested without a window.
 
+pub mod drag;
 pub mod icons;
+pub mod menu;
+pub mod quicklook;
 pub mod trash;
 pub mod workspace;
 
@@ -12,6 +15,12 @@ use objc2_foundation::{NSDictionary, NSString, NSURL};
 use serde_json::{Value, json};
 use std::process::Command;
 use tao::{platform::macos::WindowExtMacOS, window::Window};
+
+/// The web view of a window as an NSView, for AppKit calls that need the view the page is drawn in.
+pub fn web_view(webview: &wry::WebView) -> objc2::rc::Retained<objc2_app_kit::NSView> {
+    use wry::WebViewExtMacOS;
+    objc2::rc::Retained::into_super(objc2::rc::Retained::into_super(webview.webview()))
+}
 
 /// The NSWindow of a tao window, which lives as long as the tao window does.
 pub fn ns_window(window: &Window) -> Option<&NSWindow> {

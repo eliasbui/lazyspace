@@ -232,8 +232,17 @@ class Pane {
     this.renderAll();
   }
 
+  // The columns a pane of this width shows, as QSpace drops columns in a narrow pane: all four from 600 points, no
+  // Kind below that, and only the name and the size below 460.
+  shownColumns() {
+    const width = this.list.clientWidth || 800;
+    return width >= 600 ? ["name", "mtime", "size", "kind"] : width >= 460 ? ["name", "mtime", "size"] : ["name", "size"];
+  }
+
   applyCols() {
-    this.el.style.setProperty("--cols", `minmax(180px, 1fr) ${this.cols.mtime}px ${this.cols.size}px ${this.cols.kind}px`);
+    this.columns = this.shownColumns();
+    const widths = this.columns.slice(1).map((c) => `${this.cols[c]}px`).join(" ");
+    this.el.style.setProperty("--cols", `minmax(${this.columns.length > 2 ? 140 : 110}px, 1fr) ${widths}`);
   }
 
   resizeColumn(e, column) {
@@ -305,7 +314,8 @@ class Pane {
 
   renderHead() {
     const sort = this.sortOf(this.tab);
-    this.head.innerHTML = COLUMNS.map(([key, word]) => {
+    const shown = this.columns || this.shownColumns();
+    this.head.innerHTML = COLUMNS.filter(([key]) => shown.includes(key)).map(([key, word]) => {
       const sorted = sort.by === key || (key === "kind" && sort.by === "kind");
       const arrow = sorted ? icon(sort.desc ? "chevron.down" : "chevron.up") : "";
       const grip = key === "name" ? "" : `<i class="grip" data-grip="${key}"></i>`;
@@ -337,6 +347,10 @@ class Pane {
     }
     const width = this.list.clientWidth - 16;
     const height = this.list.clientHeight;
+    if (!icons && this.shownColumns().join() !== (this.columns || []).join()) {
+      this.applyCols();
+      this.renderHead();
+    }
     const per = icons ? Math.max(1, Math.floor(width / CELL_W)) : 1;
     const rowH = icons ? CELL_H : ROW_H;
     this.per = per;
@@ -374,7 +388,7 @@ class Pane {
     const e = tab.rows.get(i);
     const sel = !!e && tab.isSel(e.name);
     const cut = !!e && Panes.cut.has(e.uri);
-    const key = `${tab.generation}|${icons}|${per}|${e ? e.name : ""}|${sel}|${cut}|${e?.dirSize ?? ""}`;
+    const key = `${tab.generation}|${icons}|${per}|${(this.columns || []).length}|${e ? e.name : ""}|${sel}|${cut}|${e?.dirSize ?? ""}`;
     if (el.dataset.key === key || (this.renaming && this.renaming.index === i)) return;
     el.dataset.key = key;
     el.dataset.index = i;
@@ -404,7 +418,8 @@ class Pane {
     const thumb = thumbUrl(e, 16);
     const fallback = iconUrl(e, 16);
     const img = thumb ? `<img src="${thumb}" draggable="false" alt="" onerror="this.onerror=null;this.src='${fallback}'">` : `<img src="${fallback}" draggable="false" alt="">`;
-    el.innerHTML = `<div class="cell name">${img}<span>${esc(e.name)}</span></div><div class="cell">${fmtDate(e.mtime)}</div><div class="cell num">${size}</div><div class="cell">${esc(e.type || "")}</div>`;
+    const cells = { mtime: `<div class="cell">${fmtDate(e.mtime)}</div>`, size: `<div class="cell num">${size}</div>`, kind: `<div class="cell">${esc(e.type || "")}</div>` };
+    el.innerHTML = `<div class="cell name">${img}<span>${esc(e.name)}</span></div>${(this.columns || []).slice(1).map((c) => cells[c]).join("")}`;
   }
 
   // Asks for the rows between `first` and `last` that are not loaded, a little beyond them, one request at a time.
@@ -869,7 +884,7 @@ const Panes = (() => {
     const layouts = Array.isArray(saved?.panes) && saved.panes.length ? saved.panes.slice(0, 4) : [{ tabs: [{ uri: home }] }];
     if (saved?.sidebarWidth) $("app").style.setProperty("--side-w", saved.sidebarWidth);
     if (saved?.sidebarHidden) $("app").classList.add("no-sidebar");
-    grid.dataset.layout = ["single", "h2", "v2", "grid"].includes(saved?.layout) ? saved.layout : "single";
+    grid.dataset.layout = LAYOUTS[saved?.layout] ? saved.layout : "single";
     for (const p of layouts) {
       const tabs = (Array.isArray(p.tabs) ? p.tabs : []).filter((t) => typeof t?.uri === "string").slice(0, 20);
       const pane = addPane(tabs.length ? tabs : [{ uri: home }]);
@@ -877,6 +892,11 @@ const Panes = (() => {
       if (p.cols) Object.assign(pane.cols, p.cols);
       pane.applyCols();
     }
+    // A layout with more panes than were saved gets panes at home.
+    while (panes.length < LAYOUTS[grid.dataset.layout]) addPane([{ uri: home }]);
+    while (panes.length > LAYOUTS[grid.dataset.layout]) panes.pop().el.remove();
+    $("app").classList.toggle("multi", panes.length > 1);
+    paintLayoutButton();
     if (uri) panes[0].tab.uri = uri;
     api.sizesOn = !!S.settings.folder_sizes;
     focus(panes[Math.min(Math.max(0, saved?.focus | 0), panes.length - 1)]);
@@ -888,6 +908,51 @@ const Panes = (() => {
     }
     // Every other tab lists when it is first shown.
     focused.list.focus({ preventScroll: true });
+  }
+
+  // Changes the number and arrangement of panes; a new pane opens where the focused one is, a pane that goes closes
+  // its tabs.
+  function setLayout(layout) {
+    const n = LAYOUTS[layout];
+    if (!n) return;
+    grid.dataset.layout = layout;
+    $("app").classList.toggle("multi", n > 1);
+    while (panes.length < n) {
+      const pane = addPane([{ uri: focused?.tab?.uri || S.places.home }]);
+      const uri = pane.tab.uri;
+      pane.tab.uri = null;
+      pane.navigate(uri, { history: false });
+    }
+    while (panes.length > n) {
+      const pane = panes.pop();
+      for (const tab of pane.tabs) call("view.close", { view: tab.id }).catch(() => {});
+      pane.el.remove();
+      if (focused === pane) {
+        focused = null;
+        focus(panes[panes.length - 1]);
+      }
+    }
+    panes.forEach((p, i) => {
+      p.index = i;
+      p.el.dataset.pane = `p${i}`;
+      p.renderSoon();
+    });
+    paintLayoutButton();
+    saveSoon();
+    reportGlass();
+  }
+
+  function paintLayoutButton() {
+    const layout = grid.dataset.layout;
+    if (api.layoutButton) api.layoutButton.innerHTML = icon(`layout.${layout === "h3" ? "h2" : layout === "l1r2" ? "grid" : layout}`);
+  }
+
+  // Moves the focus to the next pane (or the previous one), as Tab does in QSpace.
+  function cycle(step) {
+    if (panes.length < 2) return;
+    const next = panes[(panes.indexOf(focused) + step + panes.length) % panes.length];
+    focus(next);
+    next.list.focus({ preventScroll: true });
   }
 
   // Opens a place in the focused pane.
@@ -902,12 +967,54 @@ const Panes = (() => {
       const tab = pane.tab;
       const entries = tab.selectedEntries();
       if (!entries.length) return;
-      const dirs = entries.filter((e) => e.isDir);
-      const files = entries.filter((e) => !e.isDir);
-      if (dirs.length === 1 && !files.length) return pane.navigate(dirs[0].uri);
-      for (const d of dirs) pane.newTab(d.uri);
+      // A kind a feature opens as a folder (an archive) is browsed into; the rest the system opens.
+      const into = entries.map((e) => (e.isDir ? e.uri : LZ.vfs.browse(e))).filter(Boolean);
+      const files = entries.filter((e) => !e.isDir && !LZ.vfs.browse(e));
+      if (into.length === 1 && !files.length) return pane.navigate(into[0]);
+      for (const uri of into) pane.newTab(uri);
       if (files.length) call("native.open", { uris: files.map((f) => f.uri) }).catch(say);
     },
+    openInNewTab(pane) {
+      for (const e of pane.tab.selectedEntries().filter((e) => e.isDir)) pane.newTab(e.uri);
+    },
+    quickLook(pane) {
+      const tab = pane.tab;
+      if (!tab.selCount()) return;
+      const lead = tab.rows.get(tab.lead);
+      const selected = tab.selectedEntries();
+      const index = Math.max(0, selected.findIndex((e) => e === lead));
+      call("native.quicklook", { ...tab.selection(), index }).catch(say);
+    },
+    duplicate(pane) {
+      const tab = pane.tab;
+      const uris = tab.selectedEntries().map((e) => e.uri);
+      if (uris.length && tab.capabilities.write) call("fs.copy", { from: uris, to: tab.uri, mode: "copy" }).catch(say);
+    },
+    getInfo(pane) {
+      if (pane.tab.selCount()) call("native.get_info", pane.tab.selection()).catch(say);
+      else call("native.get_info", { uris: [pane.tab.uri] }).catch(say);
+    },
+    reveal(pane) {
+      const sel = pane.tab.selCount() ? pane.tab.selection() : { uris: [pane.tab.uri] };
+      call("native.reveal", sel).catch(say);
+    },
+    copyPath(pane) {
+      const entries = pane.tab.selectedEntries();
+      const text = (entries.length ? entries.map((e) => pathOf(e.uri)) : [pathOf(pane.tab.uri)]).join("\n");
+      call("clipboard.text", { text }).then(() => toast(t("pathCopied")), say);
+    },
+    nextPane() {
+      cycle(1);
+    },
+    previousPane() {
+      cycle(-1);
+    },
+    layoutSingle: () => setLayout("single"),
+    layoutH2: () => setLayout("h2"),
+    layoutV2: () => setLayout("v2"),
+    layoutH3: () => setLayout("h3"),
+    layoutL1R2: () => setLayout("l1r2"),
+    layoutGrid: () => setLayout("grid"),
     back(pane) {
       const tab = pane.tab;
       if (!tab.back.length) return;
@@ -1111,6 +1218,7 @@ const Panes = (() => {
   const api = {
     start,
     open,
+    setLayout,
     focus,
     current,
     focused: () => focused,
@@ -1132,6 +1240,6 @@ const Panes = (() => {
 })();
 
 words({
-  vi: { deleteTitle: "Xóa hẳn {0} mục?", deleteText: "Các mục này sẽ bị xóa ngay, không qua Thùng rác. Không hoàn tác được.", deleteNow: "Xóa", notAPath: "Hãy nhập một đường dẫn bắt đầu bằng / hoặc ~" },
-  en: { deleteTitle: "Delete {0} items for good?", deleteText: "These items will be deleted at once, without the Trash. This cannot be undone.", deleteNow: "Delete", notAPath: "Type a path that starts with / or ~" },
+  vi: { pathCopied: "Đã sao chép đường dẫn", deleteTitle: "Xóa hẳn {0} mục?", deleteText: "Các mục này sẽ bị xóa ngay, không qua Thùng rác. Không hoàn tác được.", deleteNow: "Xóa", notAPath: "Hãy nhập một đường dẫn bắt đầu bằng / hoặc ~" },
+  en: { pathCopied: "Path copied", deleteTitle: "Delete {0} items for good?", deleteText: "These items will be deleted at once, without the Trash. This cannot be undone.", deleteNow: "Delete", notAPath: "Type a path that starts with / or ~" },
 });

@@ -3,7 +3,7 @@
 //! moves them instead.
 
 use objc2::{ClassType, rc::Retained, runtime::{AnyObject, ProtocolObject}};
-use objc2_app_kit::{NSPasteboard, NSPasteboardURLReadingFileURLsOnlyKey, NSPasteboardWriting};
+use objc2_app_kit::{NSPasteboard, NSPasteboardTypeString, NSPasteboardURLReadingFileURLsOnlyKey, NSPasteboardWriting};
 use objc2_foundation::{NSArray, NSDictionary, NSNumber, NSString, NSURL};
 use std::path::{Path, PathBuf};
 
@@ -29,6 +29,14 @@ pub fn read() -> Vec<PathBuf> {
         return Vec::new();
     };
     objects.iter().filter_map(|o| o.downcast::<NSURL>().ok()).filter_map(|u| u.path()).map(|p| PathBuf::from(p.to_string())).collect()
+}
+
+/// Puts text on the clipboard (a path copied as text).
+pub fn write_text(text: &str) {
+    let pasteboard = NSPasteboard::generalPasteboard();
+    pasteboard.clearContents();
+    // SAFETY: the type is a process-lifetime constant of AppKit.
+    pasteboard.setString_forType(&NSString::from_str(text), unsafe { NSPasteboardTypeString });
 }
 
 pub fn change_count() -> isize {

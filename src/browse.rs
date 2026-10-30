@@ -82,7 +82,7 @@ struct Targets {
     selection: Option<Selection>,
 }
 
-fn targets(app: &App, window: WindowId, value: &Value) -> Result<Vec<Uri>, String> {
+pub(crate) fn targets(app: &App, window: WindowId, value: &Value) -> Result<Vec<Uri>, String> {
     let t: Targets = args(value.clone())?;
     let mut uris: Vec<Uri> = t.uris.iter().map(|u| Uri::parse(u)).collect::<Result<_, _>>()?;
     if let (Some(view), Some(selection)) = (&t.view, &t.selection) {
@@ -442,13 +442,22 @@ pub fn register(d: &mut Dispatcher) {
             to: String,
             #[serde(default, rename = "move")]
             mv: bool,
+            /// "copy", "move", or "auto": a move on the same disk and a copy to another, as a drop in Finder.
+            mode: Option<String>,
         }
         let a: CopyArgs = args(a)?;
         let from: Vec<Uri> = a.from.iter().map(|u| Uri::parse(u)).collect::<Result<_, _>>()?;
         if from.is_empty() {
             return Err(tr("Chưa chọn mục nào", "Nothing is selected").into());
         }
-        let job = start_transfer(app, window, from, Uri::parse(&a.to)?, a.mv);
+        let to = Uri::parse(&a.to)?;
+        let mv = match a.mode.as_deref() {
+            Some("move") => true,
+            Some("copy") => false,
+            Some("auto") => from.iter().all(|f| same_disk(f, &to)),
+            _ => a.mv,
+        };
+        let job = start_transfer(app, window, from, to, mv);
         Ok(json!({ "job": job }))
     });
     d.on("fs.trash", |app, window, a| {
@@ -662,6 +671,13 @@ pub fn register(d: &mut Dispatcher) {
             "trash": Uri::file(&home.join(".Trash")).to_string(),
         }))
     });
+}
+
+/// Whether two local places are on the same disk, where a drop moves rather than copies.
+fn same_disk(a: &Uri, b: &Uri) -> bool {
+    use std::os::unix::fs::MetadataExt;
+    let dev = |u: &Uri| u.local_path().and_then(|p| std::fs::symlink_metadata(&p).ok()).map(|m| m.dev());
+    matches!((dev(a), dev(b)), (Some(x), Some(y)) if x == y)
 }
 
 fn one_mib() -> u64 {
