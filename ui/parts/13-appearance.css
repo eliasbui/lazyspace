@@ -1,0 +1,55 @@
+/* The accent colours of the Mac, as Settings offers them, in light and in dark. */
+:root[data-accent="blue"] { --accent: #007aff; }
+:root[data-accent="purple"] { --accent: #a550a7; }
+:root[data-accent="pink"] { --accent: #f74f9e; }
+:root[data-accent="red"] { --accent: #e0383e; }
+:root[data-accent="orange"] { --accent: #f7821b; }
+:root[data-accent="yellow"] { --accent: #e8a500; }
+:root[data-accent="green"] { --accent: #62ba46; }
+:root[data-accent="graphite"] { --accent: #8c8c8c; }
+:root.dark[data-accent="blue"] { --accent: #0a84ff; }
+:root.dark[data-accent="purple"] { --accent: #b45fb6; }
+:root.dark[data-accent="pink"] { --accent: #ff5fae; }
+:root.dark[data-accent="red"] { --accent: #ff5257; }
+:root.dark[data-accent="orange"] { --accent: #ff9233; }
+:root.dark[data-accent="yellow"] { --accent: #ffc600; }
+:root.dark[data-accent="green"] { --accent: #6bc94f; }
+:root.dark[data-accent="graphite"] { --accent: #989898; }
+
+/* The size of icons in the icon view. */
+:root[data-icon-size="48"] { --icon: 48px; }
+:root[data-icon-size="96"] { --icon: 96px; }
+:root[data-icon-size="128"] { --icon: 128px; }
+
+/* The size of the text of lists; the row heights match ROW_H of the panes. */
+:root[data-text-size="small"] .row { height: 22px; }
+:root[data-text-size="small"] .row .name { font-size: 12px; }
+:root[data-text-size="small"] .row .cell { font-size: 11px; }
+:root[data-text-size="large"] .row { height: 28px; }
+:root[data-text-size="large"] .row .name { font-size: 14.5px; }
+:root[data-text-size="large"] .row .cell { font-size: 13px; }
+:root[data-text-size="large"] .row .name img { width: 18px; height: 18px; }
+
+/* The sidebar's icons in colour, as Finder drew them before it went grey. */
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="desktop"] { color: #30b0c7; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="download"] { color: #34c759; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="doc"] { color: #007aff; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="film"] { color: #af52de; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="music"] { color: #ff2d55; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="photo"] { color: #ff9500; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="house"] { color: #5e5ce6; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="app"] { color: #0a84ff; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="trash"] { color: #8e8e93; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="tray"] { color: #ff9f0a; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="workspace"] { color: #30b0c7; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="server"] { color: #5856d6; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="bucket"] { color: #ff9500; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="share"] { color: #32ade6; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="icloud"] { color: #32ade6; }
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico^="drive"] { color: #8e8e93; }
+
+/* The swatches of the accent colours in Settings. */
+.swatches { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.swatch { width: 18px; height: 18px; padding: 0; border: 0; border-radius: 50%; box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.2); cursor: default; }
+.swatch.on { box-shadow: 0 0 0 2px var(--group, #fff), 0 0 0 4px var(--swatch); }
+.swatch[data-accent="system"] { background: conic-gradient(#e0383e, #f7821b, #e8a500, #62ba46, #007aff, #a550a7, #f74f9e, #e0383e); }

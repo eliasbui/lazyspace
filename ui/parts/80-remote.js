@@ -101,10 +101,10 @@ const Remote = (() => {
       const saved = conns
         .map((c) => {
           const off = c.live ? `<span class="end" data-rm-off="${LZ.esc(c.id)}" title="${LZ.esc(t("disconnect"))}">${icon("eject")}</span>` : "";
-          return `<button class="side-item" data-conn="${LZ.esc(c.id)}"><span class="ico">${icon(iconOf(c))}</span><span class="label">${LZ.esc(c.name)}</span>${off}</button>`;
+          return `<button class="side-item" data-conn="${LZ.esc(c.id)}"><span class="ico" data-ico="${iconOf(c)}">${icon(iconOf(c))}</span><span class="label">${LZ.esc(c.name)}</span>${off}</button>`;
         })
         .join("");
-      const clouds = (rclone.remotes || []).map((r) => `<button class="side-item" data-uri="rclone://${encodeURIComponent(r)}/"><span class="ico">${icon("icloud")}</span><span class="label">${LZ.esc(r)}</span></button>`).join("");
+      const clouds = (rclone.remotes || []).map((r) => `<button class="side-item" data-uri="rclone://${encodeURIComponent(r)}/"><span class="ico" data-ico="icloud">${icon("icloud")}</span><span class="label">${LZ.esc(r)}</span></button>`).join("");
       el.innerHTML = head + saved + clouds;
       mark();
     },

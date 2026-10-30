@@ -21,7 +21,7 @@ const Workspaces = (() => {
     render(el) {
       el.innerHTML =
         `<div class="side-head"><span>${LZ.esc(t("workspaces"))}</span><span class="end" data-ws-save title="${LZ.esc(t("saveWorkspace"))}">${icon("plus")}</span></div>` +
-        all.map((w) => `<button class="side-item" data-ws="${LZ.esc(w.id)}"><span class="ico">${icon("workspace")}</span><span class="label">${LZ.esc(w.name)}</span></button>`).join("");
+        all.map((w) => `<button class="side-item" data-ws="${LZ.esc(w.id)}"><span class="ico" data-ico="workspace">${icon("workspace")}</span><span class="label">${LZ.esc(w.name)}</span></button>`).join("");
     },
   });
 

@@ -84,6 +84,14 @@ pub struct Settings {
     pub confirm_delete: bool,
     pub preview: Preview,
     pub desktop: Desktop,
+    /// The colour of selections and buttons: "system" (the Mac's own) or one of the Mac's accent colours.
+    pub accent: String,
+    /// The sidebar's icons: "mono" as Finder draws them, or "color".
+    pub sidebar_icons: String,
+    /// The side of an icon in the icon view, in points: 48, 64, 96 or 128.
+    pub icon_size: u32,
+    /// The size of the text of lists: "small", "medium" or "large".
+    pub text_size: String,
     pub check_updates: bool,
     pub favourites: Vec<String>,
     pub sidebar_sections: Value,
@@ -105,6 +113,10 @@ impl Default for Settings {
             confirm_delete: true,
             preview: Preview::default(),
             desktop: Desktop::default(),
+            accent: "system".into(),
+            sidebar_icons: "mono".into(),
+            icon_size: 64,
+            text_size: "medium".into(),
             check_updates: true,
             favourites: Vec::new(),
             sidebar_sections: Value::Null,
@@ -139,8 +151,11 @@ impl Settings {
     }
 
     fn check(&self) -> Result<(), String> {
-        let choices: [(&str, &str, &[&str]); 6] = [
+        let choices: [(&str, &str, &[&str]); 9] = [
             ("language", &self.language, &["vi", "en"]),
+            ("accent", &self.accent, &["system", "blue", "purple", "pink", "red", "orange", "yellow", "green", "graphite"]),
+            ("sidebar_icons", &self.sidebar_icons, &["mono", "color"]),
+            ("text_size", &self.text_size, &["small", "medium", "large"]),
             ("theme", &self.theme, &["system", "light", "dark"]),
             ("keymap", &self.keymap, &["mac", "windows"]),
             ("view_mode", &self.view_mode, &["list", "icons", "columns"]),
@@ -151,6 +166,9 @@ impl Settings {
             if !allowed.contains(&value) {
                 return Err(format!("{} {key}: {value}", tr("Giá trị không hợp lệ cho", "Not a valid value for")));
             }
+        }
+        if ![48, 64, 96, 128].contains(&self.icon_size) {
+            return Err(format!("{} icon_size: {}", tr("Giá trị không hợp lệ cho", "Not a valid value for"), self.icon_size));
         }
         Ok(())
     }

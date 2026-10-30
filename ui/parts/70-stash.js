@@ -30,7 +30,7 @@ const Stash = (() => {
     id: "stash",
     render(el) {
       if (S.window.role !== "main") return;
-      el.innerHTML = `<button class="side-item" data-uri="${STASH}"><span class="ico">${icon("tray")}</span><span class="label">${LZ.esc(t("stash"))}</span><span class="side-count">${count || ""}</span></button>`;
+      el.innerHTML = `<button class="side-item" data-uri="${STASH}"><span class="ico" data-ico="tray">${icon("tray")}</span><span class="label">${LZ.esc(t("stash"))}</span><span class="side-count">${count || ""}</span></button>`;
       Sidebar.mark();
     },
   });

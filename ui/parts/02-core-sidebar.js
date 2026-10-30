@@ -26,7 +26,7 @@ const Sidebar = (() => {
   let volumes = [];
 
   function item(uri, iconName, label, end = "") {
-    return `<button class="side-item" data-uri="${esc(uri)}"><span class="ico">${icon(iconName)}</span><span class="label">${esc(label)}</span>${end}</button>`;
+    return `<button class="side-item" data-uri="${esc(uri)}"><span class="ico" data-ico="${iconName}">${icon(iconName)}</span><span class="label">${esc(label)}</span>${end}</button>`;
   }
 
   function render() {

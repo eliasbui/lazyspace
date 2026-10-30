@@ -11,9 +11,19 @@ words({
   },
 });
 
-const ROW_H = 24;
-const CELL_W = 108;
-const CELL_H = 118;
+// The height of a row and the side of an icon and of its cell, which follow the text and icon sizes of Settings.
+let ROW_H = 24;
+let ICON = 64;
+let CELL_W = 108;
+let CELL_H = 118;
+function setMetrics(s) {
+  ROW_H = { small: 22, medium: 24, large: 28 }[s?.text_size] || 24;
+  ICON = [48, 64, 96, 128].includes(s?.icon_size) ? s.icon_size : 64;
+  CELL_W = ICON + 44;
+  CELL_H = ICON + 54;
+}
+// Before the panes start, so the first frame is drawn at the sizes of Settings.
+on("app.hello", (d) => setMetrics(d.settings));
 const COLUMNS = [
   ["name", "colName"],
   ["mtime", "colModified"],
@@ -431,8 +441,8 @@ class Pane {
         el.innerHTML = "";
         return;
       }
-      const thumb = thumbUrl(e, 64);
-      const fallback = iconUrl(e, 64);
+      const thumb = thumbUrl(e, ICON);
+      const fallback = iconUrl(e, ICON);
       const img = thumb ? thumbImg(thumb, fallback, "thumb") : `<img src="${esc(fallback)}" draggable="false" alt="">`;
       el.innerHTML = `<div class="pic">${img}</div><div class="label">${esc(e.name)}</div>`;
       return;

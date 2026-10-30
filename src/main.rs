@@ -542,7 +542,9 @@ fn main() {
 /// already drawn in them, and the parts of ui/parts after its own script.
 fn page(settings: &Settings) -> String {
     let glass = if settings.glass { " data-glass" } else { "" };
-    let root = format!("<html lang=\"{}\" data-theme=\"{}\"{glass}>", settings.language, settings.theme);
+    // The look of Settings is on the root from the first frame, so nothing changes colour or size once drawn.
+    let look = format!(" data-accent=\"{}\" data-sidebar-icons=\"{}\" data-icon-size=\"{}\" data-text-size=\"{}\"", settings.accent, settings.sidebar_icons, settings.icon_size, settings.text_size);
+    let root = format!("<html lang=\"{}\" data-theme=\"{}\"{glass}{look}>", settings.language, settings.theme);
     INDEX_HTML.replacen("<html lang=\"vi\">", &root, 1).replacen("<!--parts-->", PARTS_HTML, 1)
 }
 
@@ -582,8 +584,8 @@ mod tests {
     #[test]
     fn the_page_comes_in_the_language_and_look_of_the_settings() {
         let settings = Settings { language: "en".into(), theme: "dark".into(), glass: true, ..Default::default() };
-        assert!(page(&settings).contains(r#"<html lang="en" data-theme="dark" data-glass>"#), "the root of ui/index.html is still <html lang=\"vi\">");
-        assert!(page(&Settings::default()).contains(r#"<html lang="vi" data-theme="system">"#));
+        assert!(page(&settings).contains(r#"<html lang="en" data-theme="dark" data-glass data-accent="system""#), "the root of ui/index.html is still <html lang=\"vi\">");
+        assert!(page(&Settings::default()).contains(r#"<html lang="vi" data-theme="system" data-accent="system" data-sidebar-icons="mono" data-icon-size="64" data-text-size="medium">"#));
     }
 
     #[test]
