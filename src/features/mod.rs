@@ -12,6 +12,7 @@ pub mod rename;
 pub mod stash;
 pub mod sync;
 pub mod templates;
+pub mod viewer;
 pub mod workspaces;
 
 use crate::ipc::Dispatcher;
@@ -28,6 +29,7 @@ pub fn register(d: &mut Dispatcher) {
     stash::register(d);
     sync::register(d);
     templates::register(d);
+    viewer::register(d);
     workspaces::register(d);
 }
 
@@ -82,7 +84,7 @@ mod tests {
     fn every_feature_registers_without_panicking() {
         let mut d = Dispatcher::new();
         register(&mut d);
-        for area in ["archive", "desktop", "hash", "menuedit", "openin", "preview", "remote", "rename", "stash", "sync", "templates", "workspaces"] {
+        for area in ["archive", "desktop", "hash", "menuedit", "openin", "preview", "remote", "rename", "stash", "sync", "templates", "viewer", "workspaces"] {
             assert!(d.areas().contains(&area), "{area}");
         }
     }

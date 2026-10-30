@@ -34,7 +34,10 @@ for s in 16 32 128 256 512; do
 done
 iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
 
-# The questions macOS asks the first time the app reads a protected folder, in both languages of the app.
+# The questions macOS asks the first time the app reads a protected folder, in both languages of the app. Folders are
+# declared so LazySpace can be made the app for them (Settings, "Use LazySpace instead of Finder"); as an alternate it
+# never takes them unless asked. Files need no declaration: a reveal from another app reaches the file viewer as an
+# open-documents event whatever the file's type.
 cat >"$APP/Contents/Info.plist" <<EOT
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -52,6 +55,15 @@ cat >"$APP/Contents/Info.plist" <<EOT
     <key>CFBundleLocalizations</key><array><string>en</string><string>vi</string></array>
     <key>LSMinimumSystemVersion</key><string>13.0</string>
     <key>NSHighResolutionCapable</key><true/>
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key><string>Folder</string>
+            <key>CFBundleTypeRole</key><string>Viewer</string>
+            <key>LSHandlerRank</key><string>Alternate</string>
+            <key>LSItemContentTypes</key><array><string>public.folder</string></array>
+        </dict>
+    </array>
     <key>NSDesktopFolderUsageDescription</key><string>LazySpace shows the files in your Desktop folder.</string>
     <key>NSDocumentsFolderUsageDescription</key><string>LazySpace shows the files in your Documents folder.</string>
     <key>NSDownloadsFolderUsageDescription</key><string>LazySpace shows the files in your Downloads folder.</string>

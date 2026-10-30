@@ -109,6 +109,7 @@ const Stash = (() => {
           [
             { id: "open", label: t("openItem"), icon: "arrow.up.forward.app" },
             { id: "reveal", label: t("revealFinder"), icon: "macwindow" },
+            { id: "revealHere", label: t("revealHere"), icon: "folder" },
             { separator: true },
             { id: "remove", label: t("stashRemove"), icon: "tray.and.arrow.up" },
           ],
@@ -117,6 +118,8 @@ const Stash = (() => {
         );
         if (choice === "open") LZ.call("native.open", { uris }).catch(LZ.say);
         else if (choice === "reveal") LZ.call("native.reveal", { uris }).catch(LZ.say);
+        // The shelf has no panes: the app shows the items in a main window, opening one if none is open.
+        else if (choice === "revealHere") Viewer.reveal(null, uris);
         else if (choice === "remove") LZ.call("stash.remove", { uris }).catch(LZ.say);
       });
       // Text, links and pictures from a browser come as an HTML5 drop (files come through the app, as `drop`).

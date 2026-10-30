@@ -333,7 +333,10 @@ Sort: { "by": "name|size|mtime|kind|ext", "desc": false, "foldersFirst": true }
 | `native.open` | `{ "uris" }` | null | `NSWorkspace.openURL`; tệp từ xa qua bản tạm |
 | `native.open_with` | `{ "uris", "app": "/Applications/X.app" }` | null | |
 | `native.apps_for` | `{ "uri" }` | `[ { "path", "name", "icon", "default": true } ]` | `URLsForApplicationsToOpenURL` |
-| `native.reveal` | `{ "uris" }` | null | `activateFileViewerSelectingURLs` |
+| `native.reveal` | `{ "uris" }` | null | `activateFileViewerSelectingURLs`; AppleScript tới Finder khi `NSFileViewer` là app khác |
+| `viewer.reveal` | `{ "uris" }` | null | hiện trong LazySpace qua cửa sổ chính (mục 17) |
+| `viewer.state` | `{}` | `{ "fileViewer", "folders", "available" }` | đọc từ hệ thống |
+| `viewer.enable` | `{ "on" }` | như `viewer.state` | đổi `NSFileViewer` và app mở thư mục |
 | `native.quicklook` | `{ "uris", "index" }` | null | mở hoặc đóng (toggle) |
 | `native.volumes` | `{}` | `[ { "name", "path", "ejectable", "icon", "free", "total" } ]` | |
 | `native.eject` | `{ "path" }` | null | `unmountAndEjectDeviceAtURL_error` |
@@ -1181,3 +1184,15 @@ Ghi lại sau khi làm xong W1 tới W9, để người đọc mã không phải
   tượng, cỡ chữ) và bảng lệnh Command-P cùng các phím tắt hai khung (F5, F6, Command-U, Command-Shift-T).
 - An toàn: ảnh thu nhỏ hỏng chuyển sang biểu tượng qua một listener chung, không có handler viết trong markup; tên do
   máy chủ trả về như `..` hay có dấu `/` bị bỏ qua khi liệt kê và khi chép.
+- Thêm theo yêu cầu sau thiết kế: LazySpace thay Finder (`src/features/viewer.rs`, `ui/parts/15-finder.js`). "Hiện
+  trong LazySpace" cạnh "Hiện trong Finder" (menu chuột phải, bảng lệnh, Command-Control-R, khay tạm) mở thư mục chứa
+  mục trong tab mới của khung đang chọn và chọn sẵn mục; cửa sổ không có khung (khay tạm, desktop) gọi
+  `viewer.reveal { uris }`, Rust gửi `viewer.show { uri, names }` tới cửa sổ chính phía trước (mở một cửa sổ nếu chưa
+  có). Công tắc Cài đặt `viewer.enable { on }` ghi `NSFileViewer` toàn cục (`defaults write -g`) và đặt app mở
+  `public.folder` (`setDefaultApplicationAtURL:toOpenContentType:completionHandler:`); tắt thì xóa `NSFileViewer` và
+  trả `public.folder` về Finder; `viewer.state` đọc lại hai cài đặt đó từ hệ thống. Đã thử bằng app dò: với
+  `NSFileViewer` trỏ tới một app khác Finder, `activateFileViewerSelectingURLs` và `selectFile:inFileViewerRootedAtPath:`
+  gửi `kAEOpenDocuments` ('aevt'/'odoc') với chính tệp đó, giống `open -a`, AppKit chuyển thành
+  `application:openURLs:` dù Info.plist không khai kiểu tệp, tao đưa ra `Event::Opened`. Thư mục mở thành tab, mục khác
+  mở thư mục chứa nó và chọn nó. "Hiện trong Finder" của chính LazySpace (`native.reveal`) gọi Finder bằng AppleScript
+  khi `NSFileViewer` không còn là Finder, để không vòng lại LazySpace.

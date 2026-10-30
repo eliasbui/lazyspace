@@ -93,6 +93,9 @@ pub struct Settings {
     /// The size of the text of lists: "small", "medium" or "large".
     pub text_size: String,
     pub check_updates: bool,
+    /// LazySpace in place of Finder: the Mac's file viewer and the app for folders (src/features/viewer.rs). What the
+    /// user asked for; the system's own defaults say whether it holds.
+    pub file_viewer: bool,
     pub favourites: Vec<String>,
     pub sidebar_sections: Value,
     #[serde(flatten)]
@@ -118,6 +121,7 @@ impl Default for Settings {
             icon_size: 64,
             text_size: "medium".into(),
             check_updates: true,
+            file_viewer: false,
             favourites: Vec::new(),
             sidebar_sections: Value::Null,
             extra: Map::new(),
@@ -221,6 +225,7 @@ mod tests {
         assert_eq!((settings.language.as_str(), settings.sort.by.as_str(), settings.sort.folders_first), ("en", "size", true));
         assert_eq!((settings.theme.as_str(), settings.glass, settings.confirm_delete, settings.check_updates), ("system", false, true, true));
         assert_eq!((settings.keymap.as_str(), settings.view_mode.as_str(), settings.preview.side.as_str()), ("mac", "list", "right"));
+        assert!(!settings.file_viewer, "Finder stays the file viewer until the user says otherwise");
     }
 
     #[test]

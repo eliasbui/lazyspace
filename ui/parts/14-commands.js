@@ -33,6 +33,7 @@
     ["undo", "file", "Hoàn tác", "Undo"],
     ["getInfo", "file", "Lấy thông tin", "Get Info"],
     ["reveal", "file", "Hiện trong Finder", "Show in Finder"],
+    ["revealHere", "file", "Hiện trong LazySpace", "Show in LazySpace"],
     ["copyPath", "file", "Sao chép đường dẫn", "Copy Path"],
     ["selectAll", "file", "Chọn tất cả", "Select All"],
     ["hash", "file", "Tính mã băm", "Calculate Hashes"],

@@ -1,13 +1,16 @@
 //! What the system does with files for the app: opening them, the apps that can open one, showing them in Finder, the
-//! disks with their space, and ejecting one. Ported in part from figghost's volumes.rs.
+//! disks with their space, and ejecting one; and which app the system shows files and opens folders with. Ported in
+//! part from figghost's volumes.rs.
 
 use crate::tr;
+use block2::RcBlock;
 use objc2::{msg_send, rc::Retained, runtime::AnyObject};
 use objc2_app_kit::{NSWorkspace, NSWorkspaceOpenConfiguration};
 use objc2_foundation::{
-    NSArray, NSFileManager, NSString, NSURL, NSURLVolumeAvailableCapacityForImportantUsageKey, NSURLVolumeIsEjectableKey, NSURLVolumeIsInternalKey,
-    NSURLVolumeLocalizedNameKey, NSURLVolumeTotalCapacityKey, NSVolumeEnumerationOptions,
+    NSArray, NSBundle, NSError, NSFileManager, NSGlobalDomain, NSString, NSURL, NSURLVolumeAvailableCapacityForImportantUsageKey, NSURLVolumeIsEjectableKey,
+    NSURLVolumeIsInternalKey, NSURLVolumeLocalizedNameKey, NSURLVolumeTotalCapacityKey, NSUserDefaults, NSVolumeEnumerationOptions,
 };
+use objc2_uniform_type_identifiers::UTTypeFolder;
 use serde::Serialize;
 use std::{path::Path, process::Command};
 
@@ -82,10 +85,90 @@ pub fn apps_for(path: &Path) -> Vec<App> {
     apps
 }
 
-/// Shows the items selected in a Finder window.
-pub fn reveal(paths: &[impl AsRef<Path>]) {
-    let urls: Vec<Retained<NSURL>> = paths.iter().map(|p| url_of(p.as_ref())).collect();
-    NSWorkspace::sharedWorkspace().activateFileViewerSelectingURLs(&NSArray::from_retained_slice(&urls));
+/// Shows the items selected in a Finder window. NSWorkspace hands them to the app the global `NSFileViewer` names,
+/// which is LazySpace itself once it is the Mac's file viewer (or another Finder replacement); Finder is then asked by
+/// name, as `get_info` does, with the paths as arguments of the script, not in its text.
+pub fn reveal(paths: &[impl AsRef<Path>]) -> Result<(), String> {
+    if file_viewer().is_none_or(|id| id.eq_ignore_ascii_case(FINDER_ID)) {
+        let urls: Vec<Retained<NSURL>> = paths.iter().map(|p| url_of(p.as_ref())).collect();
+        NSWorkspace::sharedWorkspace().activateFileViewerSelectingURLs(&NSArray::from_retained_slice(&urls));
+        return Ok(());
+    }
+    let script = [
+        "on run argv",
+        "set found to {}",
+        "repeat with p in argv",
+        "set end of found to (POSIX file (contents of p) as alias)",
+        "end repeat",
+        "tell application \"Finder\"",
+        "activate",
+        "reveal found",
+        "end tell",
+        "end run",
+    ];
+    let mut command = Command::new("/usr/bin/osascript");
+    for line in script {
+        command.args(["-e", line]);
+    }
+    command.args(paths.iter().map(AsRef::as_ref)).spawn().map(drop).map_err(|e| e.to_string())
+}
+
+/// Finder's bundle identifier, and where it is.
+pub const FINDER_ID: &str = "com.apple.finder";
+const FINDER_APP: &str = "/System/Library/CoreServices/Finder.app";
+
+/// The app the global `NSFileViewer` default names: the one every app's NSWorkspace asks to show a file
+/// (`activateFileViewerSelectingURLs`, `selectFile:inFileViewerRootedAtPath:`), with a kAEOpenDocuments event of the
+/// file itself. None while it is Finder by default.
+pub fn file_viewer() -> Option<String> {
+    // SAFETY: NSGlobalDomain is a process-lifetime constant.
+    let global = NSUserDefaults::standardUserDefaults().persistentDomainForName(unsafe { NSGlobalDomain })?;
+    let value = global.objectForKey(&NSString::from_str("NSFileViewer"))?;
+    value.downcast::<NSString>().ok().map(|id| id.to_string()).filter(|id| !id.is_empty())
+}
+
+/// Names `id` as the file viewer of every app, or gives the role back to Finder when `id` is None. Written with
+/// `defaults`, as NSUserDefaults can only replace the whole global domain, not one key of it.
+pub fn set_file_viewer(id: Option<&str>) -> Result<(), String> {
+    let mut command = Command::new("/usr/bin/defaults");
+    match id {
+        Some(id) => command.args(["write", "-g", "NSFileViewer", "-string", id]),
+        None => command.args(["delete", "-g", "NSFileViewer"]),
+    };
+    let done = command.output().map_err(|e| e.to_string())?;
+    // Deleting a key that is not there fails, and still leaves what was wanted.
+    if done.status.success() || (id.is_none() && file_viewer().is_none()) {
+        Ok(())
+    } else {
+        Err(tr("Không đổi được trình xem tệp của macOS", "The file viewer of macOS could not be changed").into())
+    }
+}
+
+/// The bundle identifier of the app the system opens folders with (`open ~/Documents`, a folder another app opens):
+/// Finder unless it was changed.
+pub fn folder_app() -> Option<String> {
+    // SAFETY: UTTypeFolder is a process-lifetime constant.
+    let app = NSWorkspace::sharedWorkspace().URLForApplicationToOpenContentType(unsafe { UTTypeFolder })?;
+    NSBundle::bundleWithURL(&app)?.bundleIdentifier().map(|id| id.to_string())
+}
+
+/// Makes the app at `app` the one the system opens folders with, or Finder when `app` is None. The app must declare
+/// `public.folder` in its Info.plist (scripts/bundle-macos.sh). It waits for LaunchServices to answer, which may come
+/// on the main thread, so it is called off it.
+pub fn set_folder_app(app: Option<&Path>) -> Result<(), String> {
+    let app = url_of(app.unwrap_or(Path::new(FINDER_APP)));
+    let (sender, answer) = std::sync::mpsc::channel();
+    let done = RcBlock::new(move |error: *mut NSError| {
+        // SAFETY: the error, when there is one, lives for the call of the handler.
+        let _ = sender.send(unsafe { error.as_ref() }.map(|e| e.localizedDescription().to_string()));
+    });
+    // SAFETY: UTTypeFolder is a process-lifetime constant.
+    NSWorkspace::sharedWorkspace().setDefaultApplicationAtURL_toOpenContentType_completionHandler(&app, unsafe { UTTypeFolder }, Some(&done));
+    match answer.recv_timeout(std::time::Duration::from_secs(20)) {
+        Ok(None) => Ok(()),
+        Ok(Some(error)) => Err(error),
+        Err(_) => Err(tr("macOS không trả lời khi đổi ứng dụng mở thư mục", "macOS did not answer when the app for folders was changed").into()),
+    }
 }
 
 /// Opens Finder's Get Info window of the item; the path goes in as an argument of the script, not into its text.

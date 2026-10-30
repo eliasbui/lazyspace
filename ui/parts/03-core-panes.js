@@ -811,12 +811,12 @@ class Pane {
     input.addEventListener("blur", () => setTimeout(() => input.isConnected && done(false), 120));
   }
 
-  // Tabs: a new one opens where the current one is, or at `uri`.
-  newTab(uri) {
+  // Tabs: a new one opens where the current one is, or at `uri` with the names of `select` selected once listed.
+  newTab(uri, select = null) {
     const from = this.tab?.uri;
     this.tabs.push(new Tab(null, this.tab?.mode));
     this.active = this.tabs.length - 1;
-    this.navigate(uri || from || S.places.home, { history: false });
+    this.navigate(uri || from || S.places.home, { history: false, select });
   }
 
   activate(i) {

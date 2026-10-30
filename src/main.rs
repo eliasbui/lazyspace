@@ -512,6 +512,9 @@ fn main() {
     let mut app = App::new(settings, settings_path, settings::layout_path(), proxy);
     app.menu_bar = menus::menu_bar();
 
+    // What macOS asks the app to open as it launches comes before the loop starts (AppKit sends `application:openURLs:`
+    // ahead of `applicationDidFinishLaunching:`); it waits for the first main window.
+    let mut opened_early: Option<Vec<PathBuf>> = Some(Vec::new());
     event_loop.run(move |event, target, flow| {
         *flow = ControlFlow::Wait;
         match event {
@@ -521,6 +524,17 @@ fn main() {
                 }
                 dispatcher.start(&mut app);
                 app.open_surface(Role::Main, SurfaceOptions::default());
+                if let Some(paths) = opened_early.take().filter(|p| !p.is_empty()) {
+                    features::viewer::opened(&mut app, paths);
+                }
+            }
+            // A folder or a file to show, sent by macOS once LazySpace stands in for Finder (src/features/viewer.rs).
+            Event::Opened { urls } => {
+                let paths: Vec<PathBuf> = urls.iter().filter_map(|u| u.to_file_path().ok()).collect();
+                match opened_early.as_mut() {
+                    Some(early) => early.extend(paths),
+                    None => features::viewer::opened(&mut app, paths),
+                }
             }
             Event::Reopen { has_visible_windows: false, .. } => app.reopen(),
             Event::WindowEvent { window_id, event: WindowEvent::CloseRequested, .. } => app.close_requested(window_id),

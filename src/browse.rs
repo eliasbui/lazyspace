@@ -681,7 +681,7 @@ pub fn register(d: &mut Dispatcher) {
         serde_json::to_value(workspace::apps_for(&path)).map_err(|e| e.to_string())
     });
     d.on("native.reveal", |app, window, a| {
-        workspace::reveal(&local_paths(&targets(app, window, &a)?)?);
+        workspace::reveal(&local_paths(&targets(app, window, &a)?)?)?;
         Ok(Value::Null)
     });
     d.on("native.get_info", |app, window, a| {
