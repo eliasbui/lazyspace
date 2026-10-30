@@ -25,6 +25,10 @@ tượng và ảnh thu nhỏ của hệ thống, Xem nhanh, Thùng rác, kéo th
 Mọi thư mục được liệt kê và sắp xếp trong Rust, nên thư mục một trăm nghìn tệp vẫn mở trong chưa tới một giây; mọi
 thao tác tệp chạy thành một tác vụ có tiến độ, có thể hủy và hoàn tác. Ứng dụng có tiếng Việt và tiếng Anh.
 
+<p align="center">
+  <img src="docs/screenshots/vi-main.png" width="880" alt="Cửa sổ LazySpace: thanh bên, các tab, thanh đường dẫn và danh sách tệp" />
+</p>
+
 ## Tính năng
 
 - **Tối đa bốn khung, có tab như File Explorer.** Sáu bố cục: một khung, hai khung cạnh nhau hoặc trên dưới, ba khung,
@@ -98,6 +102,27 @@ thao tác tệp chạy thành một tác vụ có tiến độ, có thể hủy 
   Symbols của hệ thống.
 - **Hoàn tác.** Chuyển, đổi tên, tạo mới và đưa vào Thùng rác đều hoàn tác được bằng Command-Z.
 - **Tiếng Việt hoặc tiếng Anh**, và tự cập nhật trong ứng dụng.
+
+## Ảnh chụp màn hình
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/vi-panes.png" alt="Hai khung ở chế độ tối với Liquid Glass" /></td>
+    <td width="50%"><img src="docs/screenshots/vi-search.png" alt="Tìm kiếm với các mục khớp nhất dưới ô tìm" /></td>
+  </tr>
+  <tr>
+    <td align="center">Hai khung ở chế độ tối với Liquid Glass, trạng thái Git của từng tệp và nhánh hiện tại</td>
+    <td align="center">Tìm ngay khi gõ: các mục khớp nhất dưới ô tìm, trang kết quả có bộ lọc</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/vi-columns.png" alt="Dạng cột" /></td>
+    <td width="50%"><img src="docs/screenshots/vi-disk.png" alt="Bản đồ dung lượng của thư mục" /></td>
+  </tr>
+  <tr>
+    <td align="center">Dạng cột, xem trước tệp đang chọn</td>
+    <td align="center">Thư mục chứa gì, vẽ thành bản đồ dung lượng</td>
+  </tr>
+</table>
 
 ## Bàn phím
 

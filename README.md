@@ -25,6 +25,10 @@ and thumbnails, Quick Look, the Trash, drag and drop with other apps, a real con
 is listed and sorted in Rust, so a folder of a hundred thousand files opens in a fraction of a second, and every file
 operation runs as a job you can watch, cancel and undo. It speaks English and Vietnamese.
 
+<p align="center">
+  <img src="docs/screenshots/en-main.png" width="880" alt="The LazySpace window: the sidebar, tabs, the path bar and a list of files" />
+</p>
+
 ## Features
 
 - **Up to four panes, with tabs as in File Explorer.** Six layouts: one pane, two side by side or stacked, three, one
@@ -104,6 +108,27 @@ operation runs as a job you can watch, cancel and undo. It speaks English and Vi
   toolbar does, and its icons are the system's SF Symbols.
 - **Undo.** Moves, renames, new items and the Trash are undone with Command-Z.
 - **English or Vietnamese**, and in-app updates.
+
+## Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/en-panes.png" alt="Two panes in dark mode with Liquid Glass" /></td>
+    <td width="50%"><img src="docs/screenshots/en-search.png" alt="Search with the best matches under the field" /></td>
+  </tr>
+  <tr>
+    <td align="center">Two panes in dark mode with Liquid Glass, Git's state of each file and the branch</td>
+    <td align="center">Search as you type: the best matches under the field, the results with filters</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/en-columns.png" alt="The column view" /></td>
+    <td width="50%"><img src="docs/screenshots/en-disk.png" alt="The map of a folder by size" /></td>
+  </tr>
+  <tr>
+    <td align="center">The column view, with a preview of the file selected</td>
+    <td align="center">What a folder holds, as a map of its sizes</td>
+  </tr>
+</table>
 
 ## Keyboard
 
