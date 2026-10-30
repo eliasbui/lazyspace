@@ -1,0 +1,28 @@
+/* The map of what a folder holds: a rectangle for each item, in the colour of what it is, the items of a folder inside
+   it; and the groups of twins with their files to tick. */
+.panel.disk-panel { width: min(960px, 100%); height: min(680px, 100%); display: flex; flex-direction: column; gap: 10px; }
+.disk-head { display: flex; align-items: center; gap: 12px; }
+.disk-what { flex: 1; min-width: 0; }
+.disk-what h2 { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.disk-what small { color: var(--secondary); }
+.disk-map { position: relative; flex: 1; min-height: 240px; border-radius: 12px; overflow: hidden; background: var(--field); }
+.disk-wait { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--secondary); }
+.disk-cell {
+  position: absolute; overflow: hidden; padding: 3px 6px; border-radius: 5px; background: var(--c); color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.25); transition: filter 0.12s;
+}
+.disk-cell:hover { filter: brightness(1.12); }
+.disk-cell b { position: relative; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 600; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); }
+.disk-cell small { position: relative; display: block; font-size: 10px; opacity: 0.9; }
+.disk-cell i { position: absolute; border-radius: 3px; box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.25); opacity: 0.9; }
+.disk-hint { margin: 0; font-size: 11px; color: var(--secondary); }
+
+.panel.twins-panel { width: min(720px, 100%); }
+.twins-sum { margin: 0 0 8px; }
+.twins-list { max-height: 52vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.tw-group { border-radius: 10px; background: var(--group); box-shadow: 0 0 0 0.5px var(--group-stroke); padding: 6px 4px; }
+.tw-head { padding: 2px 10px 4px; font-size: 11px; font-weight: 600; color: var(--secondary); }
+.tw-row { display: flex; align-items: center; gap: 8px; height: 26px; padding: 0 10px; border-radius: 6px; font-size: 12px; }
+.tw-row:hover { background: var(--hover); }
+.tw-row img { width: 16px; height: 16px; }
+.tw-row span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

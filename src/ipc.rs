@@ -1,5 +1,5 @@
 //! The messages between the page and the app: the envelope, the dispatcher that routes a method to its handler, and
-//! the handlers of the core methods (`app.*`, `settings.*`, `glass.*`, `panes.*`, `update.*`). A feature keeps its own
+//! the handlers of the core methods (`app.*`, `settings.*`, `panes.*`, `update.*`). A feature keeps its own
 //! handlers in its own file and registers them with `Dispatcher::on`.
 
 use crate::{App, Role, SurfaceOptions, native, tr, update};
@@ -171,17 +171,6 @@ pub fn register_core(d: &mut Dispatcher) {
         }
         native::choose_folder(&args::<ChooseFolder>(a)?.prompt)
     });
-    d.on("glass.panes", |app, window, a| {
-        #[derive(Deserialize)]
-        struct Panes {
-            panes: Vec<[f64; 5]>,
-        }
-        let Panes { panes } = args(a)?;
-        if let Some(surface) = app.surfaces.get(&window) {
-            surface.glass.set_panes(&panes);
-        }
-        Ok(Value::Null)
-    });
     d.on("panes.state", |app, window, a| {
         #[derive(Deserialize)]
         struct PanesState {
@@ -256,8 +245,6 @@ mod tests {
         assert!(call("app.open_url", json!({})).is_err(), "a missing field");
         assert!(call("app.open_url", json!({"url": 5})).is_err(), "the wrong type");
         assert!(call("app.open_url", json!({"url": "file:///etc/passwd"})).is_err(), "a scheme that is not the web's");
-        assert!(call("glass.panes", json!({"panes": [[1, 2, 3]]})).is_err(), "a pane of three numbers");
-        assert!(call("glass.panes", json!({"panes": [[1, 2, 3, 4, 5]]})).is_ok());
         assert!(call("panes.state", json!({"state": 7})).is_err(), "a state that is not an object");
         assert!(call("settings.set", json!({})).is_err(), "no patch");
         assert!(call("settings.set", json!({"patch": {"unknown_key": 1}})).is_err());

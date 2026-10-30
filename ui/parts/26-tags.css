@@ -1,0 +1,11 @@
+/* Finder's seven colours, the dots of tags after a name, and the sidebar's tags. */
+:root { --tag-1: #8e8e93; --tag-2: #34c759; --tag-3: #af52de; --tag-4: #007aff; --tag-5: #ffcc00; --tag-6: #ff3b30; --tag-7: #ff9500; }
+.tags { flex: none; display: inline-flex; margin-left: 4px; vertical-align: middle; }
+.tags i { width: 9px; height: 9px; border-radius: 50%; background: var(--tag-c, transparent); box-shadow: 0 0 0 1px var(--window), 0 0 0 1.5px var(--tag-ring, transparent); }
+.tags i + i { margin-left: -3px; }
+.cell-icon .label .tags { margin: 0 4px 0 0; }
+.tag-0 { --tag-c: transparent; --tag-ring: var(--secondary); }
+.tag-1 { --tag-c: var(--tag-1); } .tag-2 { --tag-c: var(--tag-2); } .tag-3 { --tag-c: var(--tag-3); } .tag-4 { --tag-c: var(--tag-4); }
+.tag-5 { --tag-c: var(--tag-5); } .tag-6 { --tag-c: var(--tag-6); } .tag-7 { --tag-c: var(--tag-7); }
+.pane.focus .row.sel .tags i { box-shadow: 0 0 0 1px var(--row-selected); }
+.tag-dot { display: block; width: 10px; height: 10px; border-radius: 50%; background: var(--tag-c); }

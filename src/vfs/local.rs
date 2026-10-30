@@ -32,6 +32,11 @@ const PACKAGES: &[&str] = &[
     "logicx", "band", "workflow", "action", "lpdf",
 ];
 
+/// Whether a folder with this extension is one item to the user, never gone into: an app, a library of photos.
+pub fn is_package(ext: &str) -> bool {
+    PACKAGES.contains(&ext.to_lowercase().as_str())
+}
+
 pub struct Local;
 
 impl Provider for Local {

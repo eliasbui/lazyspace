@@ -67,6 +67,7 @@ pub fn menu_bar() -> Option<MenuBar> {
         true,
         &[
             &MenuItem::with_id(NEW_WINDOW, tr("Cửa sổ mới", "New Window"), true, key(Modifiers::META, Code::KeyN)),
+            &item("file.new_tab", tr("Tab mới", "New Tab")),
             &item(NEW_FOLDER, tr("Thư mục mới", "New Folder")),
             &PredefinedMenuItem::separator(),
             &item(CLOSE_TAB, tr("Đóng tab", "Close Tab")),
@@ -92,6 +93,8 @@ pub fn menu_bar() -> Option<MenuBar> {
         &[
             &item("view.list", tr("Dạng danh sách", "as List")),
             &item("view.icons", tr("Dạng biểu tượng", "as Icons")),
+            &item("view.columns", tr("Dạng cột", "as Columns")),
+            &item("view.gallery", tr("Dạng gallery", "as Gallery")),
             &item("view.hidden", tr("Hiện tệp ẩn", "Show Hidden Files")),
             &PredefinedMenuItem::separator(),
             &PredefinedMenuItem::fullscreen(Some(tr("Vào chế độ toàn màn hình", "Enter Full Screen"))),

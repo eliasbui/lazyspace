@@ -5,7 +5,7 @@ LZ.words({
   en: { newFile: "New File", templatesFolder: "Open the Templates Folder", addTemplate: "Use the Selected File as a Template", templateAdded: "Template added" },
 });
 LZ.icons.add({
-  "doc.plus": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M6.5 3.5h7l4.5 4.5v12.5h-11.5z"/><path d="M13.5 3.5V8H18M12.25 11.5v6M9.25 14.5h6"/></svg>',
+  "doc.plus": "doc.badge.plus",
 });
 
 const Templates = (() => {

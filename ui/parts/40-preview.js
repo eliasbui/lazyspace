@@ -16,8 +16,8 @@ LZ.words({
   },
 });
 LZ.icons.add({
-  "sidebar.right": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M14.5 5v14"/></svg>',
-  "panel.bottom": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 13.5h18"/></svg>',
+  "sidebar.right": "sidebar.right",
+  "panel.bottom": "rectangle.bottomthird.inset.filled,rectangle.bottomhalf.inset.filled",
 });
 
 const Preview = (() => {
@@ -53,7 +53,6 @@ const Preview = (() => {
     b.title = t(side() === "bottom" ? "moveRight" : "moveBottom");
     $("tb-preview")?.classList.toggle("on", on());
     if (on()) update(true);
-    reportGlass();
   }
 
   function rows(list) {

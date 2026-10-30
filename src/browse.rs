@@ -130,7 +130,7 @@ fn listed(app: &mut App, window: WindowId, view: &str, request: u64, result: Res
             let Some(generation) = app.views.finish(view, request, entries, &icons::describe) else { return };
             let Ok(v) = app.views.get(view, window) else { return };
             let free = v.uri.local_path().and_then(|p| workspace::free_space(&p));
-            let changed = json!({ "view": view, "generation": generation, "count": v.count(), "uri": v.uri.to_string(), "capabilities": v.capabilities, "free": free });
+            let changed = json!({ "view": view, "generation": generation, "count": v.count(), "uri": v.uri.to_string(), "capabilities": v.capabilities, "free": free, "groups": v.groups() });
             let sizes_wanted = app.settings.folder_sizes && v.capabilities.sizes;
             app.post(window, event("view.changed", changed));
             follow_open_folders(app);
@@ -209,6 +209,17 @@ pub fn complete(text: &str) -> Vec<String> {
     out
 }
 
+/// The most folders a crumb's menu lists.
+const SUBFOLDERS_MAX: usize = 300;
+
+/// The folders directly in `uri` that are not hidden, by name as Finder sorts them, as `{ name, uri }`.
+fn subfolders(uri: &Uri) -> Result<Vec<Value>, String> {
+    let mut folders: Vec<vfs::Entry> = registry().get(uri)?.list(uri, &AtomicBool::new(false))?.into_iter().filter(|e| e.is_dir && !e.hidden).collect();
+    folders.sort_by_cached_key(vfs::Entry::key);
+    folders.truncate(SUBFOLDERS_MAX);
+    Ok(folders.into_iter().map(|e| json!({ "name": e.name, "uri": e.uri })).collect())
+}
+
 /// The name a new folder gets: "untitled folder", "untitled folder 2" as Finder names them.
 fn new_folder_name(folder: &Uri) -> Result<String, String> {
     let provider = registry().get(folder)?;
@@ -226,8 +237,55 @@ fn title(verb: (&str, &str), uris: &[Uri]) -> String {
     }
 }
 
+/// Waits for the copies and moves before this one to finish, showing it waits; the turn lasts as long as the guard.
+fn turn(ctx: &crate::jobs::Ctx) -> Result<std::sync::MutexGuard<'static, ()>, String> {
+    static QUEUE: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    loop {
+        match QUEUE.try_lock() {
+            Ok(guard) => return Ok(guard),
+            Err(std::sync::TryLockError::Poisoned(p)) => return Ok(p.into_inner()),
+            Err(std::sync::TryLockError::WouldBlock) => {}
+        }
+        if ctx.cancelled() {
+            return Err("cancelled".into());
+        }
+        ctx.progress(0, 0, tr("Đang chờ lượt...", "Waiting for its turn..."));
+        thread::sleep(std::time::Duration::from_millis(200));
+    }
+}
+
+/// Reads every file copied again on both sides and compares their SHA-256; the first that differs is an error.
+pub fn verify_copies(ctx: &crate::jobs::Ctx, pairs: &[(Uri, Uri)]) -> Result<(), String> {
+    let mut files: Vec<(PathBuf, PathBuf)> = Vec::new();
+    for (from, to) in pairs {
+        let (Some(from), Some(to)) = (from.local_path(), to.local_path()) else { continue };
+        let mut stack = vec![(from, to)];
+        while let Some((a, b)) = stack.pop() {
+            if a.is_dir() {
+                for item in std::fs::read_dir(&a).map_err(|e| e.to_string())?.flatten() {
+                    stack.push((item.path(), b.join(item.file_name())));
+                }
+            } else if a.is_file() {
+                files.push((a, b));
+            }
+        }
+    }
+    for (i, (a, b)) in files.iter().enumerate() {
+        if ctx.cancelled() {
+            return Err("cancelled".into());
+        }
+        ctx.progress(i as u64, files.len() as u64, &format!("{} {}", tr("Kiểm tra", "Checking"), b.file_name().map(|n| n.to_string_lossy()).unwrap_or_default()));
+        let same = crate::features::disk::digest(a, None).is_some_and(|d| crate::features::disk::digest(b, None) == Some(d));
+        if !same {
+            return Err(format!("{}: {}", tr("Bản sao khác bản gốc", "The copy differs from the original"), b.display()));
+        }
+    }
+    Ok(())
+}
+
 /// Starts copying or moving `from` into `to` as a job of `window`, keeping an undo when it is over.
 fn start_transfer(app: &mut App, window: WindowId, from: Vec<Uri>, to: Uri, mv: bool) -> u64 {
+    let (queue, verify) = (app.settings.copy_queue, app.settings.verify_copies);
     let verb = if mv { ("Chuyển", "Move") } else { ("Chép", "Copy") };
     let job_title = title(verb, &from);
     let undo_title = job_title.clone();
@@ -250,7 +308,12 @@ fn start_transfer(app: &mut App, window: WindowId, from: Vec<Uri>, to: Uri, mv: 
         kind,
         job_title,
         move |ctx| {
+            // One at a time when Settings asks: a later one waits its turn, and can still be stopped meanwhile.
+            let _turn = if queue { Some(turn(ctx)?) } else { None };
             let done = copy::transfer(ctx, &from, &to, mv)?;
+            if verify && !mv {
+                verify_copies(ctx, &done.pairs)?;
+            }
             // Local pairs as paths, for the undo; the names of what arrived, for the page to select them.
             let pairs: Vec<Value> = done.pairs.iter().filter_map(|(s, d)| Some(json!([s.local_path()?, d.local_path()?]))).collect();
             let names: Vec<String> = done.pairs.iter().map(|(_, d)| d.name()).collect();
@@ -296,7 +359,7 @@ pub fn register(d: &mut Dispatcher) {
         }
         let a: SortView = args(a)?;
         let generation = app.views.sort(&a.view, window, a.sort, &icons::describe)?;
-        Ok(json!({ "generation": generation }))
+        Ok(json!({ "generation": generation, "groups": app.views.get(&a.view, window)?.groups() }))
     });
     d.on("view.filter", |app, window, a| {
         #[derive(Deserialize)]
@@ -306,7 +369,7 @@ pub fn register(d: &mut Dispatcher) {
         }
         let a: Filter = args(a)?;
         let (generation, count) = app.views.filter(&a.view, window, &a.text)?;
-        Ok(json!({ "generation": generation, "count": count }))
+        Ok(json!({ "generation": generation, "count": count, "groups": app.views.get(&a.view, window)?.groups() }))
     });
     d.on("view.hidden", |app, window, a| {
         #[derive(Deserialize)]
@@ -316,7 +379,7 @@ pub fn register(d: &mut Dispatcher) {
         }
         let a: Hidden = args(a)?;
         let (generation, count) = app.views.set_hidden(&a.view, window, a.show)?;
-        Ok(json!({ "generation": generation, "count": count }))
+        Ok(json!({ "generation": generation, "count": count, "groups": app.views.get(&a.view, window)?.groups() }))
     });
     d.on("view.find", |app, window, a| {
         #[derive(Deserialize)]
@@ -370,6 +433,15 @@ pub fn register(d: &mut Dispatcher) {
             text: String,
         }
         Ok(json!({ "items": complete(&args::<Complete>(a)?.text) }))
+    });
+    // The folders in a place, by name, for the menu of a crumb of the path bar.
+    d.on("fs.subfolders", |app, _, a| {
+        #[derive(Deserialize)]
+        struct Subfolders {
+            uri: String,
+        }
+        let uri = Uri::parse(&args::<Subfolders>(a)?.uri)?;
+        off_main(app, &uri.clone(), move || Ok(json!({ "items": subfolders(&uri)? })))
     });
     d.on("fs.stat", |app, _, a| {
         #[derive(Deserialize)]
@@ -627,6 +699,17 @@ pub fn register(d: &mut Dispatcher) {
         Ok(json!({ "cut": cut }))
     });
     d.on("jobs.list", |app, _, _| Ok(app.jobs.list()));
+    d.on("jobs.pause", |app, window, a| {
+        #[derive(Deserialize)]
+        struct Pause {
+            id: u64,
+            paused: bool,
+        }
+        let a: Pause = args(a)?;
+        app.jobs.pause(a.id, a.paused)?;
+        app.post(window, event("jobs.paused", json!({ "id": a.id, "paused": a.paused })));
+        Ok(Value::Null)
+    });
     d.on("jobs.cancel", |app, _, a| {
         #[derive(Deserialize)]
         struct Cancel {
@@ -713,6 +796,8 @@ pub fn register(d: &mut Dispatcher) {
             "pictures": place(dirs::picture_dir()),
             "applications": Uri::file(Path::new("/Applications")).to_string(),
             "trash": Uri::file(&home.join(".Trash")).to_string(),
+            // The files used lately, as a search of the home folder (src/features/search.rs).
+            "recents": Uri { scheme: "search".into(), authority: "recent=1".into(), path: Uri::file(&home).path }.to_string(),
         }))
     });
 }
@@ -765,6 +850,33 @@ fn run_undo(undo: &Undo, ctx: &crate::jobs::Ctx) -> Result<Value, String> {
 mod tests {
     use super::*;
     use crate::{jobs::test_ctx, vfs::local::tests::Temp};
+
+    #[test]
+    fn a_copy_is_checked_byte_for_byte_and_a_changed_one_fails() {
+        let t = Temp::new("verify");
+        t.file("from/dir/a.txt", "a");
+        t.file("from/b.txt", "b");
+        t.file("to/dir/a.txt", "a");
+        t.file("to/b.txt", "b");
+        let pair = |name: &str| (Uri::file(&t.0.join("from").join(name)), Uri::file(&t.0.join("to").join(name)));
+        let pairs = [pair("dir"), pair("b.txt")];
+        let (ctx, _answers, _cancel) = test_ctx();
+        assert!(verify_copies(&ctx, &pairs).is_ok());
+        t.file("to/dir/a.txt", "x");
+        assert!(verify_copies(&ctx, &pairs).unwrap_err().contains("a.txt"));
+    }
+
+    #[test]
+    fn a_crumb_lists_the_folders_in_it_by_name_without_hidden_ones() {
+        let t = Temp::new("subfolders");
+        t.file("b/x", "");
+        t.file("A/x", "");
+        t.file(".hidden/x", "");
+        t.file("file.txt", "");
+        let names: Vec<Value> = subfolders(&t.uri()).unwrap().iter().map(|f| f["name"].clone()).collect();
+        assert_eq!(names, [json!("A"), json!("b")]);
+        assert!(subfolders(&t.uri().join("nothing")).is_err(), "a folder that is not there");
+    }
 
     #[test]
     fn the_address_bar_completes_folders_by_prefix() {

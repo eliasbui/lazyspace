@@ -32,6 +32,16 @@ function authorityOf(uri) {
 }
 // What a place is called in a title, a tab and the path bar.
 const placeName = (uri) => (placeNames[schemeOf(uri)] ? placeNames[schemeOf(uri)](uri) : nameOf(uri));
+// A place as a list of places writes it: the path from the home folder (~) on this Mac, the name of the server or the
+// shelf with the path in it elsewhere.
+function placeLabel(uri) {
+  const path = pathOf(uri);
+  if (!isLocal(uri)) return path === "/" ? placeName(uri) : `${placeName(withPath(uri, "/"))}: ${path}`;
+  const home = S.places.home ? pathOf(S.places.home) : null;
+  return home && (path === home || path.startsWith(`${home}/`)) ? `~${path.slice(home.length)}` : path;
+}
+// Finder's tags of an item as dots of their colours, after its name as Finder draws them (ui/parts/26-tags.js).
+const tagDots = (e) => (e?.tags?.length ? `<span class="tags">${e.tags.slice(0, 3).map(([name, c]) => `<i class="tag-${Number(c) || 0}" title="${esc(name)}"></i>`).join("")}</span>` : "");
 const samePlace = (a, b) => !!a && !!b && schemeOf(a) === schemeOf(b) && authorityOf(a) === authorityOf(b) && pathOf(a) === pathOf(b);
 
 const locale = () => (lang === "vi" ? "vi-VN" : "en-US");

@@ -68,6 +68,8 @@ pub struct Ctx {
     pub id: u64,
     window: Option<WindowId>,
     cancel: Arc<AtomicBool>,
+    /// Set while the user has the job paused; it waits at its next step until it is let go or stopped.
+    paused: Arc<AtomicBool>,
     proxy: Proxy,
     answers: Receiver<(Answer, bool)>,
     remembered: RefCell<HashMap<&'static str, Answer>>,
@@ -79,12 +81,21 @@ impl Ctx {
         self.cancel.load(Ordering::Relaxed)
     }
 
+    /// Holds the job here while it is paused, unless it is stopped meanwhile. Every job that reports its progress
+    /// can be paused, at the step it reports.
+    pub fn wait_while_paused(&self) {
+        while self.paused.load(Ordering::Relaxed) && !self.cancelled() {
+            thread::sleep(Duration::from_millis(100));
+        }
+    }
+
     pub fn cancel_flag(&self) -> &AtomicBool {
         &self.cancel
     }
 
     /// Reports how far the job is, at most ten times a second; the last step (`done == total`) always goes.
     pub fn progress(&self, done: u64, total: u64, current: &str) {
+        self.wait_while_paused();
         let now = Instant::now();
         if done < total && self.last_progress.get().is_some_and(|last| now - last < PROGRESS_EVERY) {
             return;
@@ -129,6 +140,7 @@ impl Ctx {
 
 struct Handle {
     cancel: Arc<AtomicBool>,
+    paused: Arc<AtomicBool>,
     answers: Sender<(Answer, bool)>,
     kind: &'static str,
     title: String,
@@ -159,10 +171,11 @@ impl Jobs {
         self.next += 1;
         let id = self.next;
         let cancel = Arc::new(AtomicBool::new(false));
+        let paused = Arc::new(AtomicBool::new(false));
         let (answers, receiver) = channel();
-        self.running.insert(id, Handle { cancel: cancel.clone(), answers, kind, title: title.clone() });
+        self.running.insert(id, Handle { cancel: cancel.clone(), paused: paused.clone(), answers, kind, title: title.clone() });
         proxy.send(UserEvent::Post { window, message: event("jobs.started", json!({ "id": id, "kind": kind, "title": title })) });
-        let ctx = Ctx { id, window, cancel, proxy: proxy.clone(), answers: receiver, remembered: RefCell::new(HashMap::new()), last_progress: Cell::new(None) };
+        let ctx = Ctx { id, window, cancel, paused, proxy: proxy.clone(), answers: receiver, remembered: RefCell::new(HashMap::new()), last_progress: Cell::new(None) };
         let proxy = proxy.clone();
         thread::Builder::new()
             .name(format!("job-{kind}-{id}"))
@@ -195,6 +208,13 @@ impl Jobs {
         Ok(())
     }
 
+    /// Pauses a job at its next step, or lets it go on.
+    pub fn pause(&self, id: u64, paused: bool) -> Result<(), String> {
+        let handle = self.running.get(&id).ok_or_else(|| tr("Việc này đã xong", "That job is over").to_owned())?;
+        handle.paused.store(paused, Ordering::Relaxed);
+        Ok(())
+    }
+
     pub fn answer(&self, id: u64, answer: Answer, all: bool) -> Result<(), String> {
         let handle = self.running.get(&id).ok_or_else(|| tr("Việc này đã xong", "That job is over").to_owned())?;
         handle.answers.send((answer, all)).map_err(|_| tr("Việc này đã xong", "That job is over").to_owned())
@@ -212,7 +232,7 @@ impl Jobs {
 pub fn test_ctx() -> (Ctx, Sender<(Answer, bool)>, Arc<AtomicBool>) {
     let cancel = Arc::new(AtomicBool::new(false));
     let (answers, receiver) = channel();
-    let ctx = Ctx { id: 1, window: None, cancel: cancel.clone(), proxy: Proxy::none(), answers: receiver, remembered: RefCell::new(HashMap::new()), last_progress: Cell::new(None) };
+    let ctx = Ctx { id: 1, window: None, cancel: cancel.clone(), paused: Arc::new(AtomicBool::new(false)), proxy: Proxy::none(), answers: receiver, remembered: RefCell::new(HashMap::new()), last_progress: Cell::new(None) };
     (ctx, answers, cancel)
 }
 
@@ -222,6 +242,24 @@ mod tests {
 
     fn conflict() -> Question {
         Question::Conflict { name: "a.txt".into(), folder: false, source: Value::Null, target: Value::Null }
+    }
+
+    #[test]
+    fn a_paused_job_waits_at_its_next_step_until_let_go_or_stopped() {
+        let (ctx, _answers, cancel) = test_ctx();
+        let paused = ctx.paused.clone();
+        paused.store(true, Ordering::Relaxed);
+        let started = Instant::now();
+        let release = thread::spawn(move || {
+            thread::sleep(Duration::from_millis(300));
+            paused.store(false, Ordering::Relaxed);
+        });
+        ctx.progress(1, 2, "a");
+        assert!(started.elapsed() >= Duration::from_millis(250), "it waited for the pause to end");
+        release.join().unwrap();
+        ctx.paused.store(true, Ordering::Relaxed);
+        cancel.store(true, Ordering::Relaxed);
+        ctx.wait_while_paused();
     }
 
     #[test]

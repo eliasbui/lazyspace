@@ -37,9 +37,9 @@ LZ.words({
   },
 });
 LZ.icons.add({
-  server: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4.5" width="16" height="6.5" rx="1.8"/><rect x="4" y="13" width="16" height="6.5" rx="1.8"/><path d="M7.5 7.75h.01M7.5 16.25h.01" stroke-width="2.4" stroke-linecap="round"/></svg>',
-  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="5" width="17" height="11" rx="2"/><path d="M12 16v3.5M7 19.5h10"/></svg>',
-  bucket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><ellipse cx="12" cy="6.5" rx="7.5" ry="2.5"/><path d="M4.5 6.5l1.8 11.2c.2 1.3 2.7 2.3 5.7 2.3s5.5-1 5.7-2.3l1.8-11.2"/></svg>',
+  server: "server.rack",
+  share: "externaldrive.connected.to.line.below",
+  bucket: "cylinder",
 });
 
 const Remote = (() => {

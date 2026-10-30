@@ -7,6 +7,9 @@ pub mod icons;
 pub mod menu;
 pub mod panel;
 pub mod quicklook;
+pub mod services;
+pub mod share;
+pub mod tags;
 pub mod trash;
 pub mod workspace;
 
@@ -16,6 +19,12 @@ use objc2_foundation::{NSDictionary, NSString, NSURL};
 use serde_json::{Value, json};
 use std::process::Command;
 use tao::{platform::macos::WindowExtMacOS, window::Window};
+
+/// The start of today on this Mac's clock, in seconds since 1970, as Finder and Spotlight count "today".
+pub fn start_of_today() -> i64 {
+    let calendar = objc2_foundation::NSCalendar::currentCalendar();
+    calendar.startOfDayForDate(&objc2_foundation::NSDate::now()).timeIntervalSince1970() as i64
+}
 
 /// The web view of a window as an NSView, for AppKit calls that need the view the page is drawn in.
 pub fn web_view(webview: &wry::WebView) -> objc2::rc::Retained<objc2_app_kit::NSView> {

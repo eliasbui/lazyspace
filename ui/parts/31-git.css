@@ -1,0 +1,12 @@
+/* The state of an item in git, after its name, and the branch at the end of the path bar. */
+.mark { flex: none; margin-left: auto; padding: 0 5px; border-radius: 4px; font: 600 10px/16px ui-monospace, "SF Mono", Menlo, monospace; font-style: normal; }
+.mark-M { color: #c27c00; background: rgba(255, 159, 10, 0.16); }
+.mark-A, .mark-new { color: #1f9d48; background: rgba(52, 199, 89, 0.16); }
+.mark-D { color: #d70015; background: rgba(255, 59, 48, 0.14); }
+.mark-R { color: #0a6fdb; background: rgba(0, 122, 255, 0.14); }
+.mark-U { color: #fff; background: #ff3b30; }
+.dark .mark-M { color: #ffb340; } .dark .mark-A, .dark .mark-new { color: #30d158; } .dark .mark-D { color: #ff6961; } .dark .mark-R { color: #409cff; }
+.pane.focus .row.sel .mark { color: #fff; background: rgba(255, 255, 255, 0.22); }
+.git-branch { flex: none; display: flex; align-items: center; gap: 4px; height: 22px; max-width: 180px; padding: 0 8px; margin-right: 2px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-size: 11px; font-weight: 600; }
+.git-branch span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.git-branch svg { width: 11px; height: 11px; }

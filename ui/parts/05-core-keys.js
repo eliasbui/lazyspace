@@ -8,6 +8,8 @@ const KEYMAPS = {
     "Shift+Tab": "previousPane",
     "Cmd+1": "viewIcons",
     "Cmd+2": "viewList",
+    "Cmd+3": "viewColumns",
+    "Cmd+4": "viewGallery",
     "Cmd+Alt+1": "layoutSingle",
     "Cmd+Alt+2": "layoutH2",
     "Cmd+Alt+3": "layoutV2",
@@ -51,6 +53,8 @@ const KEYMAPS = {
     "Shift+Tab": "previousPane",
     "Ctrl+1": "viewIcons",
     "Ctrl+2": "viewList",
+    "Ctrl+3": "viewColumns",
+    "Ctrl+4": "viewGallery",
     "Cmd+Alt+1": "layoutSingle",
     "Cmd+Alt+2": "layoutH2",
     "Cmd+Alt+3": "layoutV2",
@@ -101,7 +105,18 @@ const Keys = (() => {
 
   // Moves in the list: the arrows, Home, End and the pages, by one row in a list and by a line of icons in a grid.
   function moveKey(pane, e) {
-    const icons = pane.tab.mode === "icons";
+    const mode = pane.tab.mode;
+    // The column view goes out to the folder on the left and into the folder selected on the right.
+    if (mode === "columns" && (e.key === "ArrowLeft" || e.key === "ArrowRight") && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      Panes.action(e.key === "ArrowLeft" ? "columnOut" : "columnIn", pane);
+      return true;
+    }
+    // A gallery's strip runs sideways: every arrow moves by one.
+    if (mode === "gallery" && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      pane.move(e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 1, e.shiftKey);
+      return true;
+    }
+    const icons = mode === "icons";
     const per = icons ? pane.per || 1 : 1;
     const page = Math.max(1, Math.floor(pane.list.clientHeight / (pane.rowH || ROW_H)) - 1) * per;
     const steps = {

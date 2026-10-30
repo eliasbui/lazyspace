@@ -26,35 +26,39 @@
         --accent: #007aff;
         --icon: 64px;
         --window: #ffffff;
-        --sidebar: rgba(243, 243, 245, 0.96);
-        --sidebar-stroke: rgba(0, 0, 0, 0.07);
+        --sidebar: #f2f2f4;
+        --sidebar-stroke: rgba(0, 0, 0, 0.06);
         --label: rgba(0, 0, 0, 0.86);
         --secondary: rgba(0, 0, 0, 0.5);
         --tertiary: rgba(0, 0, 0, 0.26);
-        --separator: rgba(0, 0, 0, 0.09);
+        --separator: rgba(0, 0, 0, 0.08);
         --hover: rgba(0, 0, 0, 0.05);
         --pressed: rgba(0, 0, 0, 0.1);
-        --nav-selected: rgba(0, 0, 0, 0.08);
+        --nav-selected: rgba(0, 0, 0, 0.075);
         --stripe: rgba(0, 0, 0, 0.025);
         --row-selected: var(--accent);
         --row-selected-dim: rgba(0, 0, 0, 0.09);
-        --capsule: rgba(255, 255, 255, 0.92);
-        --capsule-stroke: rgba(0, 0, 0, 0.1);
-        --capsule-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.05);
+        /* Glass as the page draws it: a fill, a hairline, a light along the top edge, and a soft shadow under it. */
+        --capsule: rgba(255, 255, 255, 0.94);
+        --capsule-stroke: rgba(0, 0, 0, 0.07);
+        --rim: rgba(255, 255, 255, 0.9);
+        --capsule-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.07);
         --field: rgba(0, 0, 0, 0.05);
         --field-bg: #ffffff;
         --field-stroke: rgba(0, 0, 0, 0.14);
         --btn: #ffffff;
         --btn-stroke: rgba(0, 0, 0, 0.13);
-        --panel: #f5f5f7;
-        --panel-stroke: rgba(0, 0, 0, 0.1);
-        --menu: rgba(250, 250, 252, 0.96);
+        --panel: #f7f7f9;
+        --float: rgba(250, 250, 252, 0.82);
+        --panel-stroke: rgba(0, 0, 0, 0.09);
+        --menu: rgba(250, 250, 252, 0.9);
         --group: #ffffff;
         --group-stroke: rgba(0, 0, 0, 0.06);
         --track: rgba(0, 0, 0, 0.1);
-        --rim: transparent;
         --red: #ff3b30;
         --shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+        /* Motion that settles the way AppKit's springs do: quick at first, long and soft at the end. */
+        --spring: cubic-bezier(0.32, 0.72, 0, 1);
       }
       @supports (color: -apple-system-control-accent) {
         :root { --accent: -apple-system-control-accent; }
@@ -62,28 +66,30 @@
       :root.dark {
         color-scheme: dark;
         --window: #1e1e1e;
-        --sidebar: rgba(42, 42, 44, 0.96);
+        --sidebar: #2a2a2d;
         --sidebar-stroke: rgba(255, 255, 255, 0.07);
         --label: rgba(255, 255, 255, 0.88);
         --secondary: rgba(255, 255, 255, 0.52);
         --tertiary: rgba(255, 255, 255, 0.26);
         --separator: rgba(255, 255, 255, 0.09);
-        --hover: rgba(255, 255, 255, 0.06);
-        --pressed: rgba(255, 255, 255, 0.12);
+        --hover: rgba(255, 255, 255, 0.07);
+        --pressed: rgba(255, 255, 255, 0.13);
         --nav-selected: rgba(255, 255, 255, 0.1);
         --stripe: rgba(255, 255, 255, 0.028);
         --row-selected-dim: rgba(255, 255, 255, 0.12);
-        --capsule: rgba(255, 255, 255, 0.09);
-        --capsule-stroke: rgba(255, 255, 255, 0.1);
-        --capsule-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        --capsule: #2f2f33;
+        --capsule-stroke: rgba(255, 255, 255, 0.09);
+        --rim: rgba(255, 255, 255, 0.13);
+        --capsule-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.28);
         --field: rgba(255, 255, 255, 0.08);
         --field-bg: rgba(255, 255, 255, 0.06);
         --field-stroke: rgba(255, 255, 255, 0.12);
         --btn: rgba(255, 255, 255, 0.13);
         --btn-stroke: rgba(255, 255, 255, 0.06);
-        --panel: #2a2a2c;
+        --panel: #28282b;
+        --float: rgba(40, 40, 44, 0.82);
         --panel-stroke: rgba(255, 255, 255, 0.1);
-        --menu: rgba(44, 44, 46, 0.96);
+        --menu: rgba(44, 44, 46, 0.92);
         --group: rgba(255, 255, 255, 0.05);
         --group-stroke: rgba(255, 255, 255, 0.05);
         --track: rgba(255, 255, 255, 0.14);
@@ -106,83 +112,49 @@
       input, textarea { -webkit-user-select: text; user-select: text; font: inherit; color: inherit; }
       button { font: inherit; color: inherit; cursor: default; }
       svg { display: block; flex: none; }
+      /* An SF Symbol (ui/parts/00-core-icons.js): the system's drawing as a mask, in the colour of the text around it. */
+      svg.sym { background-color: currentColor; -webkit-mask: var(--sym) center / contain no-repeat; mask: var(--sym) center / contain no-repeat; }
       :focus { outline: none; }
       :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 1px; }
 
-      /* Liquid Glass (beta), as Finder has it on macOS 26: the window is glass the desktop shows through (src/glass.rs
-         puts the system's glass, or a vibrancy material before macOS 26, behind the page), the sidebar and the
-         toolbar's capsules float on it as panes of their own, and the files lie on a card of the window's colour, a
-         little see-through, so they read as on a plain window. Nothing is painted behind the glass: what tints it is
-         the wallpaper. */
+      /* Liquid Glass (beta), as Finder has it on macOS 26: the window is solid, and its sidebar floats on it as a pane of
+         glass the desktop shows through. src/glass.rs puts a strip of the system's glass down the left of the window,
+         behind the page; the page is see-through only inside the sidebar, whose shadow paints the window's colour all
+         around it, so the hole is exactly the sidebar's shape in the very frame the sidebar moves. */
       :root.glass {
-        --window: rgba(246, 246, 248, 0.34);
-        --content: rgba(255, 255, 255, 0.86);
-        --content-stroke: rgba(255, 255, 255, 0.7);
-        --sidebar: rgba(255, 255, 255, 0.36);
-        --sidebar-stroke: rgba(255, 255, 255, 0.55);
-        --capsule: rgba(255, 255, 255, 0.5);
-        --capsule-stroke: rgba(255, 255, 255, 0.6);
-        --capsule-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.06);
-        --panel: rgba(246, 246, 248, 0.84);
-        --group: rgba(255, 255, 255, 0.72);
-        --rim: rgba(255, 255, 255, 0.85);
-        --field-bg: rgba(255, 255, 255, 0.7);
-        --menu: rgba(250, 250, 252, 0.88);
+        --sidebar-glass: rgba(255, 255, 255, 0.26);
+        --sidebar-glass-stroke: rgba(255, 255, 255, 0.6);
       }
       :root.glass.dark {
-        --window: rgba(28, 28, 30, 0.4);
-        --content: rgba(30, 30, 32, 0.84);
-        --content-stroke: rgba(255, 255, 255, 0.08);
-        --sidebar: rgba(40, 40, 44, 0.34);
-        --sidebar-stroke: rgba(255, 255, 255, 0.12);
-        --capsule: rgba(70, 70, 76, 0.42);
-        --capsule-stroke: rgba(255, 255, 255, 0.14);
-        --capsule-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        --panel: rgba(36, 36, 40, 0.82);
-        --group: rgba(255, 255, 255, 0.06);
-        --rim: rgba(255, 255, 255, 0.24);
-        --field-bg: rgba(255, 255, 255, 0.07);
-        --menu: rgba(44, 44, 48, 0.88);
+        --sidebar-glass: rgba(24, 24, 26, 0.3);
+        --sidebar-glass-stroke: rgba(255, 255, 255, 0.12);
       }
-      .glass body { background: var(--window); }
-      /* The files' card: inset in the window as the sidebar is, so the two read as a pair on the glass. */
-      .glass .workspace {
-        margin: 0 8px 8px 8px; border-radius: 14px; overflow: hidden; background: var(--content);
-        box-shadow: 0 0 0 0.5px var(--content-stroke), 0 2px 10px rgba(0, 0, 0, 0.06);
+      .glass body { background: transparent; }
+      .glass main { position: relative; z-index: 1; background: var(--window); }
+      .glass .sidebar {
+        background: var(--sidebar-glass);
+        box-shadow: inset 0 0.5px 0 var(--rim), 0 0 0 0.5px var(--sidebar-glass-stroke), 0 6px 24px rgba(0, 0, 0, 0.12), 0 0 0 400px var(--window);
       }
-      .glass .status { box-shadow: none; }
-      /* The panes of glass: frosted by the page itself before macOS 26, with a light along their top edge. */
-      .glass .sidebar, .glass .capsule, .glass .panel, .glass .toast, .glass .banner, .glass .jobs, .glass .suggest {
-        -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%);
-      }
-      .glass .sidebar, .glass .capsule, .glass .panel { box-shadow: inset 0 1px 0 var(--rim), 0 0 0 0.5px var(--capsule-stroke), 0 8px 28px rgba(0, 0, 0, 0.1); }
-      .glass .sidebar { background: var(--sidebar); }
-      /* With the system's glass (src/glass.rs lays a pane of it under each of these), the page only tints them a
-         little so text keeps its contrast over a bright or busy wallpaper; the glass draws its own edge and light. */
-      .glass.native, .glass.native body { background: transparent; }
-      .glass.native .sidebar, .glass.native .capsule { -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
-      .glass.native .sidebar { background: color-mix(in srgb, var(--content) 22%, transparent); }
-      .glass.native .capsule { background: transparent; }
-      /* A sheet lies over the page itself, which the system's glass behind the page cannot blur: the page frosts it,
-         over a deeper dim. */
-      .glass .modal { background: rgba(0, 0, 0, 0.22); }
-      .glass .set-nav { background: color-mix(in srgb, var(--sidebar) 60%, transparent); }
 
-      .app { display: grid; grid-template-columns: var(--side-w, 220px) minmax(0, 1fr); height: 100%; }
-      .app.no-sidebar { grid-template-columns: 0 minmax(0, 1fr); }
-      .app.no-sidebar .sidebar { display: none; }
+      .app { display: grid; grid-template-columns: var(--side-w, 220px) minmax(0, 1fr); height: 100%; transition: grid-template-columns 0.32s var(--spring); }
+      .app.no-sidebar { grid-template-columns: 0px minmax(0, 1fr); }
+      /* No motion while the sidebar's edge is dragged or the window comes back as it was. */
+      .app.still, .app.still * { transition: none !important; }
 
-      /* The sidebar floats inset in the window, as on macOS 26, and holds the window's buttons at its top. */
+      /* The sidebar floats inset in the window, as on macOS 26, and holds the window's buttons at its top. Hidden, it
+         slides out to the left as the files take its place. */
       .sidebar {
-        position: relative; margin: 8px 0 8px 8px; border-radius: 16px; background: var(--sidebar);
+        position: relative; width: calc(var(--side-w, 220px) - 8px); margin: 8px 0 8px 8px; border-radius: 18px; background: var(--sidebar);
         box-shadow: 0 0 0 0.5px var(--sidebar-stroke), 0 2px 10px rgba(0, 0, 0, 0.05);
         display: flex; flex-direction: column; min-height: 0; overflow: hidden;
+        transition: transform 0.32s var(--spring), opacity 0.22s ease, visibility 0s;
       }
-      .side-top { height: 40px; flex: none; }
-      .side-scroll { flex: 1; overflow-y: auto; padding: 0 8px 10px; }
+      .app.no-sidebar .sidebar { transform: translateX(calc(-1 * var(--side-w, 220px))); opacity: 0; visibility: hidden; pointer-events: none; transition: transform 0.32s var(--spring), opacity 0.22s ease, visibility 0s 0.32s; }
+      .side-top { height: 42px; flex: none; }
+      .side-scroll { flex: 1; overflow-y: auto; padding: 0 10px 10px; }
       .side-scroll::-webkit-scrollbar { width: 0; }
       .side-head {
-        display: flex; align-items: center; justify-content: space-between; height: 26px; margin-top: 8px; padding: 0 8px;
+        display: flex; align-items: center; justify-content: space-between; height: 26px; margin-top: 10px; padding: 0 8px;
         font-size: 11px; font-weight: 600; color: var(--secondary);
       }
       .side-head:first-child { margin-top: 0; }
@@ -190,51 +162,62 @@
       .side-head .end { width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; opacity: 0; transition: opacity 0.15s; }
       .side-head:hover .end { opacity: 1; }
       .side-head .end:hover { background: var(--pressed); }
-      .side-head .end svg { width: 12px; height: 12px; }
+      .side-head .end svg { width: 11px; height: 11px; }
       .side-item {
-        display: flex; align-items: center; gap: 7px; width: 100%; height: 26px; padding: 0 8px; border: 0; border-radius: 7px;
-        background: transparent; text-align: left; white-space: nowrap;
+        display: flex; align-items: center; gap: 8px; width: 100%; height: 28px; padding: 0 8px; border: 0; border-radius: 8px;
+        background: transparent; text-align: left; white-space: nowrap; transition: background-color 0.12s;
       }
       .side-item:hover { background: var(--hover); }
       .side-item.on { background: var(--nav-selected); font-weight: 500; }
       .side-item.on .ico { color: var(--accent); }
-      .side-item .ico { width: 16px; height: 16px; color: var(--secondary); }
-      .side-item .ico svg { width: 16px; height: 16px; }
+      .side-item .ico { width: 18px; height: 16px; display: grid; place-items: center; color: var(--secondary); }
+      .side-item .ico svg { width: 17px; height: 15px; }
       .side-item .label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
       .side-item .end { flex: none; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; color: var(--secondary); opacity: 0.8; }
       .side-item .end:hover { background: var(--pressed); opacity: 1; }
-      .side-item .end svg { width: 12px; height: 12px; }
+      .side-item .end svg { width: 11px; height: 11px; }
       .side-foot { flex: none; padding: 6px 8px 8px; }
       .resizer { position: absolute; top: 0; right: -4px; width: 8px; height: 100%; cursor: col-resize; z-index: 2; }
 
       main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
 
-      /* The toolbar: capsules of buttons in the strip where a title bar would be. */
-      .toolbar { height: 52px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 10px 0 12px; }
+      /* The toolbar: capsules of buttons in the strip where a title bar would be. Without the sidebar it keeps clear of
+         the window's buttons. When it is too narrow it folds as NSToolbar does (ui/parts/04-core-toolbar.js): the title
+         goes, the search becomes a button, then whole groups go into the overflow menu. */
+      .toolbar { position: relative; height: 52px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 10px 0 12px; transition: padding-left 0.32s var(--spring); }
+      .app.no-sidebar .toolbar { padding-left: 84px; }
       .capsule {
-        display: flex; align-items: center; gap: 0; height: 32px; padding: 0 2px; flex: none; border-radius: 999px;
-        background: var(--capsule); box-shadow: 0 0 0 0.5px var(--capsule-stroke), var(--capsule-shadow);
+        display: flex; align-items: center; gap: 0; height: 34px; padding: 0 3px; flex: none; border-radius: 999px;
+        background: var(--capsule); box-shadow: inset 0 0.5px 0 var(--rim), 0 0 0 0.5px var(--capsule-stroke), var(--capsule-shadow);
       }
+      .capsule:empty { display: none; }
       .tb {
-        height: 28px; min-width: 30px; padding: 0 6px; border: 0; border-radius: 999px; background: transparent;
+        height: 28px; min-width: 32px; padding: 0 7px; border: 0; border-radius: 999px; background: transparent;
         display: flex; align-items: center; justify-content: center; gap: 4px; color: var(--label);
+        transition: background-color 0.15s ease, transform 0.18s var(--spring);
       }
       .tb:hover { background: var(--hover); }
-      .tb:active { background: var(--pressed); }
-      .tb:disabled { opacity: 0.3; background: transparent; }
+      .tb:active { background: var(--pressed); transform: scale(0.93); }
+      .tb:disabled { opacity: 0.3; background: transparent; transform: none; }
       .tb.on { background: var(--pressed); }
-      .tb svg { width: 17px; height: 17px; }
+      .tb svg { width: 18px; height: 16px; }
       .tb .caret { width: 9px; height: 9px; opacity: 0.7; }
       .slot-in { display: contents; }
       /* A hairline parts a feature's buttons from the group's own. */
       .slot-in > :first-child { position: relative; margin-left: 7px; }
       .slot-in > :first-child::before { content: ""; position: absolute; left: -4px; top: 7px; bottom: 7px; width: 1px; background: var(--separator); }
-      .title { font-size: 15px; font-weight: 700; padding: 0 6px 0 2px; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.1px; }
+      .title { min-width: 60px; font-size: 15px; font-weight: 700; padding: 0 4px 0 2px; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.2px; }
       .spacer { flex: 1; min-width: 8px; height: 100%; }
-      .search { display: flex; align-items: center; gap: 6px; width: 190px; padding: 0 10px; }
+      .search { display: flex; align-items: center; gap: 6px; width: 200px; padding: 0 11px; }
       .search svg { width: 14px; height: 14px; color: var(--secondary); }
       .search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; }
       .search input::placeholder { color: var(--secondary); }
+      .search:focus-within { box-shadow: inset 0 0.5px 0 var(--rim), 0 0 0 1px var(--accent), 0 0 0 3.5px color-mix(in srgb, var(--accent) 28%, transparent), var(--capsule-shadow); }
+      .toolbar.fold-title .title { display: none; }
+      .toolbar.fold-search .search:not(.open) { width: 34px; padding: 0; justify-content: center; }
+      .toolbar.fold-search .search:not(.open) input { display: none; }
+      .toolbar.fold-search .search.open { position: absolute; right: 10px; z-index: 6; width: min(240px, calc(100% - 24px)); }
+      .toolbar.fold-actions #tbActions, .toolbar.fold-view #tbView, .toolbar.fold-right [data-slot="toolbar.right"] { display: none; }
 
       /* The panes: each with its own tabs, path bar, columns, rows and status. */
       .workspace { flex: 1; min-height: 0; display: flex; }
@@ -250,59 +233,80 @@
       [data-layout="h2"] .pane + .pane, [data-layout="h3"] .pane + .pane, [data-layout="l1r2"] .pane:nth-child(2), [data-layout="grid"] .pane:nth-child(2) { box-shadow: inset 1px 0 0 var(--separator); }
       [data-layout="v2"] .pane + .pane, [data-layout="grid"] .pane:nth-child(3) { box-shadow: inset 0 1px 0 var(--separator); }
       [data-layout="l1r2"] .pane:nth-child(3), [data-layout="grid"] .pane:nth-child(4) { box-shadow: inset 1px 1px 0 var(--separator); }
-      /* With more than one pane, the focused one is the one the toolbar and the keys act on: its path bar takes a tint of
-         the accent and a bar of it under the path; the others step back. */
-      .multi .pane:not(.focus) .pathbar, .multi .pane:not(.focus) .head { opacity: 0.6; }
-      .multi .pane.focus .pathbar { background: color-mix(in srgb, var(--accent) 6%, transparent); }
-      .multi .pane.focus .pathbar::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: -1px; height: 2px; border-radius: 1px; background: var(--accent); }
-      .multi .pane.focus .crumb:last-child { color: var(--accent); }
+      /* With more than one pane, the focused one is the one the toolbar and the keys act on: its path takes a tint of the
+         accent; the others step back. */
+      .multi .pane:not(.focus) .pathbar, .multi .pane:not(.focus) .head, .multi .pane:not(.focus) .tabs { opacity: 0.62; }
+      .multi .pane.focus .address-box:not(.editing) { background: color-mix(in srgb, var(--accent) 11%, var(--field)); }
+      .multi .pane.focus .crumb.here { color: var(--accent); }
       .list.drop { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 8px; }
       .side-item.drop, .tab.drop { box-shadow: inset 0 0 0 2px var(--accent); }
       .cell-icon.drop .pic { box-shadow: 0 0 0 2px var(--accent); }
 
-      /* Tabs are small pills from the left, each as wide as its name needs up to a limit, rather than bars sharing the
-         whole width: two tabs no longer look like two halves of a switch. */
-      .tabs { flex: none; display: flex; gap: 4px; padding: 0 10px 6px; overflow: hidden; }
+      /* Each pane's tabs, as File Explorer has them: a bar with one tab or more and the button for a new one after the
+         last; each tab a pill as wide as its name needs up to a limit, the one shown raised. A tab is dragged along the
+         bar or to another pane's, with a line where it would go. */
+      .tabs { position: relative; flex: none; display: flex; align-items: center; gap: 4px; height: 38px; padding: 4px 10px 2px; }
+      .tab-strip { position: relative; flex: 0 1 auto; min-width: 0; display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+      .tab-strip::-webkit-scrollbar { display: none; }
       .tab {
-        position: relative; flex: 0 1 180px; min-width: 64px; height: 26px; display: flex; align-items: center; gap: 4px; padding: 0 8px 0 12px;
-        border-radius: 999px; color: var(--secondary); font-size: 12px; white-space: nowrap; transition: background 0.15s, color 0.15s;
+        position: relative; flex: 0 1 auto; width: 184px; min-width: 104px; height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 6px 0 10px;
+        border-radius: 999px; color: var(--secondary); font-size: 12px; white-space: nowrap; transition: background-color 0.15s, color 0.15s;
       }
+      .tab img { width: 16px; height: 16px; flex: none; }
       .tab span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
       .tab:hover { background: var(--hover); color: var(--label); }
-      .tab.on { background: var(--capsule); color: var(--label); font-weight: 500; box-shadow: 0 0 0 0.5px var(--capsule-stroke), var(--capsule-shadow); }
-      .tab .x { order: 2; flex: none; width: 16px; height: 16px; border: 0; border-radius: 50%; background: transparent; display: grid; place-items: center; color: var(--secondary); opacity: 0; transition: opacity 0.15s; }
+      .tab.on { background: var(--capsule); color: var(--label); font-weight: 500; box-shadow: inset 0 0.5px 0 var(--rim), 0 0 0 0.5px var(--capsule-stroke), var(--capsule-shadow); }
+      .tab.lifted { z-index: 3; opacity: 0.92; transition: none; box-shadow: inset 0 0.5px 0 var(--rim), 0 0 0 0.5px var(--capsule-stroke), 0 8px 24px rgba(0, 0, 0, 0.2); background: var(--capsule); }
+      .tab .x { flex: none; width: 18px; height: 18px; border: 0; border-radius: 50%; background: transparent; display: grid; place-items: center; color: var(--secondary); opacity: 0; transition: opacity 0.15s; }
       .tab:hover .x, .tab.on .x { opacity: 1; }
-      .tab .x:hover { background: var(--pressed); }
+      .tab .x:hover { background: var(--pressed); color: var(--label); }
       .tab .x svg { width: 8px; height: 8px; }
+      .tab-add { flex: none; width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; display: grid; place-items: center; color: var(--secondary); transition: background-color 0.15s; }
+      .tab-add:hover { background: var(--hover); color: var(--label); }
+      .tab-add:active { background: var(--pressed); }
+      .tab-add svg { width: 13px; height: 13px; }
+      .tab-caret { position: absolute; top: 10px; bottom: 6px; width: 2px; border-radius: 1px; background: var(--accent); pointer-events: none; }
 
-      .pathbar { position: relative; flex: none; height: 30px; display: flex; align-items: center; gap: 2px; margin: 0 8px 2px; padding: 0 4px; border-radius: 8px; color: var(--secondary); }
-      /* One pane is driven from the toolbar, which has back, forward and the filter already; its own appear with more
-         panes, where each needs them. */
-      .app:not(.multi) .pathbar .nav, .app:not(.multi) .pathbar [data-act="filter"] { display: none; }
-      .pathbar .nav { width: 22px; height: 22px; border: 0; border-radius: 6px; background: transparent; display: grid; place-items: center; color: var(--secondary); }
+      /* The path bar of a pane, as File Explorer's address bar: up and reload beside a field of crumbs, a menu of the
+         folders in each crumb behind the arrow after it, the history at its end. Back and forward come with more than
+         one pane; one pane has them in the toolbar. */
+      .pathbar { position: relative; flex: none; height: 38px; display: flex; align-items: center; gap: 2px; padding: 2px 10px 6px; color: var(--secondary); }
+      .app:not(.multi) .pathbar [data-act="back"], .app:not(.multi) .pathbar [data-act="forward"], .app:not(.multi) .pathbar [data-act="filter"] { display: none; }
+      .pathbar .nav { flex: none; width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; display: grid; place-items: center; color: var(--secondary); transition: background-color 0.12s; }
       .pathbar .nav:hover:not(:disabled) { background: var(--hover); color: var(--label); }
+      .pathbar .nav:active:not(:disabled) { background: var(--pressed); }
       .pathbar .nav:disabled { opacity: 0.35; }
-      .pathbar .nav svg { width: 12px; height: 12px; }
-      .crumbs { flex: 1; min-width: 0; height: 22px; display: flex; align-items: center; gap: 0; overflow: hidden; padding-left: 4px; border-radius: 6px; }
-      .crumbs:hover { background: var(--hover); }
-      .crumb { flex: none; display: flex; align-items: center; gap: 5px; height: 20px; padding: 0 4px; border: 0; border-radius: 5px; background: transparent; color: var(--secondary); font-size: 12px; white-space: nowrap; max-width: 220px; }
-      .crumb span { overflow: hidden; text-overflow: ellipsis; }
-      .crumb:hover { color: var(--label); background: var(--pressed); }
-      .crumb:last-child { color: var(--label); }
-      .crumb img { width: 14px; height: 14px; }
-      .sep { flex: none; width: 12px; height: 12px; display: grid; place-items: center; color: var(--tertiary); }
-      .sep svg { width: 6px; height: 7px; }
-      .address { flex: 1; min-width: 0; height: 22px; padding: 0 8px; border: 0; border-radius: 6px; outline: none; background: var(--field-bg); box-shadow: 0 0 0 1px var(--accent), 0 0 0 3.5px color-mix(in srgb, var(--accent) 30%, transparent); font-size: 12px; color: var(--label); }
-      .pathbar .tool { width: 22px; height: 22px; border: 0; border-radius: 6px; background: transparent; display: grid; place-items: center; color: var(--secondary); }
-      .pathbar .tool:hover { background: var(--hover); color: var(--label); }
-      .pathbar .tool svg { width: 13px; height: 13px; }
-      .suggest {
-        position: absolute; z-index: 30; min-width: 280px; max-height: 300px; overflow-y: auto; padding: 4px; border-radius: 10px;
-        background: var(--menu); box-shadow: 0 0 0 0.5px var(--panel-stroke), 0 10px 30px rgba(0, 0, 0, 0.2);
-        -webkit-backdrop-filter: blur(30px); backdrop-filter: blur(30px);
+      .pathbar .nav svg { width: 14px; height: 13px; }
+      .address-box {
+        flex: 1; min-width: 0; height: 30px; margin: 0 2px; display: flex; align-items: center; gap: 2px; padding: 0 3px 0 4px; border-radius: 9px;
+        background: var(--field); transition: background-color 0.12s, box-shadow 0.12s;
       }
-      .suggest div { height: 22px; line-height: 22px; padding: 0 8px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; }
+      .address-box:hover { background: color-mix(in srgb, var(--field), var(--label) 4%); }
+      .address-box.editing { background: var(--field-bg); box-shadow: 0 0 0 1px var(--accent), 0 0 0 3.5px color-mix(in srgb, var(--accent) 28%, transparent); }
+      .crumbs { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; gap: 0; overflow: hidden; }
+      .crumb { flex: none; display: flex; align-items: center; gap: 6px; height: 24px; padding: 0 6px; border: 0; border-radius: 6px; background: transparent; color: var(--secondary); font-size: 12.5px; white-space: nowrap; max-width: 240px; transition: background-color 0.12s; }
+      .crumb span { overflow: hidden; text-overflow: ellipsis; }
+      .crumb:hover { color: var(--label); background: var(--hover); }
+      .crumb.here { color: var(--label); font-weight: 500; }
+      .crumb img { width: 16px; height: 16px; }
+      .crumbs .sep { flex: none; width: 18px; height: 24px; padding: 0; border: 0; border-radius: 6px; background: transparent; display: grid; place-items: center; color: var(--tertiary); transition: background-color 0.12s; }
+      .crumbs .sep:hover, .crumbs .sep.open { background: var(--hover); color: var(--label); }
+      .crumbs .sep svg { width: 8px; height: 9px; }
+      .crumbs .sep.more svg { width: 11px; height: 10px; }
+      .address { flex: 1; min-width: 0; height: 26px; padding: 0 6px; border: 0; outline: none; background: transparent; font-size: 12.5px; color: var(--label); }
+      .address-box .tool { flex: none; width: 26px; height: 24px; border: 0; border-radius: 6px; background: transparent; display: grid; place-items: center; color: var(--secondary); transition: background-color 0.12s; }
+      .address-box .tool:hover { background: var(--hover); color: var(--label); }
+      .address-box .tool svg { width: 14px; height: 13px; }
+      .suggest {
+        position: absolute; z-index: 30; min-width: 280px; max-height: 320px; overflow-y: auto; padding: 5px; border-radius: 12px;
+        background: var(--menu); box-shadow: inset 0 0.5px 0 var(--rim), 0 0 0 0.5px var(--panel-stroke), 0 12px 34px rgba(0, 0, 0, 0.2);
+        -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%);
+      }
+      .suggest div { display: flex; align-items: center; gap: 8px; height: 26px; padding: 0 9px; border-radius: 6px; white-space: nowrap; font-size: 12.5px; }
+      .suggest div span { overflow: hidden; text-overflow: ellipsis; }
+      .suggest div svg { width: 14px; height: 13px; color: var(--secondary); }
       .suggest div.on { background: var(--accent); color: #fff; }
+      .suggest div.on svg { color: #fff; }
 
       .head {
         flex: none; display: grid; grid-template-columns: var(--cols); height: 26px; align-items: center; margin: 0 8px;
@@ -345,6 +349,10 @@
       .inactive .pane.focus .row.sel .name { color: var(--label); }
       .row.sel { background: var(--row-selected-dim); }
       .row.drop { box-shadow: inset 0 0 0 2px var(--accent); }
+      /* The header of a group of the list, on a line of its own. */
+      .group-head { position: absolute; left: 0; right: 0; height: 24px; display: flex; align-items: flex-end; padding: 0 8px 3px; font-size: 12px; font-weight: 700; color: var(--label); box-shadow: inset 0 -1px 0 var(--separator); }
+      /* The frame a drag beside the items draws to select what it covers. */
+      .marquee { position: absolute; z-index: 3; pointer-events: none; border-radius: 3px; border: 1px solid color-mix(in srgb, var(--accent) 75%, transparent); background: color-mix(in srgb, var(--accent) 16%, transparent); }
       .rename {
         flex: 1; min-width: 60px; height: 20px; margin-left: -3px; padding: 0 3px; border: 0; border-radius: 3px; outline: none;
         background: var(--field-bg); color: var(--label); box-shadow: 0 0 0 1px var(--accent), 0 0 0 3.5px color-mix(in srgb, var(--accent) 30%, transparent);
@@ -374,15 +382,20 @@
       .pane-overlay > * { pointer-events: auto; }
       .preview-slot { flex: none; }
 
-      /* Running jobs float above the panes, bottom right. */
-      .jobs {
-        position: fixed; right: 14px; bottom: 34px; z-index: 25; width: 300px; display: flex; flex-direction: column; gap: 10px; padding: 12px 14px;
-        border-radius: 14px; background: var(--panel); box-shadow: 0 0 0 0.5px var(--panel-stroke), 0 12px 36px rgba(0, 0, 0, 0.18);
+      /* What floats over the window (the running jobs, the update, the toasts) is frosted glass of the page's own. */
+      .jobs, .banner, .toast {
+        background: var(--float); -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+        box-shadow: inset 0 0.5px 0 var(--rim), 0 0 0 0.5px var(--panel-stroke), 0 10px 30px rgba(0, 0, 0, 0.18);
       }
+      /* Running jobs float above the panes, bottom right. */
+      .jobs { position: fixed; right: 14px; bottom: 34px; z-index: 25; width: 300px; display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: 16px; }
       .jobs:empty { display: none; }
       .job { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: center; font-size: 12px; }
       .job .what { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
       .job .stop { width: 18px; height: 18px; border: 0; border-radius: 50%; background: var(--field); display: grid; place-items: center; color: var(--secondary); }
+      .job .job-tools { display: flex; gap: 4px; }
+      .job .pause svg { width: 7px; height: 8px; }
+      .job.paused .bar i { background: var(--secondary); }
       .job .stop svg { width: 8px; height: 8px; }
       .job .bar { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: var(--track); overflow: hidden; }
       .job .bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 2px; transition: width 0.15s linear; }
@@ -394,10 +407,11 @@
       .push {
         height: 28px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--btn); color: var(--label);
         font-weight: 500; white-space: nowrap; box-shadow: 0 0 0 0.5px var(--btn-stroke), 0 0.5px 1.5px rgba(0, 0, 0, 0.1);
+        transition: filter 0.12s, transform 0.18s var(--spring);
       }
-      .push:active { filter: brightness(0.94); }
+      .push:active { filter: brightness(0.94); transform: scale(0.97); }
       .push.primary { background: var(--accent); color: #fff; box-shadow: 0 0.5px 1.5px rgba(0, 0, 0, 0.15); }
-      .push:disabled { opacity: 0.5; }
+      .push:disabled { opacity: 0.5; transform: none; }
       .beta { font-size: 9.5px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; color: #fff; background: #ff9500; padding: 1px 6px; border-radius: 999px; vertical-align: 1px; }
       .check { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--secondary); }
 
@@ -406,29 +420,35 @@
       .knob { position: absolute; inset: 0; border-radius: 11px; background: var(--track); transition: background 0.2s ease; }
       .knob::before {
         content: ""; position: absolute; width: 20px; height: 20px; left: 1px; top: 1px; border-radius: 50%; background: #fff;
-        box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.25); transition: transform 0.2s cubic-bezier(0.3, 0.7, 0.4, 1);
+        box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.25); transition: transform 0.24s var(--spring);
       }
       .switch input:checked + .knob { background: var(--accent); }
       .switch input:checked + .knob::before { transform: translateX(16px); }
 
       .segmented { display: flex; padding: 2px; border-radius: 999px; background: var(--field); }
-      .seg { flex: 1; height: 24px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; font-weight: 500; white-space: nowrap; }
+      .seg { flex: 1; height: 24px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; font-weight: 500; white-space: nowrap; transition: background-color 0.15s; }
       .seg.on { background: var(--btn); box-shadow: 0 0 0 0.5px var(--btn-stroke), 0 1px 2px rgba(0, 0, 0, 0.12); }
       select {
         height: 28px; padding: 0 8px; border: 0; border-radius: 8px; outline: none; background: var(--field-bg); color: var(--label);
         font: inherit; min-width: 150px; max-width: 200px; box-shadow: 0 0 0 0.5px var(--field-stroke);
       }
 
-      /* Sheets come down from the top of the window, over a dimmed one. */
-      .modal { position: fixed; inset: 0; z-index: 40; display: none; justify-content: center; align-items: flex-start; padding: 56px 16px 16px; background: rgba(0, 0, 0, 0.14); }
-      .modal.open { display: flex; }
+      /* Sheets rise over a dimmed window with a spring and fade away when closed; one is open at a time. */
+      .modal { position: fixed; inset: 0; z-index: 40; display: none; justify-content: center; align-items: flex-start; padding: 56px 16px 16px; background: rgba(0, 0, 0, 0.16); }
+      .modal.open, .modal.leaving { display: flex; }
+      .modal.open { animation: dim-in 0.2s ease both; }
+      .modal.leaving { pointer-events: none; animation: dim-out 0.18s ease both; }
       .panel {
-        width: min(520px, 100%); max-height: 100%; overflow-y: auto; padding: 20px; border-radius: 20px; background: var(--panel);
-        box-shadow: 0 0 0 0.5px var(--panel-stroke), 0 22px 70px rgba(0, 0, 0, 0.3);
-        animation: sheet 0.24s cubic-bezier(0.32, 0.72, 0, 1);
+        width: min(520px, 100%); max-height: 100%; overflow-y: auto; padding: 20px; border-radius: 22px; background: var(--panel);
+        box-shadow: inset 0 0.5px 0 var(--rim), 0 0 0 0.5px var(--panel-stroke), 0 24px 70px rgba(0, 0, 0, 0.3);
+        animation: sheet-in 0.36s var(--spring) both;
       }
+      .modal.leaving .panel { animation: sheet-out 0.18s ease both; }
       .panel.small { width: min(440px, 100%); }
-      @keyframes sheet { from { transform: translateY(-14px) scale(0.98); opacity: 0; } }
+      @keyframes sheet-in { from { transform: translateY(-12px) scale(0.97); opacity: 0; } }
+      @keyframes sheet-out { to { transform: scale(0.98); opacity: 0; } }
+      @keyframes dim-in { from { background-color: transparent; } }
+      @keyframes dim-out { to { background-color: transparent; } }
       .panel h2 { margin: 0 0 6px; font-size: 14px; font-weight: 700; }
       .panel p { margin: 0 0 8px; color: var(--secondary); line-height: 1.45; }
       .buttons { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
@@ -445,23 +465,30 @@
       .item .label small { display: block; margin-top: 2px; font-size: 11px; line-height: 1.4; color: var(--secondary); }
       .item .control { flex: none; display: flex; align-items: center; gap: 8px; }
 
+      /* Above the sheets (40), so what the update has to say is never under Settings; below the toasts (50). */
       .banner {
-        position: fixed; left: 50%; bottom: 16px; z-index: 30; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px);
-        padding: 8px 8px 8px 16px; border-radius: 999px; background: var(--panel); box-shadow: 0 0 0 0.5px var(--panel-stroke), 0 10px 30px rgba(0, 0, 0, 0.18);
-        transform: translate(-50%, 160%); transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+        position: fixed; left: 50%; bottom: 16px; z-index: 45; display: flex; align-items: center; gap: 8px; max-width: calc(100vw - 32px);
+        padding: 8px 8px 8px 16px; border-radius: 999px; transform: translate(-50%, 160%); transition: transform 0.36s var(--spring);
       }
       .banner.show { transform: translate(-50%, 0); }
+      .banner #bannerTxt { margin-right: 4px; }
+      #updateNote.bad { color: var(--red); }
+      .upd-bar { height: 4px; margin-top: 8px; border-radius: 2px; background: var(--track); overflow: hidden; }
+      .upd-bar i { display: block; height: 100%; width: 0; border-radius: 2px; background: var(--accent); transition: width 0.2s linear; }
+      .upd-notes {
+        margin: 8px 0 0; max-height: 140px; overflow-y: auto; padding: 8px 10px; border-radius: 8px; background: var(--field); color: var(--secondary);
+        font: 11.5px/1.45 var(--ui-font, -apple-system, BlinkMacSystemFont, system-ui, sans-serif); white-space: pre-wrap; -webkit-user-select: text; user-select: text;
+      }
       .toast {
-        position: fixed; left: 50%; top: 58px; z-index: 50; max-width: calc(100vw - 32px); padding: 8px 16px; border-radius: 999px;
-        background: var(--panel); box-shadow: 0 0 0 0.5px var(--panel-stroke), 0 8px 26px rgba(0, 0, 0, 0.16); font-weight: 500; text-align: center;
-        opacity: 0; transform: translate(-50%, -8px); transition: opacity 0.2s ease, transform 0.25s ease; pointer-events: none;
+        position: fixed; left: 50%; top: 58px; z-index: 50; max-width: calc(100vw - 32px); padding: 8px 16px; border-radius: 999px; font-weight: 500; text-align: center;
+        opacity: 0; transform: translate(-50%, -8px) scale(0.98); transition: opacity 0.2s ease, transform 0.32s var(--spring); pointer-events: none;
       }
       .toast.show { opacity: 1; transform: translate(-50%, 0); }
       @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
     </style>
   </head>
   <body>
-    <div class="app" id="app">
+    <div class="app still" id="app">
       <aside class="sidebar" id="sidebar">
         <div class="side-top drag"></div>
         <div class="side-scroll" id="sideScroll">
@@ -485,8 +512,10 @@
           <!-- Three groups, as macOS 26 groups a toolbar: how the folder is shown, what is made or removed in it, and
                where else it opens. A slot of a feature sits inside its group rather than in a capsule of its own. -->
           <div class="capsule" id="tbView">
-            <button class="tb" data-view="list" data-tt="asList"></button>
             <button class="tb" data-view="icons" data-tt="asIcons"></button>
+            <button class="tb" data-view="list" data-tt="asList"></button>
+            <button class="tb" data-view="columns" data-tt="asColumns"></button>
+            <button class="tb" data-view="gallery" data-tt="asGallery"></button>
             <div class="slot-in" data-slot="toolbar.layout"></div>
           </div>
           <div class="capsule" id="tbActions">
@@ -494,6 +523,7 @@
             <button class="tb" id="tbTrash" data-tt="moveToTrash"></button>
             <div class="slot-in" data-slot="toolbar.left"></div>
           </div>
+          <div class="capsule" id="tbOverflow" hidden><button class="tb" id="tbMore" data-tt="moreTools"></button></div>
           <div class="spacer"></div>
           <div class="capsule" data-slot="toolbar.right"></div>
           <div class="capsule search" id="tbSearch">
@@ -540,6 +570,18 @@
               <div class="label"><span data-t="folderSizes"></span><small data-t="folderSizesHint"></small></div>
               <div class="control"><label class="switch"><input type="checkbox" id="folderSizes" /><span class="knob"></span></label></div>
             </div>
+            <div class="item">
+              <div class="label"><span data-t="alwaysTabs"></span><small data-t="alwaysTabsHint"></small></div>
+              <div class="control"><label class="switch"><input type="checkbox" id="alwaysTabs" /><span class="knob"></span></label></div>
+            </div>
+            <div class="item">
+              <div class="label"><span data-t="copyQueue"></span><small data-t="copyQueueHint"></small></div>
+              <div class="control"><label class="switch"><input type="checkbox" id="copyQueue" /><span class="knob"></span></label></div>
+            </div>
+            <div class="item">
+              <div class="label"><span data-t="verifyCopies"></span><small data-t="verifyCopiesHint"></small></div>
+              <div class="control"><label class="switch"><input type="checkbox" id="verifyCopies" /><span class="knob"></span></label></div>
+            </div>
           </div>
 
           <div class="group-title" data-t="appearance"></div>
@@ -565,8 +607,12 @@
           <div class="group-title" data-t="about"></div>
           <div class="group">
             <div class="item">
-              <div class="label">LazySpace <span id="version">-</span><small id="updateNote"></small></div>
-              <div class="control"><button class="push" id="checkUpdate" data-t="checkUpdate"></button></div>
+              <div class="label">
+                LazySpace <span id="version">-</span><small id="updateNote"></small>
+                <div class="upd-bar" id="updateBar" hidden><i></i></div>
+                <pre class="upd-notes" id="updateNotes" hidden></pre>
+              </div>
+              <div class="control"><button class="push" id="checkUpdate"></button></div>
             </div>
             <div class="item">
               <div class="label"><span data-t="autoUpdate"></span><small data-t="autoUpdateHint"></small></div>
@@ -611,7 +657,8 @@
     <div class="jobs" id="jobs"></div>
     <div class="banner" id="banner">
       <div id="bannerTxt"></div>
-      <button class="push primary" id="bannerBtn" data-t="update"></button>
+      <button class="push" id="bannerLater" data-t="later"></button>
+      <button class="push primary" id="bannerBtn"></button>
     </div>
     <div class="toast" id="toast"></div>
 
@@ -662,29 +709,35 @@
           settings: "Cài đặt", done: "Xong", general: "Chung", appearance: "Giao diện", about: "Giới thiệu", cancel: "Hủy",
           language: "Ngôn ngữ", languageHint: "Ngôn ngữ của cửa sổ, menu và thông báo.",
           theme: "Chế độ màu", themeHint: "Theo hệ thống, hoặc luôn sáng, luôn tối.", system: "Hệ thống", light: "Sáng", dark: "Tối",
-          glassHint: "Thanh bên, thanh công cụ và các bảng thành kính mờ, như macOS 26. Bật hoặc tắt sẽ mở lại cửa sổ.",
+          glassHint: "Thanh bên thành tấm kính nhìn thấy hình nền phía sau, như Finder trên macOS 26. Bật hoặc tắt sẽ mở lại cửa sổ.",
           foldersFirst: "Thư mục lên đầu", foldersFirstHint: "Khi sắp xếp theo tên, thư mục luôn đứng trước tệp.",
           folderSizes: "Tính dung lượng thư mục", folderSizesHint: "Cột Kích thước hiện dung lượng của từng thư mục, tính dần ở chế độ nền.",
+          alwaysTabs: "Luôn hiện thanh tab", alwaysTabsHint: "Như File Explorer của Windows: thanh tab và nút tab mới hiện cả khi chỉ có một tab.",
+          copyQueue: "Chép lần lượt", copyQueueHint: "Các lần chép và chuyển chờ nhau, chạy từng cái một thay vì cùng lúc; đỡ tranh ổ đĩa khi chép nhiều.",
+          verifyCopies: "Kiểm tra lại sau khi chép", verifyCopiesHint: "Đọc lại từng tệp ở cả hai bên và so SHA-256; chậm hơn nhưng chắc bản sao đúng từng byte.",
           autoUpdate: "Tự kiểm tra bản mới", autoUpdateHint: "Hỏi GitHub một lần mỗi lần mở ứng dụng.",
           checkUpdate: "Kiểm tra cập nhật", checking: "Đang kiểm tra bản mới...", upToDate: "Bạn đang dùng bản mới nhất.",
           updateOut: "Có bản LazySpace {0}. Bạn đang dùng {1}.", update: "Cập nhật", updating: "Đang tải...", updatingPct: "Đang tải {0}%",
-          updateReady: "Đã tải xong bản mới. Khởi động lại để dùng.", restart: "Khởi động lại",
+          updateReady: "Đã tải xong bản mới. Khởi động lại để dùng.", restart: "Khởi động lại", updateNow: "Cập nhật ngay", download: "Tải về", later: "Để sau",
           back: "Quay lại", forward: "Tiến tới", asList: "Dạng danh sách", asIcons: "Dạng biểu tượng", newFolder: "Thư mục mới",
-          moveToTrash: "Chuyển vào Thùng rác", searchHere: "Lọc thư mục này",
+          moveToTrash: "Chuyển vào Thùng rác", searchHere: "Lọc thư mục này", moreTools: "Các nút khác",
         },
         en: {
           settings: "Settings", done: "Done", general: "General", appearance: "Appearance", about: "About", cancel: "Cancel",
           language: "Language", languageHint: "The language of the window, the menus and the notifications.",
           theme: "Colour mode", themeHint: "As the system, or always light or dark.", system: "System", light: "Light", dark: "Dark",
-          glassHint: "The sidebar, the toolbar and the sheets turn to frosted glass, as in macOS 26. Turning it on or off reopens the window.",
+          glassHint: "The sidebar turns to a pane of glass the desktop shows through, as Finder's on macOS 26. Turning it on or off reopens the window.",
           foldersFirst: "Folders on top", foldersFirstHint: "When sorting by name, folders always come before files.",
           folderSizes: "Calculate folder sizes", folderSizesHint: "The Size column shows the size of each folder, worked out in the background.",
+          alwaysTabs: "Always show the tab bar", alwaysTabsHint: "As in Windows' File Explorer: the tabs and the button for a new tab show even with one tab.",
+          copyQueue: "Copy one at a time", copyQueueHint: "Copies and moves wait for each other and run one by one rather than all at once, so disks are not fought over.",
+          verifyCopies: "Check copies afterwards", verifyCopiesHint: "Reads every file again on both sides and compares their SHA-256: slower, but sure the copy is the same to the byte.",
           autoUpdate: "Check for new versions", autoUpdateHint: "Asks GitHub once each time the app opens.",
           checkUpdate: "Check for Updates", checking: "Checking for a new version...", upToDate: "You have the latest version.",
           updateOut: "LazySpace {0} is out. You have {1}.", update: "Update", updating: "Downloading...", updatingPct: "Downloading {0}%",
-          updateReady: "The new version is ready. Restart to use it.", restart: "Restart",
+          updateReady: "The new version is ready. Restart to use it.", restart: "Restart", updateNow: "Update Now", download: "Download", later: "Later",
           back: "Back", forward: "Forward", asList: "as List", asIcons: "as Icons", newFolder: "New Folder",
-          moveToTrash: "Move to Trash", searchHere: "Filter this folder",
+          moveToTrash: "Move to Trash", searchHere: "Filter this folder", moreTools: "More Tools",
         },
       };
       function words(more) {
@@ -707,7 +760,6 @@
       const S = {
         window: { role: "main", id: 0 },
         settings: {},
-        glassAvailable: false,
         places: {},
       };
 
@@ -728,36 +780,8 @@
         call(e.detail === 2 ? "app.zoom" : "app.drag").catch(() => {});
       });
 
-      // The native glass behind the page (src/glass.rs) is told where the page lets it show, once a frame at most and
-      // only when a pane moved: while the sidebar's edge or the window is dragged it follows frame by frame, rather
-      // than catching up once the drag stops.
-      let glassFrame = 0;
-      let glassSent = "";
-      function reportGlass() {
-        if (glassFrame) return;
-        glassFrame = requestAnimationFrame(() => {
-          glassFrame = 0;
-          if (!S.glassAvailable || !root.classList.contains("glass")) return;
-          const panes = [];
-          for (const el of document.querySelectorAll(".sidebar, .capsule, .modal.open .panel")) {
-            const r = el.getBoundingClientRect();
-            if (r.width < 1 || r.height < 1) continue;
-            panes.push([r.x, r.y, r.width, r.height, parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0]);
-          }
-          const sent = JSON.stringify(panes);
-          if (sent === glassSent) return;
-          glassSent = sent;
-          call("glass.panes", { panes }).catch(() => (glassSent = ""));
-        });
-      }
-      // The capsules move when the toolbar's width does, which the sidebar's width changes without the window's.
-      const glassWatch = new ResizeObserver(reportGlass);
-      for (const el of [document.body, $("sidebar"), $("toolbar")]) glassWatch.observe(el);
-
       function paintLook() {
         paintTheme();
-        root.classList.toggle("native", S.glassAvailable && root.classList.contains("glass"));
-        reportGlass();
       }
 
       const setSetting = (patch) => call("settings.set", { patch }).catch(say);
@@ -769,18 +793,27 @@
       $("language").addEventListener("change", () => setSetting({ language: $("language").value }));
       $("foldersFirst").addEventListener("change", () => setSetting({ sort: { foldersFirst: $("foldersFirst").checked } }));
       $("folderSizes").addEventListener("change", () => setSetting({ folder_sizes: $("folderSizes").checked }));
+      $("alwaysTabs").addEventListener("change", () => setSetting({ always_tabs: $("alwaysTabs").checked }));
+      $("copyQueue").addEventListener("change", () => setSetting({ copy_queue: $("copyQueue").checked }));
+      $("verifyCopies").addEventListener("change", () => setSetting({ verify_copies: $("verifyCopies").checked }));
       $("autoUpdate").addEventListener("change", () => setSetting({ check_updates: $("autoUpdate").checked }));
 
       // Sheets: one open at a time, closed by Escape or a click beside it (unless it waits for an answer).
       function openSheet(id) {
         closeSheets();
+        $(id).classList.remove("leaving");
         $(id).classList.add("open");
-        setTimeout(reportGlass, 260);
-        reportGlass();
+        Update.paint();
       }
       function closeSheets() {
-        for (const sheet of document.querySelectorAll(".modal.open")) sheet.classList.remove("open");
-        reportGlass();
+        for (const sheet of document.querySelectorAll(".modal.open")) {
+          sheet.classList.remove("open");
+          // It stays on screen while it fades, taking no clicks or keys.
+          sheet.classList.add("leaving");
+          clearTimeout(sheet.leaving);
+          sheet.leaving = setTimeout(() => sheet.classList.remove("leaving"), 200);
+        }
+        Update.paint();
       }
       const sheetOpen = () => !!document.querySelector(".modal.open");
       $("settingsDone").addEventListener("click", closeSheets);
@@ -809,15 +842,70 @@
         });
       }
 
-      $("checkUpdate").addEventListener("click", () => {
-        $("updateNote").textContent = t("checking");
-        call("update.check", { manual: true }).catch(say);
-      });
-      $("bannerBtn").addEventListener("click", () => {
-        $("bannerBtn").textContent = t("updating");
-        $("bannerBtn").disabled = true;
-        call("update.install").catch(say);
-      });
+      // The update as one state that the About page of Settings and the banner both show, so whichever is in sight says
+      // how it stands and offers the next step: check, update (or download, for a copy that cannot replace itself),
+      // restart. While Settings is open the banner keeps out of the way, as the same row is in front of the user there.
+      const Update = (() => {
+        const u = { state: "idle", latest: "", current: "", notes: "", url: "", installable: true, percent: 0, error: "", later: false };
+        const busy = () => u.state === "checking" || u.state === "downloading";
+        const said = () =>
+          ({
+            checking: t("checking"),
+            none: t("upToDate"),
+            available: t("updateOut", u.latest, u.current),
+            downloading: u.percent ? t("updatingPct", u.percent) : t("updating"),
+            ready: t("updateReady"),
+            error: u.error,
+          })[u.state] || "";
+        const label = () => t({ available: u.installable ? "updateNow" : "download", downloading: "updating", ready: "restart" }[u.state] || "checkUpdate");
+
+        function paint() {
+          $("updateNote").textContent = said();
+          $("updateNote").classList.toggle("bad", u.state === "error");
+          for (const b of [$("checkUpdate"), $("bannerBtn")]) {
+            b.textContent = label();
+            b.disabled = busy();
+            b.classList.toggle("primary", u.state === "available" || u.state === "ready");
+          }
+          $("updateBar").hidden = u.state !== "downloading";
+          $("updateBar").firstElementChild.style.width = `${u.percent}%`;
+          $("updateNotes").hidden = u.state !== "available" || !u.notes.trim();
+          $("updateNotes").textContent = u.notes.trim();
+          $("bannerTxt").textContent = said();
+          const waiting = ["available", "downloading", "ready"].includes(u.state);
+          $("banner").classList.toggle("show", waiting && !u.later && !$("settingsSheet").classList.contains("open"));
+        }
+        function set(patch) {
+          Object.assign(u, patch);
+          paint();
+        }
+        const fail = (error) => set({ state: "error", error: String(error) });
+
+        function act() {
+          if (u.state === "available" && !u.installable) return call("app.open_url", { url: u.url }).catch(say);
+          if (u.state === "available") {
+            set({ state: "downloading", percent: 0 });
+            return call("update.install").catch(fail);
+          }
+          if (u.state === "ready") return call("update.relaunch").catch(fail);
+          if (busy()) return;
+          set({ state: "checking" });
+          call("update.check", { manual: true }).catch(fail);
+        }
+        $("checkUpdate").addEventListener("click", act);
+        $("bannerBtn").addEventListener("click", act);
+        $("bannerLater").addEventListener("click", () => set({ later: true }));
+
+        on("update.available", (d) => set({ state: "available", latest: d.latest, current: d.current, notes: d.notes || "", url: d.url || "", installable: d.installable !== false, later: false }));
+        on("update.none", (d) => set({ state: "none", current: d.current }));
+        on("update.progress", (percent) => set({ state: "downloading", percent }));
+        on("update.ready", () => set({ state: "ready", later: false }));
+        on("update.error", (d) => {
+          fail(d.error);
+          if (!$("settingsSheet").classList.contains("open")) toast(d.error);
+        });
+        return { paint };
+      })();
 
       function showSettings(s) {
         S.settings = s;
@@ -826,17 +914,23 @@
         applyLang();
         root.dataset.theme = s.theme;
         for (const seg of $("theme").children) seg.classList.toggle("on", seg.dataset.theme === s.theme);
-        root.toggleAttribute("data-glass", s.glass);
+        // Only a main window has the glass behind it (src/glass.rs); the shelf and the desktop draw their own.
+        root.toggleAttribute("data-glass", s.glass && S.window.role === "main");
         $("glass").checked = s.glass;
         $("foldersFirst").checked = s.sort?.foldersFirst !== false;
         $("folderSizes").checked = !!s.folder_sizes;
+        $("alwaysTabs").checked = s.always_tabs !== false;
+        $("copyQueue").checked = !!s.copy_queue;
+        $("verifyCopies").checked = !!s.verify_copies;
         $("autoUpdate").checked = s.check_updates !== false;
+        Update.paint();
         paintLook();
       }
 
       on("app.hello", (d) => {
         S.window = { role: d.windowRole, id: d.windowId };
-        S.glassAvailable = !!d.glassAvailable;
+        // A main window lets things move once its panes are back (09-core-start.js); the others at once.
+        if (d.windowRole !== "main") $("app").classList.remove("still");
         S.hello = d;
         $("version").textContent = d.version;
         showSettings(d.settings);
@@ -846,21 +940,10 @@
       on("menu.action", (d) => {
         if (d.id === "app.settings") openSheet("settingsSheet");
       });
-      on("update.available", (d) => {
-        $("bannerTxt").textContent = t("updateOut", d.latest, d.current);
-        $("banner").classList.add("show");
-      });
-      on("update.none", () => ($("updateNote").textContent = t("upToDate")));
-      on("update.progress", (percent) => ($("bannerBtn").textContent = t("updatingPct", percent)));
-      on("update.ready", () => {
-        $("bannerTxt").textContent = t("updateReady");
-        $("bannerBtn").textContent = t("restart");
-        $("bannerBtn").disabled = false;
-        $("bannerBtn").onclick = () => call("update.relaunch").catch(say);
-      });
       on("toast", toast);
 
       applyLang();
+      Update.paint();
       // The page tells the app it is ready once every part has added its handlers (the last script, in ui/parts).
       window.addEventListener("DOMContentLoaded", () => call("app.ready").catch(() => {}));
     </script>

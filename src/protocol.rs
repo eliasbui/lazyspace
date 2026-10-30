@@ -1,5 +1,6 @@
 //! The `lazy://` protocol the page loads pictures through: `lazy://icon/<px>/<key>` (the icon of a file type or an
-//! item, see `vfs::Entry::icon`), `lazy://symbol/<px>/<name>` (an SF Symbol, for the menu editor),
+//! item, see `vfs::Entry::icon`), `lazy://symbol/<px>/[<weight>/]<name>` (an SF Symbol: the page's icons and the menu
+//! editor's),
 //! `lazy://thumb/<px>/<path>` (a Quick Look thumbnail) and `lazy://file/<path>` (the
 //! file itself, with ranges, for previews). Thumbnails and files are served only from the folders the app has open
 //! (`allow`), so a page that went wrong still cannot read the disk at large. Anything else is 404.
@@ -120,10 +121,13 @@ fn status(code: StatusCode) -> Response<Vec<u8>> {
     response
 }
 
+/// A picture, cached by WebKit. It may be read across origins: the page's symbols are CSS masks, which WebKit fetches
+/// in CORS mode, and the page itself has no origin of its own.
 fn image(png: Vec<u8>) -> Response<Vec<u8>> {
     Response::builder()
         .header(header::CONTENT_TYPE, "image/png")
         .header(header::CACHE_CONTROL, "max-age=3600")
+        .header(header::ACCESS_CONTROL_ALLOW_ORIGIN, "*")
         .body(png)
         .unwrap_or_else(|_| status(StatusCode::INTERNAL_SERVER_ERROR))
 }

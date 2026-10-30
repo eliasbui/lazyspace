@@ -31,6 +31,7 @@
 :root[data-text-size="large"] .row .name img { width: 18px; height: 18px; }
 
 /* The sidebar's icons in colour, as Finder drew them before it went grey. */
+:root[data-sidebar-icons="color"] .side-item .ico[data-ico="clock"] { color: #5856d6; }
 :root[data-sidebar-icons="color"] .side-item .ico[data-ico="desktop"] { color: #30b0c7; }
 :root[data-sidebar-icons="color"] .side-item .ico[data-ico="download"] { color: #34c759; }
 :root[data-sidebar-icons="color"] .side-item .ico[data-ico="doc"] { color: #007aff; }

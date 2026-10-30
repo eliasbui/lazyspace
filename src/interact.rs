@@ -66,6 +66,27 @@ pub fn register(d: &mut Dispatcher) {
         });
         Ok(Value::Null)
     });
+    d.on("native.share", |app, window, a| {
+        #[derive(Deserialize)]
+        struct Share {
+            uris: Vec<String>,
+            x: f64,
+            y: f64,
+        }
+        let a: Share = args(a)?;
+        let paths: Vec<PathBuf> = a.uris.iter().filter_map(|u| crate::vfs::Uri::parse(u).ok()?.local_path()).collect();
+        if paths.is_empty() {
+            return Err(tr("Chỉ chia sẻ được tệp trên máy", "Only files on this Mac can be shared").into());
+        }
+        let surface = app.surfaces.get(&window).ok_or_else(|| tr("Cửa sổ đã đóng", "The window is closed").to_owned())?;
+        let view = MainThreadBound::new(native::web_view(&surface.webview), main_thread()?);
+        // The sheet starts from the main queue, after this event, as the context menu does.
+        DispatchQueue::main().exec_async(move || {
+            let Some(mtm) = MainThreadMarker::new() else { return };
+            native::share::show(mtm, &view.into_inner(mtm), &paths, a.x, a.y);
+        });
+        Ok(Value::Null)
+    });
     d.on("menu.show", |app, window, a| {
         #[derive(Deserialize)]
         struct Show {

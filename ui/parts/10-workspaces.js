@@ -11,7 +11,7 @@ LZ.words({
   },
 });
 LZ.icons.add({
-  workspace: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M10 5v14M10 12h11"/></svg>',
+  workspace: "rectangle.3.group,square.stack.3d.up",
 });
 
 const Workspaces = (() => {

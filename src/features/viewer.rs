@@ -103,6 +103,8 @@ fn set(on: bool, app: Option<&Path>) -> Result<(), String> {
 }
 
 pub fn register(d: &mut Dispatcher) {
+    // "Open in LazySpace" in Finder's menus (src/native/services.rs).
+    d.on_start(|app| crate::native::services::install(app.proxy.clone()));
     d.on("viewer.state", |_, _, _| Ok(state()));
     d.on("viewer.enable", |app, _, a| {
         #[derive(Deserialize)]
@@ -160,6 +162,15 @@ mod tests {
             "the items of one folder share a tab, an app is selected rather than browsed into, a missing item is left out"
         );
         assert_eq!(reveals(&[PathBuf::from("/")]), [Reveal { folder: "/".into(), names: vec![] }], "the root has no folder above it");
+    }
+
+    #[test]
+    fn the_bundle_declares_the_service_the_app_answers() {
+        let script = include_str!("../../scripts/bundle-macos.sh");
+        let source = include_str!("../native/services.rs");
+        let message = source.split("#[unsafe(method(").nth(1).and_then(|m| m.split(':').next()).unwrap();
+        assert!(script.contains(&format!("<key>NSMessage</key><string>{message}</string>")), "NSServices in scripts/bundle-macos.sh names another message than {message}");
+        assert!(script.contains("<key>NSPortName</key><string>LazySpace</string>"));
     }
 
     #[test]

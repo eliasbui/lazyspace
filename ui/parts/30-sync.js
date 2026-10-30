@@ -21,7 +21,7 @@ LZ.words({
   },
 });
 LZ.icons.add({
-  swap: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h13M16 3l4 4-4 4M17 17H4M8 13l-4 4 4 4"/></svg>',
+  swap: "arrow.left.arrow.right",
 });
 
 const Sync = (() => {

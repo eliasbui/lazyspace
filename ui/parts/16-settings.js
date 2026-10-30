@@ -6,15 +6,17 @@ LZ.words({
   en: { searchSettings: "Search", noSettingMatch: "No setting matches" },
 });
 LZ.icons.add({
-  "set.general": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7h8M17 7h2M5 12h2M11 12h8M5 17h10M19 17h0"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></svg>',
-  "set.appearance": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="7.5"/><path d="M12 4.5v15a7.5 7.5 0 000-15z" fill="currentColor"/></svg>',
-  "set.colours": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 4.5a7.5 7.5 0 100 15c1.2 0 1.6-.9 1.2-1.8-.5-1-.1-2.2 1.2-2.2H17a2.5 2.5 0 002.5-2.5c0-4.7-3.4-8.5-7.5-8.5z"/><circle cx="8.5" cy="11" r="1" fill="currentColor"/><circle cx="11.5" cy="8" r="1" fill="currentColor"/><circle cx="15.5" cy="9.5" r="1" fill="currentColor"/></svg>',
-  "set.keyboard": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="6.5" width="17" height="11" rx="2"/><path d="M7 10h0M10 10h0M13 10h0M16 10h0M7 13.5h0M17 13.5h0M10 14h4"/></svg>',
-  "set.menu": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="4.5" width="14" height="15" rx="2.5"/><path d="M8.5 9h7M8.5 12h7M8.5 15h4"/></svg>',
-  "set.finder": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="4.5" width="16" height="15" rx="3"/><path d="M12 4.5c-1.5 3-1.8 6.5-1 9.5H12M8.5 9v1M15.5 9v1M8.5 15.5c2 1.3 5 1.3 7 0"/></svg>',
-  "set.desktop": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="11.5" rx="2"/><path d="M9 19.5h6M12 16.5v3"/></svg>',
-  "set.about": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 11v5M12 8h0"/></svg>',
-  "set.other": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.5"/></svg>',
+  "set.general": "gearshape.fill",
+  "set.appearance": "circle.lefthalf.filled",
+  "set.colours": "paintpalette.fill",
+  "set.keyboard": "keyboard.fill",
+  "set.menu": "contextualmenu.and.cursorarrow",
+  "set.finder": "folder.fill",
+  "set.desktop": "menubar.dock.rectangle,desktopcomputer",
+  "set.about": "info.circle.fill",
+  "set.other": "puzzlepiece.extension.fill",
+  "set.search": "magnifyingglass",
+  "set.actions": "terminal.fill",
 });
 
 const SettingsNav = (() => {
@@ -26,6 +28,8 @@ const SettingsNav = (() => {
     keyboard: ["set.keyboard", "#8e8e93"],
     contextMenu: ["set.menu", "#007aff"],
     finderTitle: ["set.finder", "#0a84ff"],
+    searchTitle: ["set.search", "#8e8e93"],
+    actionsTitle: ["set.actions", "#34c759"],
     desktop: ["set.desktop", "#30b0c7"],
     about: ["set.about", "#8e8e93"],
   };

@@ -1,0 +1,21 @@
+/* The bar of filters over search results: a pill for each, its value in bold, tinted with the accent when it narrows
+   the results. */
+.search-bar { flex: none; display: flex; align-items: center; gap: 6px; padding: 0 12px 8px; overflow-x: auto; scrollbar-width: none; }
+.search-bar::-webkit-scrollbar { display: none; }
+.pill {
+  flex: none; height: 26px; display: flex; align-items: center; gap: 5px; padding: 0 10px; border: 0; border-radius: 999px;
+  background: var(--field); color: var(--secondary); font-size: 12px; white-space: nowrap; transition: background-color 0.12s, color 0.12s;
+}
+.pill b { font-weight: 600; color: var(--label); }
+.pill svg { width: 8px; height: 8px; opacity: 0.7; }
+.pill:hover { background: color-mix(in srgb, var(--field), var(--label) 5%); color: var(--label); }
+.pill.on { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+.pill.on b { color: var(--accent); }
+
+/* The offers under the search field, then the best of the quick index, each with its folder after its name. */
+.search-offers { max-height: 420px; }
+.search-offers div img { width: 16px; height: 16px; flex: none; }
+.search-offers div small { flex: none; max-width: 45%; margin-left: auto; padding-left: 10px; overflow: hidden; text-overflow: ellipsis; color: var(--secondary); font-size: 11px; }
+.search-offers div.on small { color: rgba(255, 255, 255, 0.8); }
+.search-offers div span { flex: 1; min-width: 0; }
+.suggest-head { margin: 6px 9px 3px; font-size: 11px; font-weight: 600; color: var(--secondary); }

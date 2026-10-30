@@ -27,13 +27,39 @@ operation runs as a job you can watch, cancel and undo. It speaks English and Vi
 
 ## Features
 
-- **Up to four panes, with tabs.** Six layouts: one pane, two side by side or stacked, three, one on the left and two
-  on the right, or a grid of four. Each pane has its own tabs, history and view (list or icons). Columns drop as a
-  pane gets narrow, as in QSpace.
+- **Up to four panes, with tabs as in File Explorer.** Six layouts: one pane, two side by side or stacked, three, one
+  on the left and two on the right, or a grid of four. Each pane has its own tabs, history and view (list or icons).
+  The tab bar shows with one tab too, with a button for a new one; tabs are dragged to a new place or to another pane,
+  closed with the middle button, and have a menu of their own (duplicate, move to a new window or the other pane,
+  close the others or those to the right). The middle button or Command and a double click open a folder in a new
+  tab. Columns drop as a pane gets narrow, as in QSpace.
 - **Workspaces.** The window's layout, panes, tabs and places saved under a name in the sidebar and brought back with a
   click (Command-Option-W saves one).
-- **A path bar that types.** Breadcrumbs to click, or a path to type with completion of folder names; `~` stands for
-  the home folder, and `sftp://`, `s3://` and the other places can be typed too.
+- **A path bar as File Explorer's.** Breadcrumbs to click, each with an arrow that lists the folders inside it, up and
+  reload beside it, and the places gone to before at its end. Typed into, it offers those places first, then the
+  folders that complete the path; `~` stands for the home folder, and `sftp://`, `s3://` and the other places can be
+  typed too. Back and forward list where they go when right-clicked.
+- **Search as fast as you type.** A quick index of the home folder and Applications, kept in memory and up to date by
+  FSEvents, matched as fzf matches (the same scoring, in Rust; accents optional, so "bao cao" finds "Báo cáo"). The
+  best matches show under the search field as you type; Enter searches the folder and every folder in it, best match
+  first, with filters for the kind, the date, the size and the contents (Spotlight), or the whole Mac.
+- **Four views, as in Finder.** Icons, list, columns (Miller) and gallery (Command-1 to 4). The list has the columns
+  you choose (date modified, date created, size, kind, extension, where), right-click its header for them, and groups
+  by kind, date or size.
+- **Recents and tags.** The files used lately at the top of the sidebar; Finder's colour tags shown as dots, set from
+  the context menu, each colour a search of the Mac in the sidebar.
+- **Select by dragging a frame** beside the items, with Shift to add and Command to toggle.
+- **Share** with the system's sheet (AirDrop, Messages, Mail) from the toolbar or the context menu.
+- **Commands of your own** in the context menu: a line of zsh run with the selected items as its arguments, its
+  output shown or run in Terminal.
+- **What takes the space.** A map of a folder by size, as DaisyDisk draws it, and the files that are the same (by size,
+  then their bytes), the extra copies picked for the Trash in a click.
+- **Git in the list.** Each changed, new or conflicted file marked after its name, and the branch in the path bar.
+- **Copies that wait and check.** Pause and resume any job; copies can run one at a time and be checked byte for byte
+  afterwards.
+- **Open in LazySpace from Finder.** A folder or a file's menu in Finder (and Services in every app) has "Open in
+  LazySpace"; folders dropped on the Dock icon open in tabs.
+- **Pinned folders.** Any folder pinned to the sidebar from its menu, and taken out again from the sidebar.
 - **The desktop, by LazySpace (optional).** The Desktop folder's icons on the wallpaper, under every window and on
   every Space, each icon where you put it, with the context menu, keys, Quick Look and drag and drop of a pane.
   Finder's own icons can be hidden while it is on, and come back when it is off.
@@ -73,8 +99,9 @@ operation runs as a job you can watch, cancel and undo. It speaks English and Vi
   icons from 48 to 128 points, three text sizes for lists, and the font of the whole window: the system's, SF Pro
   Rounded, New York, SF Mono or any font installed on the Mac. Settings come in pages, as in System Settings, with a
   search.
-- **Liquid Glass (beta).** The sidebar, toolbar and sheets turn to glass over the desktop, with the native glass of
-  macOS 26 where it exists.
+- **Liquid Glass (beta).** As in Finder on macOS 26: a solid window whose sidebar is a pane of glass the desktop shows
+  through, with the native glass of macOS 26 where it exists. The toolbar folds as the window narrows, as a native
+  toolbar does, and its icons are the system's SF Symbols.
 - **Undo.** Moves, renames, new items and the Trash are undone with Command-Z.
 - **English or Vietnamese**, and in-app updates.
 

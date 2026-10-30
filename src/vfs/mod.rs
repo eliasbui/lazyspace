@@ -108,7 +108,8 @@ fn encode(text: &str, path: bool) -> String {
     out
 }
 
-fn decode(text: &str) -> Option<String> {
+/// Percent-decodes `text`; None when an escape is cut short or the bytes are not UTF-8.
+pub fn decode(text: &str) -> Option<String> {
     let bytes = text.as_bytes();
     let mut out = Vec::with_capacity(bytes.len());
     let mut i = 0;

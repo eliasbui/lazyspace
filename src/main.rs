@@ -16,7 +16,6 @@ mod update;
 mod vfs;
 mod views;
 
-use glass::GlassLayer;
 use ipc::{Dispatcher, event};
 use serde_json::{Value, json};
 use settings::Settings;
@@ -121,9 +120,8 @@ impl Default for SurfaceOptions {
     }
 }
 
-/// A window with its page. The fields drop in order: the glass and the page go before the window they are in.
+/// A window with its page. The fields drop in order: the page goes before the window it is in.
 pub struct Surface {
-    pub glass: GlassLayer,
     pub webview: WebView,
     pub window: Window,
     pub id: SurfaceId,
@@ -268,11 +266,13 @@ impl App {
             .with_devtools(cfg!(debug_assertions))
             .build(&window)
             .map_err(|e| e.to_string())?;
-        let glass = if glass { GlassLayer::attach(&window, &webview) } else { GlassLayer::none() };
+        if glass {
+            glass::attach(&window, &webview);
+        }
         if role == Role::Desktop {
             native::panel::pin_to_desktop(&window);
         }
-        self.surfaces.insert(window_id, Surface { glass, webview, window, id, role, options, ready: false, queued: Vec::new() });
+        self.surfaces.insert(window_id, Surface { webview, window, id, role, options, ready: false, queued: Vec::new() });
         self.focused = Some(window_id);
         Ok(())
     }
@@ -346,7 +346,6 @@ impl App {
                 "features": [],
                 "windowRole": surface.role.name(),
                 "windowId": surface.id.0,
-                "glassAvailable": glass::available(),
                 "uri": surface.options.uri,
                 "layout": settings::load_layout(&self.layout_path),
             }),
@@ -457,9 +456,9 @@ impl App {
                 update::tidy(&app);
             }
             let message = match update::check() {
-                Ok(check) if check.newer => event("update.available", json!({ "current": check.current, "latest": check.latest, "notes": check.notes, "installable": check.installable })),
+                Ok(check) if check.newer => event("update.available", json!({ "current": check.current, "latest": check.latest, "notes": check.notes, "installable": check.installable, "url": check.url })),
                 Ok(check) if manual => event("update.none", json!({ "current": check.current })),
-                Err(error) if manual => event("toast", json!(error)),
+                Err(error) if manual => event("update.error", json!({ "error": error })),
                 _ => return,
             };
             proxy.send(UserEvent::Post { window: None, message });
@@ -478,7 +477,7 @@ impl App {
             };
             let message = match run() {
                 Ok(()) => event("update.ready", Value::Null),
-                Err(error) => event("toast", json!(error)),
+                Err(error) => event("update.error", json!({ "error": error })),
             };
             proxy.send(UserEvent::Post { window: None, message });
         });

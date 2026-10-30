@@ -1,16 +1,23 @@
 //! The extensions of the core browser, each in its own module with its own methods (`<feature>.<verb>`), registered
 //! here so none of them edits main.rs (design.md section 15).
 
+pub mod actions;
 pub mod archive;
 pub mod desktop;
+pub mod disk;
+pub mod git;
 pub mod hash;
+pub mod history;
+pub mod index;
 pub mod menuedit;
 pub mod openin;
 pub mod preview;
 pub mod remote;
 pub mod rename;
+pub mod search;
 pub mod stash;
 pub mod sync;
+pub mod tags;
 pub mod templates;
 pub mod viewer;
 pub mod workspaces;
@@ -18,16 +25,23 @@ pub mod workspaces;
 use crate::ipc::Dispatcher;
 
 pub fn register(d: &mut Dispatcher) {
+    actions::register(d);
     archive::register(d);
     desktop::register(d);
+    disk::register(d);
+    git::register(d);
     hash::register(d);
+    history::register(d);
+    index::register(d);
     menuedit::register(d);
     openin::register(d);
     preview::register(d);
     remote::register(d);
     rename::register(d);
+    search::register(d);
     stash::register(d);
     sync::register(d);
+    tags::register(d);
     templates::register(d);
     viewer::register(d);
     workspaces::register(d);

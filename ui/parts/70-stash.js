@@ -15,8 +15,8 @@ LZ.words({
   },
 });
 LZ.icons.add({
-  tray: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M4 13.5l2.2-7.2A1.6 1.6 0 017.7 5h8.6a1.6 1.6 0 011.5 1.3L20 13.5V18a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 18z"/><path d="M4 13.5h4.5l1 2h5l1-2H20"/></svg>',
-  clipboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="5.5" y="4.5" width="13" height="16" rx="2"/><path d="M9 4.5h6v3H9z"/></svg>',
+  tray: "tray",
+  clipboard: "doc.on.clipboard",
 });
 
 const Stash = (() => {

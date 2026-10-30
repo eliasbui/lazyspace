@@ -5,4 +5,6 @@ on("app.hello", async (d) => {
   await Sidebar.start();
   Panes.start(d.layout, d.uri);
   Toolbar.update();
+  // The window comes back as it was without moving; from the next frame on, showing the sidebar and the like move.
+  requestAnimationFrame(() => requestAnimationFrame(() => $("app").classList.remove("still")));
 });

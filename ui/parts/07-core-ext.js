@@ -108,7 +108,10 @@ const LZ = (() => {
       b.className = "tb";
       b.id = `tb-${id}`;
       b.dataset.tt = label;
+      b.dataset.sym = iconName;
       b.innerHTML = icon(iconName);
+      // The overflow menu of a folded toolbar runs it from its own button (04-core-toolbar.js).
+      b.run = run;
       b.addEventListener("click", (e) => run(e, b));
       slot.appendChild(b);
       applyLang();

@@ -343,7 +343,8 @@ Sort: { "by": "name|size|mtime|kind|ext", "desc": false, "foldersFirst": true }
 | `native.get_info` | `{ "uri" }` | null | mở Finder Get Info bằng AppleScript |
 | `drag.arm` | `{ "uris", "window" }` | null | mục 8.2 |
 | `drag.disarm` | `{}` | null | |
-| `glass.panes` | `{ "panes": [[x,y,w,h,r], ..] }` | null | mục 9 |
+| `fs.subfolders` | `{ "uri" }` | `{ "items": [{ "name", "uri" }] }` | thư mục con không ẩn, theo tên, tối đa 300; menu của mũi tên sau mỗi crumb |
+| `history.list` / `history.add` / `history.remove` / `history.clear` | `{}` / `{ "uri", "typed" }` / `{ "uri" }` / `{}` | `[{ "uri", "typed", "at" }]` | lịch sử đường dẫn trong `history.json` (mục 17) |
 | `panes.state` | `{ "state": LayoutState }` | null | page lưu bố cục hiện tại để F1 khôi phục khi mở lại và W1 đọc |
 | `menu.show` | `{ "items": [MenuNode], "x", "y", "dynamic": ["openWith"], "uris" }` | null | mục 8.12; chọn xong đẩy `menu.chosen { id }` hoặc `menu.closed` |
 | `keymap.get` | `{}` | Keymap | |
@@ -685,28 +686,24 @@ icon SF Symbols và cây động.
 
 ## 9. Liquid Glass (beta)
 
-Hai lớp hợp tác:
+Như Finder trên macOS 26: cửa sổ đặc, chỉ thanh bên là tấm kính nhìn thấy hình nền phía sau.
 
-1. CSS (Lanes `ui/index.html` dòng 91 đến 156): `:root.glass` đổi biến màu, `.backdrop` ánh sáng màu mờ,
-   `backdrop-filter` cho `.sidebar`, `.capsule`, `.panel`, `.toast`, `.group`. Đây là toàn bộ hiệu ứng trước
-   macOS 26 và là fallback khi lớp native không có.
-2. Native (`src/glass.rs`, port `fig/webview.rs glass_background`, `veil_color`, `GlassBed`, `lay_glass`): khi
-   `settings.glass` bật, cửa sổ tao được tạo `with_transparent(true)` và wry `with_transparent(true)` (wry đặt
-   `drawsBackground = false`, verified `wkwebview/mod.rs:416`). Sau `build`, `GlassLayer::attach(window, webview)`:
-   lấy `contentView` của NSWindow, chèn một `NSGlassEffectView` (`AnyClass::get(c"NSGlassEffectView").is_some()`,
-   macOS 26 trở lên) hoặc `NSVisualEffectView` material `UnderWindowBackground`, blending `BehindWindow` phủ kín
-   bằng `addSubview_positioned_relativeTo(glass, Below, webview)`; trên đó một `NSBox` veil với `veil_color()`
-   (0.8 alpha, màu theo appearance động); page gửi `glass.panes` (sidebar, các capsule, sheet đang mở) và
-   `lay_glass` đặt các `NSGlassEffectView` con dưới chỗ page để trong suốt. `setOpaque(false)`,
-   `setBackgroundColor(clearColor)` trên NSWindow. Page khi có `glassAvailable` dùng class `glass native` để bỏ
-   `backdrop-filter` và nền `--sidebar` của chính nó ở các vùng đã có pane native (tránh kính kép).
-3. Công tắc Settings > Appearance > "Liquid Glass (beta)" mặc định tắt: `settings.set { glass }` tạo lại cửa sổ
-   (transparent không đổi được sau khi tạo trong tao) như Lanes làm với `set_glass`: lưu `panes.state`, đóng, mở lại.
-4. Theme: `Settings.theme` là `system | light | dark`; `window_theme()` của Lanes trả `Option<Theme>` cho
-   `WindowBuilder::with_theme` và `Window::set_theme`; `page()` đặt `data-theme` và `data-glass` lên `<html>` trước
-   khung hình đầu (Lanes `page`, test `the_page_comes_in_the_language_and_look_of_the_settings`);
-   `WindowEvent::ThemeChanged(theme)` của tao đẩy `theme.changed` để page cập nhật class `dark` khi theo hệ thống.
-   `veil_color` dùng `colorWithName_dynamicProvider` nên tự đổi theo appearance của cửa sổ.
+1. Native (`src/glass.rs`): khi `settings.glass` bật, cửa sổ chính được tạo `with_transparent(true)` (wry đặt
+   `drawsBackground = false`). `glass::attach` đặt sau webview một dải kính dọc mép trái cửa sổ: `NSGlassEffectView`
+   (macOS 26 trở lên) hoặc `NSVisualEffectView` material `Sidebar`, blending `BehindWindow` trước đó. Dải rộng 420 pt
+   (hơn thanh bên rộng nhất 380 pt cộng lề), cao bằng cửa sổ, autoresizing `HeightSizable | MaxXMargin`; không gì
+   trong nó đi theo bố cục của trang.
+2. Trang (`ui/index.html`, `:root.glass`): `body` trong suốt, `main` sơn màu cửa sổ, thanh bên trong suốt pha chút màu
+   và có bóng đổ trải rộng `0 0 0 400px var(--window)` sơn màu cửa sổ quanh nó, nên phần kính lộ ra đúng bằng hình
+   thanh bên ngay trong khung hình thanh bên di chuyển. Capsule của thanh công cụ, tab, bảng và thông báo đều do CSS
+   vẽ (nền, viền mảnh, vệt sáng mép trên, bóng mềm) ở cả hai chế độ.
+3. Lý do bỏ cách cũ (page gửi `glass.panes` để Rust đặt `NSGlassEffectView` dưới từng capsule): WebKit vẽ trang ở tiến
+   trình khác, sau AppKit một khung hình hoặc hơn, nên tấm kính native luôn lệch khi kéo mép thanh bên, đổi cỡ cửa sổ
+   hay mở bảng; đó là chỗ giật người dùng thấy.
+4. Công tắc Settings > Giao diện > "Liquid Glass (beta)" mặc định tắt; đổi thì mở lại cửa sổ chính (transparent không
+   đổi được sau khi tạo trong tao). Cửa sổ khay tạm và desktop bỏ `data-glass` sau `app.hello`.
+5. Theme: `Settings.theme` là `system | light | dark`; `page()` đặt `data-theme` và `data-glass` lên `<html>` trước
+   khung hình đầu; `WindowEvent::ThemeChanged` đẩy `theme.changed`.
 
 ## 10. Lưu trữ
 
@@ -854,7 +851,7 @@ Từ figghost: `glass_background`, `veil_color`, `GlassBed`, `lay_glass`, `png_o
 Phụ thuộc thêm: tao, wry, muda, serde, serde_json, objc2, objc2-foundation, objc2-app-kit, objc2-web-kit, block2,
 dispatch2, ureq, sha2, png, dirs.
 
-IPC: `app.ready`, `app.drag`, `app.zoom`, `app.new_window`, `app.open_url`, `settings.*`, `glass.panes`,
+IPC: `app.ready`, `app.drag`, `app.zoom`, `app.new_window`, `app.open_url`, `settings.*`,
 `panes.state` (chỉ lưu `layout.json`), `update.check`, `update.install`, `update.relaunch`; event `app.hello`,
 `settings.changed`, `theme.changed`, `update.*`, `toast`.
 
@@ -1184,6 +1181,46 @@ Ghi lại sau khi làm xong W1 tới W9, để người đọc mã không phải
   tượng, cỡ chữ) và bảng lệnh Command-P cùng các phím tắt hai khung (F5, F6, Command-U, Command-Shift-T).
 - An toàn: ảnh thu nhỏ hỏng chuyển sang biểu tượng qua một listener chung, không có handler viết trong markup; tên do
   máy chủ trả về như `..` hay có dấu `/` bị bỏ qua khi liệt kê và khi chép.
+- Biểu tượng của cửa sổ là SF Symbols do hệ thống vẽ: `lazy://symbol/<px>/<weight>/<tên>[,<tên thay>]` (weight
+  `light | regular | medium | semibold | bold`, tên thay cho macOS cũ thiếu tên đầu), vẽ cân đối vào ô vuông, trả kèm
+  `Access-Control-Allow-Origin: *` vì trang dùng nó làm CSS mask (WebKit tải mask theo CORS). `icon(name)` trong
+  `ui/parts/00-core-icons.js` trả một `<svg class="sym">` rỗng, nền `currentColor`, mask là symbol, nên cỡ của từng chỗ
+  vẫn như với SVG vẽ tay trước đây.
+- Tab kiểu File Explorer: `settings.always_tabs` (mặc định bật) cho thanh tab hiện cả khi một tab, có nút +; kéo tab đổi
+  chỗ hoặc sang khung khác (tab cuối của một khung thì chép, không chuyển); chuột giữa đóng tab và mở thư mục trong tab
+  nền; menu chuột phải của tab; Command và nhấp đúp mở thư mục trong tab mới.
+- Thanh đường dẫn kiểu File Explorer: nút lên, tải lại, ô crumb có mũi tên mở `fs.subfolders`, crumb thừa thu về nút
+  đầu, nút lịch sử. Lịch sử (`src/features/history.rs`, `history.json`, tối đa 60 nơi, mới nhất trước): page ghi một
+  nơi khi `view.changed` đầu tiên của nó tới, `typed` khi nó đến từ ô đường dẫn. Chuột phải nút lùi, tiến liệt kê ngăn
+  lịch sử của tab.
+- `settings.favourites` là các thư mục người dùng ghim vào thanh bên (menu chuột phải "Ghim vào thanh bên"); thêm "Mở
+  trong cửa sổ mới", "Bỏ chọn tất cả", "Đảo vùng chọn" và nút "..." cuối thanh công cụ (`ui/parts/17-explorer.js`).
+- Thanh công cụ gập như NSToolbar khi hẹp (`ui/parts/04-core-toolbar.js`): bỏ tiêu đề, thu ô tìm kiếm thành nút, rồi
+  gom lần lượt nhóm thao tác, nhóm xem, nhóm bên phải vào menu ">>".
+- "Open in LazySpace" trong Services (`src/native/services.rs`): Info.plist khai `NSServices` (message
+  `openInLazySpace`, `NSSendFileTypes` `public.item`, `NSRequiredContext` rỗng để bật sẵn), `ServicesMenu.strings`
+  tiếng Việt; khi khởi động app đặt services provider và gọi `NSUpdateDynamicServices`; các mục nhận được đi qua
+  `viewer::show`.
+- Tìm kiếm (`src/features/search.rs`, `ui/parts/19-search.js`): `search://<query>/<thư mục>`, query là
+  `q,kind,date,size,content,tag,recent,from` mã hóa hai lớp; mục giữ URI `file://` của chính nó nên mở, chép, đổi tên,
+  Thùng rác chạy như thường; trùng tên thì thêm tên thư mục. Chữ trong tên dưới thư mục nhà: chỉ mục nhanh
+  (`src/features/index.rs`, nucleo-matcher 0.3, chấm điểm như fzf, giữ trong bộ nhớ, cập nhật bằng FSEvents, bản lưu ở
+  `~/Library/Caches/LazySpace/quick-index.txt`); nội dung, thẻ, Gần đây, cả máy: Spotlight (`mdfind -0`); nơi không có
+  trong cả hai: tự duyệt theo tên. nucleo-matcher 0.3.1 dựng bảng bỏ dấu U+1D00-U+1EFF sai (`DATA1[j].1` thay cho
+  `sparse_data[j].1`), nên `index::plain` tự bỏ dấu thanh tiếng Việt, đ và dấu NFD trước khi so khớp. Kết quả giữ thứ tự
+  khớp (`sort.by = "none"`) tới khi người dùng chọn cột.
+- Cột và nhóm: `settings.columns` (mtime, ctime, size, kind, ext, where), `Sort.group` ("" | kind | date | size); Rust
+  sắp nhóm trước rồi sắp trong nhóm, gửi `groups: [[start, name]]` theo `view.changed` và các câu trả lời sort, filter,
+  hidden; trang vẽ tiêu đề nhóm thành dòng riêng ở dạng danh sách (`lineOf`, `atLine`).
+- Dạng cột và gallery (`ui/parts/25-columns.js`): cột đang chọn là danh sách của tab; các cột tổ tiên và cột xem trước
+  thư mục con là view phụ (`w<id>col<n>`) chỉ để hiện; gallery vẽ dải biểu tượng một hàng cuộn ngang.
+- Thẻ (`src/native/tags.rs`, `src/features/tags.rs`): đọc và ghi thẳng xattr `com.apple.metadata:_kMDItemUserTags`
+  (plist nhị phân "tên
+màu"), đọc lúc phục vụ `view.rows` nên chỉ trả giá cho dòng trên màn hình; tìm theo màu dùng
+  thêm `kMDItemFSLabel`. Lệnh riêng (`src/features/actions.rs`), bản đồ dung lượng và tệp trùng
+  (`src/features/disk.rs`), git (`src/features/git.rs`, không bao giờ gọi `/usr/bin/git`), chia sẻ
+  (`src/native/share.rs`), tạm dừng tác vụ (`Ctx::wait_while_paused` trong `progress`), hàng đợi chép và kiểm tra sau
+  khi chép (`settings.copy_queue`, `settings.verify_copies`, `browse::turn`, `browse::verify_copies`).
 - Thêm theo yêu cầu sau thiết kế: LazySpace thay Finder (`src/features/viewer.rs`, `ui/parts/15-finder.js`). "Hiện
   trong LazySpace" cạnh "Hiện trong Finder" (menu chuột phải, bảng lệnh, Command-Control-R, khay tạm) mở thư mục chứa
   mục trong tab mới của khung đang chọn và chọn sẵn mục; cửa sổ không có khung (khay tạm, desktop) gọi

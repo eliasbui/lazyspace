@@ -27,13 +27,38 @@ thao tác tệp chạy thành một tác vụ có tiến độ, có thể hủy 
 
 ## Tính năng
 
-- **Tối đa bốn khung, có tab.** Sáu bố cục: một khung, hai khung cạnh nhau hoặc trên dưới, ba khung, một trái hai phải,
-  hoặc lưới bốn khung. Mỗi khung có tab, lịch sử và kiểu xem riêng (danh sách hoặc biểu tượng). Khung hẹp thì bớt cột,
-  như QSpace.
+- **Tối đa bốn khung, có tab như File Explorer.** Sáu bố cục: một khung, hai khung cạnh nhau hoặc trên dưới, ba khung,
+  một trái hai phải, hoặc lưới bốn khung. Mỗi khung có tab, lịch sử và kiểu xem riêng (danh sách hoặc biểu tượng).
+  Thanh tab hiện cả khi chỉ có một tab, kèm nút tab mới; kéo tab để đổi chỗ hoặc sang khung khác, bấm chuột giữa để
+  đóng, chuột phải có menu riêng (nhân bản, chuyển sang cửa sổ mới hoặc khung bên kia, đóng các tab khác hoặc bên
+  phải). Chuột giữa hoặc Command và nhấp đúp mở thư mục trong tab mới. Khung hẹp thì bớt cột, như QSpace.
 - **Workspace.** Bố cục, các khung, các tab và vị trí của cửa sổ được lưu theo tên ở thanh bên, bấm là trở lại
   (Command-Option-W để lưu).
-- **Thanh đường dẫn gõ được.** Bấm vào từng phần, hoặc gõ đường dẫn với gợi ý tên thư mục; `~` là thư mục nhà, và gõ
-  được cả `sftp://`, `s3://` cùng các nơi khác.
+- **Thanh đường dẫn như File Explorer.** Bấm vào từng phần, mũi tên sau mỗi phần liệt kê thư mục con của nó, bên cạnh
+  có nút lên thư mục cha và tải lại, cuối thanh là những nơi đã đến. Khi gõ, thanh gợi ý những nơi đó trước rồi tới
+  các thư mục khớp đường dẫn; `~` là thư mục nhà, và gõ được cả `sftp://`, `s3://` cùng các nơi khác. Chuột phải vào
+  nút lùi, tiến để thấy danh sách nơi sẽ tới.
+- **Tìm nhanh như gõ.** Chỉ mục nhanh của thư mục nhà và Ứng dụng, giữ trong bộ nhớ và tự cập nhật theo FSEvents, so
+  khớp như fzf (cùng cách chấm điểm, viết bằng Rust; gõ không dấu vẫn ra, "bao cao" tìm được "Báo cáo"). Các mục khớp
+  nhất hiện ngay dưới ô tìm khi gõ; Enter tìm thư mục đang mở và mọi thư mục con, khớp nhất lên đầu, có lọc theo loại,
+  ngày, kích thước và nội dung (Spotlight), hoặc tìm cả máy.
+- **Bốn dạng xem như Finder.** Biểu tượng, danh sách, cột (Miller) và gallery (Command-1 đến 4). Danh sách có các cột
+  tự chọn (ngày sửa, ngày tạo, kích thước, loại, đuôi, vị trí) bằng chuột phải vào tiêu đề cột, và nhóm theo loại,
+  ngày hoặc kích thước.
+- **Gần đây và thẻ.** Các tệp dùng gần đây ở đầu thanh bên; thẻ màu của Finder hiện thành chấm, gắn từ menu chuột phải,
+  mỗi màu là một mục tìm cả máy trên thanh bên.
+- **Kéo khung để chọn** ở vùng trống cạnh các mục, giữ Shift để thêm, Command để đảo.
+- **Chia sẻ** qua bảng chia sẻ của hệ thống (AirDrop, Tin nhắn, Mail) từ thanh công cụ hoặc menu chuột phải.
+- **Lệnh của riêng bạn** trong menu chuột phải: một dòng zsh chạy với các mục đang chọn làm tham số, hiện kết quả hoặc
+  chạy trong Terminal.
+- **Cái gì chiếm chỗ.** Bản đồ dung lượng của thư mục kiểu DaisyDisk, và các tệp trùng nhau (theo kích thước rồi theo
+  nội dung), chọn sẵn bản thừa để đưa vào Thùng rác.
+- **Git trong danh sách.** Tệp đã sửa, mới hoặc xung đột có dấu sau tên, nhánh hiện trên thanh đường dẫn.
+- **Chép biết chờ và biết kiểm.** Tạm dừng, chạy tiếp mọi tác vụ; có thể cho các lần chép chạy lần lượt và kiểm tra
+  từng byte sau khi chép.
+- **Mở trong LazySpace từ Finder.** Menu chuột phải của thư mục hay tệp trong Finder (và mục Dịch vụ của mọi ứng dụng)
+  có "Mở trong LazySpace"; thả thư mục lên biểu tượng Dock để mở thành tab.
+- **Ghim thư mục.** Ghim bất kỳ thư mục nào vào thanh bên từ menu của nó, bỏ ghim ngay trên thanh bên.
 - **Màn hình nền do LazySpace hiện (tùy chọn).** Các mục của thư mục Màn hình nền trên hình nền, dưới mọi cửa sổ và ở
   mọi Space, mỗi biểu tượng nằm đúng chỗ bạn đặt, có menu chuột phải, phím tắt, Xem nhanh và kéo thả như một khung.
   Biểu tượng của Finder có thể ẩn khi bật, và trở lại khi tắt.
@@ -68,8 +93,9 @@ thao tác tệp chạy thành một tác vụ có tiến độ, có thể hủy 
 - **Màu sắc của bạn.** Sáng, tối hoặc theo hệ thống, các màu nhấn của Mac, biểu tượng thanh bên xám hoặc có màu, biểu
   tượng từ 48 tới 128 điểm, ba cỡ chữ cho danh sách, và phông chữ của cả cửa sổ: phông hệ thống, SF Pro Rounded, New
   York, SF Mono hoặc bất kỳ phông nào đã cài trên máy. Cài đặt chia trang như System Settings, có ô tìm kiếm.
-- **Liquid Glass (beta).** Thanh bên, thanh công cụ và các bảng thành kính mờ trên màn hình nền, dùng kính gốc của
-  macOS 26 khi có.
+- **Liquid Glass (beta).** Như Finder trên macOS 26: cửa sổ đặc, thanh bên là tấm kính nhìn thấy hình nền phía sau,
+  dùng kính gốc của macOS 26 nếu có. Thanh công cụ tự gập khi cửa sổ hẹp như thanh công cụ gốc, biểu tượng là SF
+  Symbols của hệ thống.
 - **Hoàn tác.** Chuyển, đổi tên, tạo mới và đưa vào Thùng rác đều hoàn tác được bằng Command-Z.
 - **Tiếng Việt hoặc tiếng Anh**, và tự cập nhật trong ứng dụng.
 

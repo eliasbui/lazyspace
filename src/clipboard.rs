@@ -19,7 +19,11 @@ pub fn write(paths: &[PathBuf]) -> isize {
 
 /// The files on the clipboard, whoever put them there.
 pub fn read() -> Vec<PathBuf> {
-    let pasteboard = NSPasteboard::generalPasteboard();
+    read_from(&NSPasteboard::generalPasteboard())
+}
+
+/// The files on a pasteboard: the clipboard's, or the one a service is handed.
+pub fn read_from(pasteboard: &NSPasteboard) -> Vec<PathBuf> {
     let classes = NSArray::from_slice(&[NSURL::class()]);
     let yes = NSNumber::new_bool(true);
     // SAFETY: the key is a process-lifetime constant; the value is an NSNumber as the option documents.

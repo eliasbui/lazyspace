@@ -31,6 +31,10 @@ pub struct View {
     keys: Vec<String>,
     /// What the page shows: the indices of `entries` left after the hidden items and the filter.
     shown: Vec<usize>,
+    /// The group of each item of `entries` when the list is shown in groups, in the same order; empty otherwise.
+    labels: Vec<String>,
+    /// Where each group starts in what is shown, with its name.
+    groups: Vec<(usize, String)>,
     filter: String,
     /// The sizes of folders worked out so far, by name.
     pub sizes: HashMap<String, u64>,
@@ -67,6 +71,8 @@ impl Views {
             entries: Vec::new(),
             keys: Vec::new(),
             shown: Vec::new(),
+            labels: Vec::new(),
+            groups: Vec::new(),
             filter: String::new(),
             sizes: HashMap::new(),
         });
@@ -93,7 +99,7 @@ impl Views {
         view.entries = entries;
         view.loading = false;
         view.generation = generation;
-        sort_entries(&mut view.entries, &mut view.keys, &view.sort, &view.sizes, kind);
+        view.labels = sort_entries(&mut view.entries, &mut view.keys, &view.sort, &view.sizes, kind);
         view.reshow();
         Some(generation)
     }
@@ -126,7 +132,7 @@ impl Views {
         let generation = self.bump();
         let view = self.get_mut(id, window)?;
         view.sort = sort;
-        sort_entries(&mut view.entries, &mut view.keys, &view.sort, &view.sizes, kind);
+        view.labels = sort_entries(&mut view.entries, &mut view.keys, &view.sort, &view.sizes, kind);
         view.generation = generation;
         view.reshow();
         Ok(generation)
@@ -224,6 +230,11 @@ impl View {
         self.shown.len()
     }
 
+    /// Where each group starts in what is shown, with its name, as `[[start, name], ...]`; empty without groups.
+    pub fn groups(&self) -> Value {
+        json!(self.groups)
+    }
+
     fn reshow(&mut self) {
         let filter = &self.filter;
         let show_hidden = self.show_hidden;
@@ -235,11 +246,25 @@ impl View {
             .filter(|(_, (e, key))| (show_hidden || !e.hidden) && (filter.is_empty() || key.contains(filter.as_str())))
             .map(|(i, _)| i)
             .collect();
+        self.groups.clear();
+        for (at, &i) in self.shown.iter().enumerate() {
+            let Some(label) = self.labels.get(i) else { break };
+            if self.groups.last().is_none_or(|(_, last)| last != label) {
+                self.groups.push((at, label.clone()));
+            }
+        }
     }
 
     fn row(&self, entry: &Entry, kind: &dyn Fn(&Entry) -> String) -> Value {
         let mut row = serde_json::to_value(entry).unwrap_or(Value::Null);
         row["type"] = json!(kind(entry));
+        // Finder's tags of an item of this Mac, read as its row is drawn, so a huge folder pays for those on screen only.
+        if let Some(path) = entry.uri.strip_prefix("file://").and_then(|_| Uri::parse(&entry.uri).ok()?.local_path()) {
+            let tags = crate::native::tags::read(&path);
+            if !tags.is_empty() {
+                row["tags"] = json!(tags);
+            }
+        }
         if let Some(size) = self.sizes.get(&entry.name) {
             row["dirSize"] = json!(size);
         }
@@ -247,13 +272,67 @@ impl View {
     }
 }
 
+/// The group of an item, as Finder's "Use Groups" shows it: where it goes among the groups (the first part of its key)
+/// and the group's name.
+fn group_of(e: &Entry, group: &str, kind: &str, size: u64, today: i64) -> ((u32, String), String) {
+    let folders = || ((0, String::new()), tr("Thư mục", "Folders").to_owned());
+    match group {
+        "kind" if e.is_dir => folders(),
+        "kind" => ((1, kind.to_lowercase()), kind.to_owned()),
+        "date" => {
+            let (rank, vi, en) = match e.mtime {
+                t if t >= today => (0, "Hôm nay", "Today"),
+                t if t >= today - 86_400 => (1, "Hôm qua", "Yesterday"),
+                t if t >= today - 7 * 86_400 => (2, "7 ngày trước", "Previous 7 Days"),
+                t if t >= today - 30 * 86_400 => (3, "30 ngày trước", "Previous 30 Days"),
+                t if t >= today - 365 * 86_400 => (4, "Trong năm qua", "Earlier This Year"),
+                _ => (5, "Cũ hơn", "Older"),
+            };
+            ((rank, String::new()), tr(vi, en).to_owned())
+        }
+        "size" if e.is_dir => folders(),
+        "size" => {
+            let (rank, vi, en) = match size {
+                s if s >= 1_000_000_000 => (1, "Rất lớn (trên 1 GB)", "Huge (over 1 GB)"),
+                s if s >= 100_000_000 => (2, "Lớn (100 MB đến 1 GB)", "Large (100 MB to 1 GB)"),
+                s if s >= 1_000_000 => (3, "Vừa (1 MB đến 100 MB)", "Medium (1 MB to 100 MB)"),
+                s if s > 0 => (4, "Nhỏ (dưới 1 MB)", "Small (under 1 MB)"),
+                _ => (5, "Trống", "Empty"),
+            };
+            ((rank, String::new()), tr(vi, en).to_owned())
+        }
+        _ => ((0, String::new()), String::new()),
+    }
+}
+
 /// Sorts as Finder does: folders first when asked, then by the chosen column, ties by name; names compare with
-/// numbers in them as numbers ("2" before "10") and without regard to case.
-pub fn sort_entries(entries: &mut Vec<Entry>, keys: &mut Vec<String>, sort: &Sort, sizes: &HashMap<String, u64>, kind: &dyn Fn(&Entry) -> String) {
+/// numbers in them as numbers ("2" before "10") and without regard to case. `none` keeps the order the place gave
+/// (the recent items, newest first). In groups, the groups come first, each sorted within; the name of each item's
+/// group comes back in the new order (none without groups).
+pub fn sort_entries(entries: &mut Vec<Entry>, keys: &mut Vec<String>, sort: &Sort, sizes: &HashMap<String, u64>, kind: &dyn Fn(&Entry) -> String) -> Vec<String> {
+    let grouped = !sort.group.is_empty();
+    if sort.by == "none" && !grouped {
+        return Vec::new();
+    }
+    let today = if sort.group == "date" { crate::native::start_of_today() } else { 0 };
+    let groups: HashMap<String, ((u32, String), String)> = if grouped {
+        let size = |e: &Entry| if e.is_dir || e.kind == "app" || e.kind == "package" { sizes.get(&e.name).copied().unwrap_or(0) } else { e.size };
+        entries.iter().map(|e| (e.name.clone(), group_of(e, &sort.group, &if sort.group == "kind" { kind(e) } else { String::new() }, size(e), today))).collect()
+    } else {
+        HashMap::new()
+    };
+    // The folder an item is in, for search results, where items come from many.
+    let folder = |e: &Entry| e.uri.rsplit_once('/').map_or(String::new(), |(f, _)| f.to_lowercase());
     let size_of = |e: &Entry| if e.is_dir || e.kind == "app" || e.kind == "package" { sizes.get(&e.name).copied().unwrap_or(0) } else { e.size };
     let kinds: HashMap<String, String> = if sort.by == "kind" { entries.iter().map(|e| (e.name.clone(), kind(e))).collect() } else { HashMap::new() };
     let mut pairs: Vec<(String, Entry)> = keys.drain(..).zip(entries.drain(..)).collect();
     pairs.sort_by(|(ka, a), (kb, b)| {
+        if grouped {
+            let by_group = groups[&a.name].0.cmp(&groups[&b.name].0);
+            if by_group != Ordering::Equal || sort.by == "none" {
+                return by_group;
+            }
+        }
         if sort.folders_first && a.is_dir != b.is_dir {
             return b.is_dir.cmp(&a.is_dir);
         }
@@ -263,6 +342,7 @@ pub fn sort_entries(entries: &mut Vec<Entry>, keys: &mut Vec<String>, sort: &Sor
             "ctime" => a.ctime.cmp(&b.ctime),
             "kind" => natural(&kinds[&a.name], &kinds[&b.name]),
             "ext" => a.ext.cmp(&b.ext),
+            "where" => folder(a).cmp(&folder(b)),
             _ => Ordering::Equal,
         };
         let by = if sort.desc { by.reverse() } else { by };
@@ -271,10 +351,15 @@ pub fn sort_entries(entries: &mut Vec<Entry>, keys: &mut Vec<String>, sort: &Sor
             if sort.desc && sort.by == "name" { names.reverse() } else { names }
         })
     });
+    let mut labels = Vec::with_capacity(if grouped { pairs.len() } else { 0 });
     for (key, entry) in pairs {
+        if grouped {
+            labels.push(groups[&entry.name].1.clone());
+        }
         keys.push(key);
         entries.push(entry);
     }
+    labels
 }
 
 /// Compares names as Finder does: case aside, and runs of digits by their value.
@@ -370,7 +455,7 @@ mod tests {
     #[test]
     fn other_columns_and_descending() {
         let mut views = listed(Sort::default());
-        let sort = |by: &str, desc: bool| Sort { by: by.into(), desc, folders_first: false };
+        let sort = |by: &str, desc: bool| Sort { by: by.into(), desc, folders_first: false, group: String::new() };
         views.sort("p0t0", window(), sort("size", true), &kind).unwrap();
         assert_eq!(names(&views, "p0t0"), ["B2.txt", "a.md", "b10.txt", "Zed"]);
         views.sort("p0t0", window(), sort("mtime", false), &kind).unwrap();
@@ -379,6 +464,39 @@ mod tests {
         assert_eq!(names(&views, "p0t0"), ["Zed", "b10.txt", "B2.txt", "a.md"]);
         views.sort("p0t0", window(), sort("kind", false), &kind).unwrap();
         assert_eq!(names(&views, "p0t0"), ["Zed", "a.md", "B2.txt", "b10.txt"]);
+    }
+
+    #[test]
+    fn groups_come_first_each_sorted_within_and_follow_the_filter() {
+        let mut views = listed(Sort::default());
+        let by_kind = Sort { by: "name".into(), desc: false, folders_first: true, group: "kind".into() };
+        views.sort("p0t0", window(), by_kind, &kind).unwrap();
+        assert_eq!(names(&views, "p0t0"), ["Zed", "a.md", "B2.txt", "b10.txt"]);
+        let groups = |views: &Views| views.get("p0t0", window()).unwrap().groups();
+        assert_eq!(groups(&views), json!([[0, tr("Thư mục", "Folders")], [1, "md file"], [2, "txt file"]]));
+        views.filter("p0t0", window(), "b").unwrap();
+        assert_eq!(groups(&views), json!([[0, "txt file"]]), "a group with nothing shown is gone");
+        views.filter("p0t0", window(), "").unwrap();
+        let by_size = Sort { by: "name".into(), desc: false, folders_first: false, group: "size".into() };
+        views.sort("p0t0", window(), by_size, &kind).unwrap();
+        assert_eq!(names(&views, "p0t0"), ["Zed", "a.md", "B2.txt", "b10.txt"], "the folder, then the small ones by name");
+        views.sort("p0t0", window(), Sort::default(), &kind).unwrap();
+        assert_eq!(groups(&views), json!([]));
+    }
+
+    #[test]
+    fn a_place_keeps_its_own_order_or_sorts_by_the_folder_of_each_item() {
+        let mut views = Views::default();
+        let none = Sort { by: "none".into(), desc: false, folders_first: true, group: String::new() };
+        let request = views.begin(window(), "s", Uri::parse("search://q%3Dx/").unwrap(), none, false, caps());
+        let mut a = entry("a.txt", false, 1, 1);
+        a.uri = "file:///z/a.txt".into();
+        let mut b = entry("b.txt", false, 1, 1);
+        b.uri = "file:///y/b.txt".into();
+        views.finish("s", request, vec![a, b, entry("Zed", true, 0, 0)], &kind).unwrap();
+        assert_eq!(names(&views, "s"), ["a.txt", "b.txt", "Zed"], "as the place gave them, the newest used first");
+        views.sort("s", window(), Sort { by: "where".into(), desc: false, folders_first: false, group: String::new() }, &kind).unwrap();
+        assert_eq!(names(&views, "s"), ["Zed", "b.txt", "a.txt"], "by folder: /x, /y, /z");
     }
 
     #[test]

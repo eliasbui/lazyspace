@@ -5,12 +5,14 @@ words({
     conflictTitle: "Đã có một mục tên \"{0}\" ở đây.", conflictText: "Bạn muốn thay thế nó, giữ cả hai, hay bỏ qua mục này?",
     conflictFolder: "Đã có một thư mục tên \"{0}\" ở đây. Gộp sẽ đưa nội dung vào thư mục có sẵn và hỏi với từng mục trùng tên.",
     incoming: "Mục mới", existing: "Mục đang có", applyAll: "Áp dụng cho tất cả", stop: "Dừng", skip: "Bỏ qua", merge: "Gộp",
+    pauseJob: "Tạm dừng", resumeJob: "Chạy tiếp", jobPaused: "Đã tạm dừng",
     replace: "Thay thế", keepBoth: "Giữ cả hai", working: "Đang làm...", password: "Nhập mật khẩu cho {0}", ok: "OK", yes: "Có",
   },
   en: {
     conflictTitle: "An item named \"{0}\" is already here.", conflictText: "Do you want to replace it, keep both, or skip this item?",
     conflictFolder: "A folder named \"{0}\" is already here. Merging puts the contents into it and asks about each item with the same name.",
     incoming: "Incoming", existing: "Already here", applyAll: "Apply to all", stop: "Stop", skip: "Skip", merge: "Merge",
+    pauseJob: "Pause", resumeJob: "Resume", jobPaused: "Paused",
     replace: "Replace", keepBoth: "Keep Both", working: "Working...", password: "Enter the password for {0}", ok: "OK", yes: "Yes",
   },
 });
@@ -28,12 +30,24 @@ const Jobs = (() => {
   on("jobs.started", (d) => {
     const el = document.createElement("div");
     el.className = "job";
-    el.innerHTML = `<div class="what"></div><button class="stop" title="${esc(t("stop"))}">${icon("xmark")}</button><div class="bar wait"><i></i></div><div class="now"></div>`;
+    el.innerHTML = `<div class="what"></div><div class="job-tools"><button class="stop pause" title="${esc(t("pauseJob"))}">${icon("pause")}</button><button class="stop" data-stop title="${esc(t("stop"))}">${icon("xmark")}</button></div><div class="bar wait"><i></i></div><div class="now"></div>`;
     el.querySelector(".what").textContent = d.title;
-    el.querySelector(".stop").addEventListener("click", () => call("jobs.cancel", { id: d.id }).catch(() => {}));
+    el.querySelector("[data-stop]").addEventListener("click", () => call("jobs.cancel", { id: d.id }).catch(() => {}));
+    // A job is paused at its next step and goes on where it was.
+    el.querySelector(".pause").addEventListener("click", () => call("jobs.pause", { id: d.id, paused: !el.classList.contains("paused") }).catch(() => {}));
     // A job over in a moment never shows.
     const timer = setTimeout(() => $("jobs").appendChild(el), 450);
     rows.set(d.id, { el, timer });
+  });
+
+  on("jobs.paused", (d) => {
+    const r = row(d.id);
+    if (!r) return;
+    r.el.classList.toggle("paused", d.paused);
+    const b = r.el.querySelector(".pause");
+    b.innerHTML = icon(d.paused ? "play" : "pause");
+    b.title = t(d.paused ? "resumeJob" : "pauseJob");
+    if (d.paused) r.el.querySelector(".now").textContent = t("jobPaused");
   });
 
   on("jobs.progress", (d) => {

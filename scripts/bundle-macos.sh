@@ -34,6 +34,8 @@ for s in 16 32 128 256 512; do
 done
 iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/AppIcon.icns"
 
+# "Open in LazySpace" (NSServices) in the menu Finder shows for any item and under Services in every app; an empty
+# NSRequiredContext has it on without a visit to the Keyboard settings. Its name in Vietnamese is in ServicesMenu.strings.
 # The questions macOS asks the first time the app reads a protected folder, in both languages of the app. Folders are
 # declared so LazySpace can be made the app for them (Settings, "Use LazySpace instead of Finder"); as an alternate it
 # never takes them unless asked. Files need no declaration: a reveal from another app reaches the file viewer as an
@@ -55,6 +57,16 @@ cat >"$APP/Contents/Info.plist" <<EOT
     <key>CFBundleLocalizations</key><array><string>en</string><string>vi</string></array>
     <key>LSMinimumSystemVersion</key><string>13.0</string>
     <key>NSHighResolutionCapable</key><true/>
+    <key>NSServices</key>
+    <array>
+        <dict>
+            <key>NSMenuItem</key><dict><key>default</key><string>Open in LazySpace</string></dict>
+            <key>NSMessage</key><string>openInLazySpace</string>
+            <key>NSPortName</key><string>LazySpace</string>
+            <key>NSRequiredContext</key><dict/>
+            <key>NSSendFileTypes</key><array><string>public.item</string></array>
+        </dict>
+    </array>
     <key>CFBundleDocumentTypes</key>
     <array>
         <dict>
@@ -78,6 +90,9 @@ cat >"$APP/Contents/Resources/en.lproj/InfoPlist.strings" <<'EOT'
 "NSDownloadsFolderUsageDescription" = "LazySpace shows the files in your Downloads folder.";
 "NSRemovableVolumesUsageDescription" = "LazySpace shows the files on your external drives.";
 "NSNetworkVolumesUsageDescription" = "LazySpace shows the files on your network volumes.";
+EOT
+cat >"$APP/Contents/Resources/vi.lproj/ServicesMenu.strings" <<'EOT'
+"Open in LazySpace" = "Mở trong LazySpace";
 EOT
 cat >"$APP/Contents/Resources/vi.lproj/InfoPlist.strings" <<'EOT'
 "NSDesktopFolderUsageDescription" = "LazySpace hiển thị các tệp trong thư mục Màn hình nền của bạn.";

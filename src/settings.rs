@@ -29,16 +29,18 @@ pub fn layout_path() -> PathBuf {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Sort {
-    /// "name", "size", "mtime", "kind" or "ext".
+    /// "name", "size", "mtime", "ctime", "kind", "ext" or "where".
     pub by: String,
     pub desc: bool,
     #[serde(rename = "foldersFirst")]
     pub folders_first: bool,
+    /// The groups the list is shown in, as Finder's "Use Groups": "" for none, "kind", "date" or "size".
+    pub group: String,
 }
 
 impl Default for Sort {
     fn default() -> Self {
-        Sort { by: "name".into(), desc: false, folders_first: true }
+        Sort { by: "name".into(), desc: false, folders_first: true, group: String::new() }
     }
 }
 
@@ -99,6 +101,15 @@ pub struct Settings {
     /// LazySpace in place of Finder: the Mac's file viewer and the app for folders (src/features/viewer.rs). What the
     /// user asked for; the system's own defaults say whether it holds.
     pub file_viewer: bool,
+    /// The tab bar of each pane even with one tab, with its button for a new tab, as Windows' File Explorer has it.
+    pub always_tabs: bool,
+    /// The columns of the list view after the name, in their order: "mtime", "ctime", "size", "kind", "ext", "where".
+    pub columns: Vec<String>,
+    /// Copies and moves wait for each other and run one at a time, rather than all at once.
+    pub copy_queue: bool,
+    /// After a copy, each file is read again on both sides and their SHA-256 compared.
+    pub verify_copies: bool,
+    /// The folders the user pinned to the sidebar, as URIs, in the order they show.
     pub favourites: Vec<String>,
     pub sidebar_sections: Value,
     #[serde(flatten)]
@@ -126,6 +137,10 @@ impl Default for Settings {
             font: String::new(),
             check_updates: true,
             file_viewer: false,
+            always_tabs: true,
+            columns: vec!["mtime".into(), "size".into(), "kind".into()],
+            copy_queue: false,
+            verify_copies: false,
             favourites: Vec::new(),
             sidebar_sections: Value::Null,
             extra: Map::new(),
@@ -159,15 +174,16 @@ impl Settings {
     }
 
     fn check(&self) -> Result<(), String> {
-        let choices: [(&str, &str, &[&str]); 9] = [
+        let choices: [(&str, &str, &[&str]); 10] = [
             ("language", &self.language, &["vi", "en"]),
             ("accent", &self.accent, &["system", "blue", "purple", "pink", "red", "orange", "yellow", "green", "graphite"]),
             ("sidebar_icons", &self.sidebar_icons, &["mono", "color"]),
             ("text_size", &self.text_size, &["small", "medium", "large"]),
             ("theme", &self.theme, &["system", "light", "dark"]),
             ("keymap", &self.keymap, &["mac", "windows"]),
-            ("view_mode", &self.view_mode, &["list", "icons", "columns"]),
-            ("sort.by", &self.sort.by, &["name", "size", "mtime", "kind", "ext"]),
+            ("view_mode", &self.view_mode, &["list", "icons", "columns", "gallery"]),
+            ("sort.by", &self.sort.by, &["name", "size", "mtime", "ctime", "kind", "ext", "where"]),
+            ("sort.group", &self.sort.group, &["", "kind", "date", "size"]),
             ("preview.side", &self.preview.side, &["right", "bottom"]),
         ];
         for (key, value, allowed) in choices {
@@ -178,6 +194,11 @@ impl Settings {
         // The family goes into a CSS value in quotes: no quote, backslash or control character can end it early.
         if self.font.chars().count() > 64 || self.font.chars().any(|c| c == '"' || c == '\\' || c.is_control()) {
             return Err(format!("{} font: {}", tr("Giá trị không hợp lệ cho", "Not a valid value for"), self.font));
+        }
+        let known = ["mtime", "ctime", "size", "kind", "ext", "where"];
+        let repeated = self.columns.iter().enumerate().any(|(i, c)| self.columns[..i].contains(c));
+        if repeated || self.columns.iter().any(|c| !known.contains(&c.as_str())) {
+            return Err(format!("{} columns: {}", tr("Giá trị không hợp lệ cho", "Not a valid value for"), self.columns.join(", ")));
         }
         if ![48, 64, 96, 128].contains(&self.icon_size) {
             return Err(format!("{} icon_size: {}", tr("Giá trị không hợp lệ cho", "Not a valid value for"), self.icon_size));
@@ -261,6 +282,11 @@ mod tests {
         assert!(settings.patched(&json!({"font": "Avenir Next"})).is_ok() && settings.patched(&json!({"font": "ui-rounded"})).is_ok());
         assert!(settings.patched(&json!({"font": "x\", serif; } body { color: red"})).is_err(), "a quote would end the family");
         assert!(settings.patched(&json!(["glass"])).is_err(), "not an object");
+        let columns = settings.patched(&json!({"columns": ["where", "size"]})).unwrap();
+        assert_eq!(columns.columns, ["where", "size"], "a list is taken whole, in its order");
+        assert!(settings.patched(&json!({"columns": ["size", "size"]})).is_err(), "a column twice");
+        assert!(settings.patched(&json!({"columns": ["colour"]})).is_err(), "a column nobody knows");
+        assert!(settings.patched(&json!({"sort": {"by": "where"}})).is_ok() && settings.patched(&json!({"sort": {"by": "none"}})).is_err());
     }
 
     #[test]

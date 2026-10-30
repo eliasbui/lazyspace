@@ -5,8 +5,8 @@ LZ.words({
   en: { openTerminal: "Open in Terminal", openEditor: "Open in Editor", otherApp: "Other App..." },
 });
 LZ.icons.add({
-  terminal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7 9.5l3 2.5-3 2.5M12.5 15h4.5"/></svg>',
-  editor: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4.5h-8a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-6"/><path d="M17.5 3.5l3 3-8 8H9.5v-3z"/></svg>',
+  terminal: "terminal",
+  editor: "chevron.left.forwardslash.chevron.right",
 });
 
 const OpenIn = (() => {
