@@ -93,8 +93,7 @@ const Jobs = (() => {
     } else if (q.type === "confirm") {
       confirmSheet(q.text, "", t("yes")).then((yes) => answer(yes ? "yes" : "no"));
     } else if (q.type === "password") {
-      const text = prompt(t("password", q.what));
-      answer(text == null ? "stop" : { text });
+      LZ.prompt(t("password", q.what), { secret: true }).then((text) => answer(text == null ? "stop" : { text }));
     }
   }
 

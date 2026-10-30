@@ -1,5 +1,6 @@
 //! The `lazy://` protocol the page loads pictures through: `lazy://icon/<px>/<key>` (the icon of a file type or an
-//! item, see `vfs::Entry::icon`), `lazy://thumb/<px>/<path>` (a Quick Look thumbnail) and `lazy://file/<path>` (the
+//! item, see `vfs::Entry::icon`), `lazy://symbol/<px>/<name>` (an SF Symbol, for the menu editor),
+//! `lazy://thumb/<px>/<path>` (a Quick Look thumbnail) and `lazy://file/<path>` (the
 //! file itself, with ranges, for previews). Thumbnails and files are served only from the folders the app has open
 //! (`allow`), so a page that went wrong still cannot read the disk at large. Anything else is 404.
 
@@ -49,6 +50,13 @@ pub fn handle(request: Request<Vec<u8>>, responder: RequestAsyncResponder) {
     match host.as_str() {
         "icon" => {
             let png = first.parse().ok().zip(decode(rest)).and_then(|(px, key)| icons::icon_png(&key, px));
+            match png {
+                Some(png) => responder.respond(image((*png).clone())),
+                None => responder.respond(status(StatusCode::NOT_FOUND)),
+            }
+        }
+        "symbol" => {
+            let png = first.parse().ok().zip(decode(rest)).and_then(|(px, name)| icons::symbol_png(&name, px));
             match png {
                 Some(png) => responder.respond(image((*png).clone())),
                 None => responder.respond(status(StatusCode::NOT_FOUND)),

@@ -59,6 +59,10 @@ const LZ = (() => {
       if (at >= 0) items.splice(at, 1);
       items.push(item);
     },
+    // Every top-level item, in the order of the groups, for the menu editor.
+    list() {
+      return [...items].sort((a, b) => (a.group ?? 50) - (b.group ?? 50) || (a.order ?? 50) - (b.order ?? 50)).map((i) => ({ id: i.id, label: t(typeof i.label === "string" ? i.label : i.id), icon: i.icon, group: i.group ?? 50 }));
+    },
     // Shows the menu for `ctx` at the point of `event` (or `x`, `y`).
     show(ctx, x, y) {
       menuItems = new Map();
@@ -174,7 +178,42 @@ const LZ = (() => {
     },
   };
 
-  return { menu, choose, toolbar, sidebar, settings, sheet, vfs, words, icons, on, call, t, esc, toast, say, confirm: confirmSheet };
+  // A question with a typed answer, as a sheet: resolves the text, or null when cancelled. `secret` hides what is
+  // typed (a password). The page has no prompt() of its own in the app's web view.
+  const promptPanel = sheet.create("promptSheet", { small: true, modal: true });
+  promptPanel.innerHTML = `<h2></h2><p></p><input class="prompt-input" spellcheck="false"><div class="buttons"><button class="push" data-a="no"></button><button class="push primary" data-a="yes"></button></div>`;
+  function prompt(title, { text = "", value = "", secret = false, ok = t("ok") } = {}) {
+    return new Promise((resolve) => {
+      const input = promptPanel.querySelector("input");
+      promptPanel.querySelector("h2").textContent = title;
+      promptPanel.querySelector("p").textContent = text;
+      promptPanel.querySelector('[data-a="no"]').textContent = t("cancel");
+      promptPanel.querySelector('[data-a="yes"]').textContent = ok;
+      input.type = secret ? "password" : "text";
+      input.value = value;
+      openSheet("promptSheet");
+      setTimeout(() => {
+        input.focus();
+        input.select();
+      }, 30);
+      const done = (answer) => {
+        promptPanel.onclick = input.onkeydown = null;
+        closeSheets();
+        resolve(answer);
+      };
+      promptPanel.onclick = (e) => {
+        const a = e.target.closest("[data-a]")?.dataset.a;
+        if (a) done(a === "yes" ? input.value : null);
+      };
+      input.onkeydown = (e) => {
+        e.stopPropagation();
+        if (e.key === "Enter") done(input.value);
+        if (e.key === "Escape") done(null);
+      };
+    });
+  }
+
+  return { menu, choose, prompt, toolbar, sidebar, settings, sheet, vfs, words, icons, on, call, t, esc, toast, say, confirm: confirmSheet };
 })();
 
 // The layout button: a native menu of the layouts, the current one checked.

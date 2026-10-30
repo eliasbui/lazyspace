@@ -2,19 +2,23 @@
 //! here so none of them edits main.rs (design.md section 15).
 
 pub mod hash;
+pub mod menuedit;
 pub mod openin;
 pub mod preview;
 pub mod rename;
 pub mod templates;
+pub mod workspaces;
 
 use crate::ipc::Dispatcher;
 
 pub fn register(d: &mut Dispatcher) {
     hash::register(d);
+    menuedit::register(d);
     openin::register(d);
     preview::register(d);
     rename::register(d);
     templates::register(d);
+    workspaces::register(d);
 }
 
 /// The folder where the features keep their files, beside settings.json.
@@ -30,7 +34,7 @@ mod tests {
     fn every_feature_registers_without_panicking() {
         let mut d = Dispatcher::new();
         register(&mut d);
-        for area in ["hash", "openin", "preview", "rename", "templates"] {
+        for area in ["hash", "menuedit", "openin", "preview", "rename", "templates", "workspaces"] {
             assert!(d.areas().contains(&area), "{area}");
         }
     }

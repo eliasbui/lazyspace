@@ -866,18 +866,33 @@ const Panes = (() => {
     emit("selection", { pane });
   }
 
+  // The window as layout.json and workspaces keep it.
+  function state() {
+    return {
+      layout: grid.dataset.layout,
+      focus: panes.indexOf(focused),
+      sidebarWidth: Sidebar.width(),
+      sidebarHidden: $("app").classList.contains("no-sidebar"),
+      panes: panes.map((p) => ({ active: p.active, cols: p.cols, tabs: p.tabs.map((tab) => ({ uri: tab.uri, mode: tab.mode, sort: tab.sort })) })),
+    };
+  }
+
   function saveSoon() {
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-      const state = {
-        layout: grid.dataset.layout,
-        focus: panes.indexOf(focused),
-        sidebarWidth: Sidebar.width(),
-        sidebarHidden: $("app").classList.contains("no-sidebar"),
-        panes: panes.map((p) => ({ active: p.active, cols: p.cols, tabs: p.tabs.map((tab) => ({ uri: tab.uri, mode: tab.mode, sort: tab.sort })) })),
-      };
-      call("panes.state", { state }).catch(() => {});
-    }, 500);
+    saveTimer = setTimeout(() => call("panes.state", { state: state() }).catch(() => {}), 500);
+  }
+
+  // Replaces the panes of the window by those of `saved` (a workspace).
+  function load(saved) {
+    for (const pane of panes) {
+      for (const tab of pane.tabs) call("view.close", { view: tab.id }).catch(() => {});
+      pane.el.remove();
+    }
+    panes.length = 0;
+    focused = null;
+    $("app").classList.remove("no-sidebar");
+    start(saved);
+    saveSoon();
   }
 
   // Builds the panes from the layout the window had (layout.json), or one pane at home.
@@ -1221,6 +1236,8 @@ const Panes = (() => {
     start,
     open,
     setLayout,
+    state,
+    load,
     focus,
     current,
     focused: () => focused,

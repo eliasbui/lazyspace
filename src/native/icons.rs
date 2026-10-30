@@ -53,6 +53,26 @@ pub fn icon_png(key: &str, px: u32) -> Option<Arc<Vec<u8>>> {
     Some(png)
 }
 
+/// The PNG of the SF Symbol `name`, `px` pixels square, drawn in black on clear (the page tints it for dark mode); None
+/// for a name this macOS does not have.
+pub fn symbol_png(name: &str, px: u32) -> Option<Arc<Vec<u8>>> {
+    if name.is_empty() || name.len() > 80 || !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '.') {
+        return None;
+    }
+    let key = format!("symbol:{name}");
+    let px = px.clamp(16, 256);
+    if let Some(png) = cache().lock().ok()?.get(&(key.clone(), px)) {
+        return Some(png.clone());
+    }
+    let mtm = MainThreadMarker::new()?;
+    let image = NSImage::imageWithSystemSymbolName_accessibilityDescription(&NSString::from_str(name), None)?;
+    let png = Arc::new(png_at(mtm, &image, px)?);
+    if let Ok(mut cache) = cache().lock() {
+        cache.insert((key, px), png.clone());
+    }
+    Some(png)
+}
+
 /// Draws `image` into a bitmap of `px` pixels square and returns it as PNG; the image picks its own best
 /// representation for that size, so the result is sharp.
 fn png_at(_mtm: MainThreadMarker, image: &NSImage, px: u32) -> Option<Vec<u8>> {
