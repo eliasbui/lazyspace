@@ -1,6 +1,7 @@
 //! The extensions of the core browser, each in its own module with its own methods (`<feature>.<verb>`), registered
 //! here so none of them edits main.rs (design.md section 15).
 
+pub mod archive;
 pub mod hash;
 pub mod menuedit;
 pub mod openin;
@@ -13,6 +14,7 @@ pub mod workspaces;
 use crate::ipc::Dispatcher;
 
 pub fn register(d: &mut Dispatcher) {
+    archive::register(d);
     hash::register(d);
     menuedit::register(d);
     openin::register(d);
@@ -36,7 +38,7 @@ mod tests {
     fn every_feature_registers_without_panicking() {
         let mut d = Dispatcher::new();
         register(&mut d);
-        for area in ["hash", "menuedit", "openin", "preview", "rename", "sync", "templates", "workspaces"] {
+        for area in ["archive", "hash", "menuedit", "openin", "preview", "rename", "sync", "templates", "workspaces"] {
             assert!(d.areas().contains(&area), "{area}");
         }
     }

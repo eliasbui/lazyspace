@@ -27,6 +27,8 @@ pub struct View {
     pub loading: bool,
     /// Every item, sorted.
     entries: Vec<Entry>,
+    /// The folded name of each item of `entries` (`vfs::fold`), in the same order.
+    keys: Vec<String>,
     /// What the page shows: the indices of `entries` left after the hidden items and the filter.
     shown: Vec<usize>,
     filter: String,
@@ -63,6 +65,7 @@ impl Views {
             request,
             loading: true,
             entries: Vec::new(),
+            keys: Vec::new(),
             shown: Vec::new(),
             filter: String::new(),
             sizes: HashMap::new(),
@@ -86,10 +89,11 @@ impl Views {
     pub fn finish(&mut self, id: &str, request: u64, entries: Vec<Entry>, kind: &dyn Fn(&Entry) -> String) -> Option<u64> {
         let generation = self.bump();
         let view = self.by_id.get_mut(id).filter(|v| v.request == request)?;
+        view.keys = entries.iter().map(Entry::key).collect();
         view.entries = entries;
         view.loading = false;
         view.generation = generation;
-        sort_entries(&mut view.entries, &view.sort, &view.sizes, kind);
+        sort_entries(&mut view.entries, &mut view.keys, &view.sort, &view.sizes, kind);
         view.reshow();
         Some(generation)
     }
@@ -122,7 +126,7 @@ impl Views {
         let generation = self.bump();
         let view = self.get_mut(id, window)?;
         view.sort = sort;
-        sort_entries(&mut view.entries, &view.sort, &view.sizes, kind);
+        sort_entries(&mut view.entries, &mut view.keys, &view.sort, &view.sizes, kind);
         view.generation = generation;
         view.reshow();
         Ok(generation)
@@ -132,7 +136,7 @@ impl Views {
     pub fn filter(&mut self, id: &str, window: WindowId, text: &str) -> Result<(u64, usize), String> {
         let generation = self.bump();
         let view = self.get_mut(id, window)?;
-        view.filter = text.to_lowercase();
+        view.filter = crate::vfs::fold(text);
         view.generation = generation;
         view.reshow();
         Ok((generation, view.shown.len()))
@@ -150,8 +154,8 @@ impl Views {
     /// Where the first item whose name starts with `prefix` is, as typing a name in a list finds it.
     pub fn find(&self, id: &str, window: WindowId, prefix: &str) -> Result<Option<usize>, String> {
         let view = self.get(id, window)?;
-        let prefix = prefix.to_lowercase();
-        Ok(view.shown.iter().position(|&i| view.entries[i].key().starts_with(&prefix)))
+        let prefix = crate::vfs::fold(prefix);
+        Ok(view.shown.iter().position(|&i| view.keys[i].starts_with(&prefix)))
     }
 
     pub fn index_of(&self, id: &str, window: WindowId, name: &str) -> Result<Option<usize>, String> {
@@ -221,8 +225,9 @@ impl View {
         self.shown = self
             .entries
             .iter()
+            .zip(&self.keys)
             .enumerate()
-            .filter(|(_, e)| (show_hidden || !e.hidden) && (filter.is_empty() || e.key().contains(filter.as_str())))
+            .filter(|(_, (e, key))| (show_hidden || !e.hidden) && (filter.is_empty() || key.contains(filter.as_str())))
             .map(|(i, _)| i)
             .collect();
     }
@@ -239,10 +244,11 @@ impl View {
 
 /// Sorts as Finder does: folders first when asked, then by the chosen column, ties by name; names compare with
 /// numbers in them as numbers ("2" before "10") and without regard to case.
-pub fn sort_entries(entries: &mut [Entry], sort: &Sort, sizes: &HashMap<String, u64>, kind: &dyn Fn(&Entry) -> String) {
+pub fn sort_entries(entries: &mut Vec<Entry>, keys: &mut Vec<String>, sort: &Sort, sizes: &HashMap<String, u64>, kind: &dyn Fn(&Entry) -> String) {
     let size_of = |e: &Entry| if e.is_dir || e.kind == "app" || e.kind == "package" { sizes.get(&e.name).copied().unwrap_or(0) } else { e.size };
     let kinds: HashMap<String, String> = if sort.by == "kind" { entries.iter().map(|e| (e.name.clone(), kind(e))).collect() } else { HashMap::new() };
-    entries.sort_by(|a, b| {
+    let mut pairs: Vec<(String, Entry)> = keys.drain(..).zip(entries.drain(..)).collect();
+    pairs.sort_by(|(ka, a), (kb, b)| {
         if sort.folders_first && a.is_dir != b.is_dir {
             return b.is_dir.cmp(&a.is_dir);
         }
@@ -256,10 +262,14 @@ pub fn sort_entries(entries: &mut [Entry], sort: &Sort, sizes: &HashMap<String, 
         };
         let by = if sort.desc { by.reverse() } else { by };
         by.then_with(|| {
-            let names = natural(&a.name, &b.name);
+            let names = natural(ka, kb);
             if sort.desc && sort.by == "name" { names.reverse() } else { names }
         })
     });
+    for (key, entry) in pairs {
+        keys.push(key);
+        entries.push(entry);
+    }
 }
 
 /// Compares names as Finder does: case aside, and runs of digits by their value.

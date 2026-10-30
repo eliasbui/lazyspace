@@ -43,7 +43,7 @@ pub fn register(d: &mut Dispatcher) {
             index: usize,
         }
         let index = args::<Look>(a.clone())?.index;
-        let paths = local(browse::targets(app, window, &a).unwrap_or_default())?;
+        let paths: Vec<PathBuf> = browse::targets(app, window, &a).unwrap_or_default().iter().filter_map(|u| crate::vfs::materialize(u).ok()).collect();
         let surface = app.surfaces.get(&window).ok_or_else(|| tr("Cửa sổ đã đóng", "The window is closed").to_owned())?;
         let ns_window = native::ns_window(&surface.window).ok_or_else(|| "no window".to_owned())?;
         quicklook::toggle(main_thread()?, ns_window, &paths, index);

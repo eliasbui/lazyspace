@@ -34,6 +34,13 @@ pub fn allow(folders: impl IntoIterator<Item = PathBuf>) {
     }
 }
 
+/// Adds a folder to those served (the copy of an item previewed from inside an archive).
+pub fn allow_also(folder: Option<PathBuf>) {
+    if let (Some(folder), Ok(mut set)) = (folder, allowed().lock()) {
+        set.insert(folder);
+    }
+}
+
 /// Whether `path` is directly in an allowed folder, or is one.
 pub fn is_allowed(path: &Path) -> bool {
     let Ok(set) = allowed().lock() else { return false };

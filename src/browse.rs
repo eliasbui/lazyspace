@@ -618,7 +618,8 @@ pub fn register(d: &mut Dispatcher) {
         Ok(Value::Null)
     });
     d.on("native.open", |app, window, a| {
-        let paths = local_paths(&targets(app, window, &a)?)?;
+        // An item inside an archive or on a server opens from a copy on this Mac.
+        let paths: Vec<PathBuf> = targets(app, window, &a)?.iter().map(vfs::materialize).collect::<Result<_, _>>()?;
         workspace::open(&paths)?;
         Ok(Value::Null)
     });

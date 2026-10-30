@@ -34,7 +34,7 @@ words({
     { id: "open", label: "m.open", icon: "arrow.up.forward.app", group: 10, order: 1, when: some, action: "open", run: act("open") },
     { id: "openWith", label: "m.openWith", icon: "square.and.arrow.up.on.square", group: 10, order: 2, when: file, submenu: [] },
     { id: "openTab", label: "m.openTab", icon: "plus.rectangle.on.rectangle", group: 10, order: 3, when: (c) => some(c) && c.entries.every((e) => e.isDir), run: act("openInNewTab") },
-    { id: "quickLook", label: "m.quickLook", icon: "eye", group: 10, order: 4, when: (c) => some(c) && local(c), action: "quickLook", run: act("quickLook") },
+    { id: "quickLook", label: "m.quickLook", icon: "eye", group: 10, order: 4, when: some, action: "quickLook", run: act("quickLook") },
     { id: "getInfo", label: "m.getInfo", icon: "info.circle", group: 20, order: 1, when: local, action: "getInfo", run: act("getInfo") },
     { id: "rename", label: "m.rename", icon: "pencil", group: 20, order: 2, when: (c) => one(c) && c.tab.capabilities.rename, run: act("rename") },
     { id: "duplicate", label: "m.duplicate", icon: "plus.square.on.square", group: 20, order: 3, when: (c) => some(c) && c.tab.capabilities.write, action: "duplicate", run: act("duplicate") },

@@ -21,6 +21,10 @@ const COLUMNS = [
   ["kind", "colKind"],
 ];
 const fileUri = (path) => `file://${path.split("/").map(encodeURIComponent).join("/")}`;
+// A path with every byte but the unreserved ones encoded, `!` included, as the app's own URIs are.
+const encodePath = (path) => path.split("/").map((p) => encodeURIComponent(p).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)).join("/");
+// The place `inside` in the archive at `path` (archive:///path/a.zip!/inside).
+const archiveUri = (path, inside) => `archive://${encodePath(path)}!/${encodePath(inside)}`.replace(/\/$/, "");
 
 let tabSeq = 1;
 
@@ -289,7 +293,11 @@ class Pane {
     this.path.querySelector('[data-act="back"]').disabled = !tab.back.length;
     this.path.querySelector('[data-act="forward"]').disabled = !tab.forward.length;
     if (this.crumbs.querySelector(".address")) return;
-    const path = pathOf(tab.uri);
+    // Inside an archive: the crumbs of the archive's folder, the archive itself, then the folders inside it.
+    const inArchive = tab.uri?.startsWith("archive://");
+    const full = pathOf(tab.uri || "");
+    const cut = inArchive ? full.indexOf("!") : -1;
+    const path = cut >= 0 ? full.slice(0, cut) : full;
     const home = S.places.home ? pathOf(S.places.home) : null;
     const crumbs = [];
     if (home && (path === home || path.startsWith(`${home}/`))) {
@@ -302,12 +310,21 @@ class Pane {
       for (const part of path.split("/").filter(Boolean)) crumbs.push([(at = `${at}/${part}`), part]);
     }
     const sep = `<span class="sep">${icon("triangle.right")}</span>`;
+    const uriOf = (p) => fileUri(p);
+    const items = crumbs.map(([p, name, first]) => [uriOf(p), name, first ? `path:${p}` : null]);
+    if (cut >= 0) {
+      // The archive's crumb opens its top; each folder inside it opens that folder.
+      items[items.length - 1][0] = archiveUri(path, "");
+      items[items.length - 1][2] = `path:${path}`;
+      let at = "";
+      for (const part of full.slice(cut + 1).split("/").filter(Boolean)) items.push([archiveUri(path, (at = at ? `${at}/${part}` : part)), part, null]);
+    }
     this.crumbs.innerHTML =
       sep +
-      crumbs
-        .map(([p, name, first]) => {
-          const img = first ? `<img src="lazy://icon/${14 * pixelRatio()}/${encodeURIComponent(`path:${p}`)}" alt="">` : "";
-          return `<button class="crumb" data-uri="${esc(fileUri(p))}">${img}<span>${esc(name)}</span></button>`;
+      items
+        .map(([uri, name, iconKey]) => {
+          const img = iconKey ? `<img src="lazy://icon/${14 * pixelRatio()}/${encodeURIComponent(iconKey)}" alt="">` : "";
+          return `<button class="crumb" data-uri="${esc(uri)}">${img}<span>${esc(name)}</span></button>`;
         })
         .join(sep);
   }
@@ -341,7 +358,7 @@ class Pane {
     const showMessage = tab.error || (!tab.loading && tab.count === 0) || (tab.loading && !tab.generation);
     this.message.hidden = !showMessage;
     if (tab.error) {
-      this.message.innerHTML = `<p>${esc(tab.error)}</p>`;
+      this.message.innerHTML = `<p>${esc(String(tab.error).replace(/^LZ-PASSWORD:/, ""))}</p>`;
     } else if (showMessage) {
       this.message.innerHTML = `<p>${esc(tab.loading ? t("loading") : tab.filter ? t("noMatch") : t("emptyFolder"))}</p>`;
     }
@@ -1047,7 +1064,16 @@ const Panes = (() => {
       pane.navigate(tab.forward.pop(), { history: false });
     },
     enclosing(pane) {
-      const path = pathOf(pane.tab.uri);
+      const uri = pane.tab.uri;
+      const path = pathOf(uri);
+      if (uri.startsWith("archive://")) {
+        const cut = path.indexOf("!");
+        const archive = path.slice(0, cut);
+        const inside = path.slice(cut + 1).replace(/^\/|\/$/g, "");
+        if (!inside) return pane.navigate(fileUri(archive.slice(0, archive.lastIndexOf("/")) || "/"), { select: [archive.split("/").pop()] });
+        const up = inside.includes("/") ? inside.slice(0, inside.lastIndexOf("/")) : "";
+        return pane.navigate(archiveUri(archive, up), { select: [inside.split("/").pop()] });
+      }
       if (path === "/") return;
       const parent = path.slice(0, path.lastIndexOf("/")) || "/";
       pane.navigate(fileUri(parent), { select: [path.split("/").pop()] });

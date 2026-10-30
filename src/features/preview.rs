@@ -98,10 +98,19 @@ pub fn media_info(path: &Path) -> Value {
 /// Everything the preview needs to know of an item, worked out off the main thread.
 fn info(uri: &Uri) -> Result<Value, String> {
     let entry = registry().get(uri)?.stat(uri)?;
-    let path = uri.local_path().ok_or_else(|| tr("Chỉ xem trước tệp trên máy", "Only files on this Mac can be previewed").to_owned())?;
+    // An item inside an archive is previewed from a copy on this Mac, when it is not too big to copy for a look.
+    let path = match uri.local_path() {
+        Some(path) => path,
+        None if entry.is_dir => return Ok(json!({ "uri": uri.to_string(), "kind": "folder", "type": crate::native::icons::describe(&entry), "entry": entry })),
+        None if entry.size <= 256 << 20 => crate::vfs::materialize(uri)?,
+        None => return Err(tr("Tệp quá lớn để xem trước từ đây", "The file is too large to preview from here").into()),
+    };
     let is_dir = entry.kind == "dir" || (entry.kind == "link" && entry.is_dir);
     let kind = if entry.kind == "app" || entry.kind == "package" { "other" } else { kind_of(&path, is_dir) };
-    let mut out = json!({ "uri": uri.to_string(), "kind": kind, "type": crate::native::icons::describe(&entry), "entry": entry });
+    let mut out = json!({ "uri": uri.to_string(), "kind": kind, "type": crate::native::icons::describe(&entry), "entry": entry, "local": Uri::file(&path).to_string() });
+    if uri.local_path().is_none() {
+        crate::protocol::allow_also(path.parent().map(Path::to_path_buf));
+    }
     match kind {
         "video" | "audio" => out["media"] = media_info(&path),
         "folder" => out["items"] = json!(std::fs::read_dir(&path).map(|d| d.flatten().filter(|e| !e.file_name().to_string_lossy().starts_with('.')).count()).ok()),

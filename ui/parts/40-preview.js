@@ -87,7 +87,7 @@ const Preview = (() => {
       text = null;
       title.textContent = entry ? entry.name : nameOf(uri);
       body.innerHTML = entry ? `<div class="pv-media"><img class="pv-icon" src="${iconUrl(entry, 128)}" alt=""></div>` : "";
-      if (isLocal(uri)) LZ.call("preview.info", { uri }).catch(() => {});
+      LZ.call("preview.info", { uri }).catch(() => {});
     }, 90);
   }
 
@@ -105,7 +105,8 @@ const Preview = (() => {
       ["pv.created", fmtDate(e.ctime)],
       ["pv.modified", fmtDate(e.mtime)],
     ];
-    const src = fileUrl(d.uri);
+    // An item inside an archive is shown from its copy on this Mac.
+    const src = fileUrl(d.local || d.uri);
     let media = "";
     const extra = [];
     if (d.kind === "image") {
@@ -127,7 +128,7 @@ const Preview = (() => {
     } else if (d.kind === "folder") {
       media = `<img class="pv-icon" src="${iconUrl(e, 128)}" alt="">`;
     } else {
-      const thumb = `lazy://thumb/${512 * pixelRatio()}/${encodeURIComponent(pathOf(d.uri))}`;
+      const thumb = `lazy://thumb/${512 * pixelRatio()}/${encodeURIComponent(pathOf(d.local || d.uri))}`;
       media = `<img class="pv-thumb" src="${thumb}" alt="" onerror="this.onerror=null;this.className='pv-icon';this.src='${iconUrl(e, 128)}'">`;
     }
     body.innerHTML = `<div class="pv-media ${d.kind}">${media}</div>${rows([...common, ...extra])}`;

@@ -471,6 +471,7 @@ fn main() {
         }
     }
 
+    thread::spawn(vfs::tidy_cache);
     let event_loop = EventLoopBuilder::<UserEvent>::with_user_event().build();
     let proxy = Proxy(Some(event_loop.create_proxy()));
     {

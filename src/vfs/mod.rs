@@ -147,10 +147,19 @@ pub struct Entry {
 }
 
 impl Entry {
-    /// The lower-case name, as sorting and finding by typing compare it.
+    /// The name as sorting, filtering and finding by typing compare it (`fold`).
     pub fn key(&self) -> String {
-        self.name.to_lowercase()
+        fold(&self.name)
     }
+}
+
+/// A name in the one form comparisons use: composed (NFC) and in lower case. macOS keeps names as they were made, and
+/// libarchive gives them decomposed (NFD), while a keyboard types composed letters, so "liệu" must match both.
+pub fn fold(text: &str) -> String {
+    if text.is_ascii() {
+        return text.to_ascii_lowercase();
+    }
+    objc2_foundation::NSString::from_str(text).precomposedStringWithCanonicalMapping().to_string().to_lowercase()
 }
 
 /// What a place allows, so the page can leave out what cannot be done there.
@@ -213,6 +222,55 @@ pub fn registry() -> &'static Registry {
     })
 }
 
+/// The app's cache folder (`~/Library/Caches/LazySpace`), which can be removed at any time.
+pub fn cache_dir() -> PathBuf {
+    dirs::cache_dir().unwrap_or_else(|| dirs::home_dir().unwrap_or_default().join("Library/Caches")).join("LazySpace")
+}
+
+/// A copy on this Mac of an item that is not one (inside an archive, on a server), for what works only with a local
+/// file: opening it, Quick Look, the preview. The copy is kept while the item keeps its size and time.
+pub fn materialize(uri: &Uri) -> Result<PathBuf, String> {
+    use std::hash::{Hash, Hasher};
+    if let Some(path) = uri.local_path() {
+        return Ok(path);
+    }
+    let provider = registry().get(uri)?;
+    let entry = provider.stat(uri)?;
+    if entry.is_dir {
+        return Err(tr("Thư mục này không mở được bằng ứng dụng khác", "This folder cannot be opened in another app").into());
+    }
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    (uri.to_string(), entry.size, entry.mtime).hash(&mut hasher);
+    let dir = cache_dir().join("tmp").join(format!("{:016x}", hasher.finish()));
+    let target = dir.join(&entry.name);
+    if target.exists() {
+        return Ok(target);
+    }
+    std::fs::create_dir_all(&dir).map_err(|e| local::error(&dir, &e))?;
+    let partial = local::partial_of(&target);
+    let mut out = std::fs::File::create(&partial).map_err(|e| local::error(&partial, &e))?;
+    let copied = std::io::copy(&mut provider.read(uri)?, &mut out).map_err(|e| e.to_string());
+    drop(out);
+    if let Err(e) = copied {
+        let _ = std::fs::remove_file(&partial);
+        return Err(e);
+    }
+    std::fs::rename(&partial, &target).map_err(|e| local::error(&target, &e))?;
+    Ok(target)
+}
+
+/// Removes the copies of `materialize` older than a day.
+pub fn tidy_cache() {
+    let Ok(dirs) = std::fs::read_dir(cache_dir().join("tmp")) else { return };
+    let day = std::time::Duration::from_secs(86_400);
+    for dir in dirs.flatten() {
+        let old = dir.metadata().and_then(|m| m.modified()).ok().and_then(|t| t.elapsed().ok()).is_some_and(|age| age > day);
+        if old {
+            let _ = std::fs::remove_dir_all(dir.path());
+        }
+    }
+}
+
 /// Whether `name` can be the name of an item: not empty, not `.` or `..`, no slash and no NUL.
 pub fn valid_name(name: &str) -> Result<(), String> {
     if name.trim().is_empty() || name == "." || name == ".." || name.contains('/') || name.contains('\0') {
@@ -255,6 +313,13 @@ mod tests {
         assert_eq!(Uri::parse("ftp://host/").unwrap().name(), "host");
         assert_eq!(uri.local_path(), Some(PathBuf::from("/Users/me")));
         assert_eq!(Uri::parse("ftp://host/x").unwrap().local_path(), None);
+    }
+
+    #[test]
+    fn decomposed_and_composed_names_fold_alike() {
+        assert_eq!(fold("Ta\u{300}i lie\u{323}\u{302}u"), fold("Tài liệu"));
+        assert_eq!(fold("TÀI"), "tài");
+        assert_eq!(fold("ABC.txt"), "abc.txt");
     }
 
     #[test]
