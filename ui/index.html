@@ -20,96 +20,97 @@
       })();
     </script>
     <style>
-      /* macOS colours: the system's own where WebKit names them (the user's accent), Apple's values elsewhere. */
+      /* The colours of a Finder window on macOS 26, light and dark; the accent is the user's own. */
       :root {
         color-scheme: light;
         --accent: #007aff;
         --window: #ffffff;
-        --sidebar: rgba(242, 242, 245, 0.94);
+        --sidebar: rgba(243, 243, 245, 0.96);
         --sidebar-stroke: rgba(0, 0, 0, 0.07);
-        --label: rgba(0, 0, 0, 0.88);
-        --secondary: rgba(0, 0, 0, 0.52);
-        --tertiary: rgba(0, 0, 0, 0.28);
-        --separator: rgba(0, 0, 0, 0.08);
+        --label: rgba(0, 0, 0, 0.86);
+        --secondary: rgba(0, 0, 0, 0.5);
+        --tertiary: rgba(0, 0, 0, 0.26);
+        --separator: rgba(0, 0, 0, 0.09);
         --hover: rgba(0, 0, 0, 0.05);
         --pressed: rgba(0, 0, 0, 0.1);
-        --selected: rgba(0, 0, 0, 0.07);
-        --glass: rgba(255, 255, 255, 0.78);
-        --glass-stroke: rgba(0, 0, 0, 0.08);
-        --field: rgba(0, 0, 0, 0.045);
-        --field-stroke: rgba(0, 0, 0, 0.12);
+        --nav-selected: rgba(0, 0, 0, 0.08);
+        --stripe: rgba(0, 0, 0, 0.035);
+        --row-selected: var(--accent);
+        --row-selected-dim: rgba(0, 0, 0, 0.09);
+        --capsule: rgba(255, 255, 255, 0.92);
+        --capsule-stroke: rgba(0, 0, 0, 0.1);
+        --capsule-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.05);
+        --field: rgba(0, 0, 0, 0.05);
         --field-bg: #ffffff;
+        --field-stroke: rgba(0, 0, 0, 0.14);
         --btn: #ffffff;
         --btn-stroke: rgba(0, 0, 0, 0.13);
         --panel: #f5f5f7;
         --panel-stroke: rgba(0, 0, 0, 0.1);
+        --menu: rgba(250, 250, 252, 0.96);
         --group: #ffffff;
         --group-stroke: rgba(0, 0, 0, 0.06);
         --track: rgba(0, 0, 0, 0.1);
-        --content: transparent;
         --rim: transparent;
         --red: #ff3b30;
-        --green: #28cd41;
         --shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
       }
       @supports (color: -apple-system-control-accent) {
         :root { --accent: -apple-system-control-accent; }
       }
-      /* Dark, when the user or the system asks for it (the root's class, set by the script in the head). */
       :root.dark {
         color-scheme: dark;
         --window: #1e1e1e;
-        --sidebar: rgba(46, 46, 48, 0.94);
+        --sidebar: rgba(42, 42, 44, 0.96);
         --sidebar-stroke: rgba(255, 255, 255, 0.07);
-        --label: rgba(255, 255, 255, 0.9);
-        --secondary: rgba(255, 255, 255, 0.55);
-        --tertiary: rgba(255, 255, 255, 0.28);
-        --separator: rgba(255, 255, 255, 0.08);
+        --label: rgba(255, 255, 255, 0.88);
+        --secondary: rgba(255, 255, 255, 0.52);
+        --tertiary: rgba(255, 255, 255, 0.26);
+        --separator: rgba(255, 255, 255, 0.09);
         --hover: rgba(255, 255, 255, 0.06);
         --pressed: rgba(255, 255, 255, 0.12);
-        --selected: rgba(255, 255, 255, 0.1);
-        --glass: rgba(58, 58, 60, 0.8);
-        --glass-stroke: rgba(255, 255, 255, 0.09);
+        --nav-selected: rgba(255, 255, 255, 0.1);
+        --stripe: rgba(255, 255, 255, 0.035);
+        --row-selected-dim: rgba(255, 255, 255, 0.12);
+        --capsule: rgba(255, 255, 255, 0.09);
+        --capsule-stroke: rgba(255, 255, 255, 0.1);
+        --capsule-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         --field: rgba(255, 255, 255, 0.08);
-        --field-stroke: rgba(255, 255, 255, 0.1);
         --field-bg: rgba(255, 255, 255, 0.06);
+        --field-stroke: rgba(255, 255, 255, 0.12);
         --btn: rgba(255, 255, 255, 0.13);
         --btn-stroke: rgba(255, 255, 255, 0.06);
         --panel: #2a2a2c;
         --panel-stroke: rgba(255, 255, 255, 0.1);
+        --menu: rgba(44, 44, 46, 0.96);
         --group: rgba(255, 255, 255, 0.05);
         --group-stroke: rgba(255, 255, 255, 0.05);
         --track: rgba(255, 255, 255, 0.14);
         --red: #ff453a;
-        --green: #32d74b;
         --shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
       }
-      /* Liquid Glass (beta), the first layer: the sidebar, the toolbar's capsules, the sheets and the groups of Settings
-         turn to frosted glass with a light along their top edge, over a soft coloured backdrop that the content lets
-         through. It is the whole effect before macOS 26, and what stays when the native layer is not there. */
+      /* Liquid Glass (beta), the first layer: the sidebar, the toolbar's capsules and the sheets turn to frosted glass
+         with a light along their top edge, over a soft coloured backdrop the content lets through. It is the whole
+         effect before macOS 26, and what stays when the native layer (src/glass.rs) is not there. */
       :root.glass {
-        --window: #e8eef8;
-        --sidebar: rgba(255, 255, 255, 0.42);
-        --sidebar-stroke: rgba(255, 255, 255, 0.55);
-        --glass: rgba(255, 255, 255, 0.5);
-        --glass-stroke: rgba(255, 255, 255, 0.6);
-        --panel: rgba(250, 250, 252, 0.72);
+        --window: rgba(255, 255, 255, 0.62);
+        --sidebar: rgba(255, 255, 255, 0.4);
+        --sidebar-stroke: rgba(255, 255, 255, 0.6);
+        --capsule: rgba(255, 255, 255, 0.5);
+        --capsule-stroke: rgba(255, 255, 255, 0.65);
+        --panel: rgba(250, 250, 252, 0.74);
         --group: rgba(255, 255, 255, 0.55);
-        --group-stroke: rgba(255, 255, 255, 0.6);
-        --content: rgba(255, 255, 255, 0.55);
-        --rim: rgba(255, 255, 255, 0.75);
+        --rim: rgba(255, 255, 255, 0.8);
         --field-bg: rgba(255, 255, 255, 0.7);
       }
       :root.glass.dark {
-        --window: #0f1117;
-        --sidebar: rgba(44, 46, 54, 0.42);
+        --window: rgba(28, 29, 34, 0.6);
+        --sidebar: rgba(44, 46, 54, 0.4);
         --sidebar-stroke: rgba(255, 255, 255, 0.12);
-        --glass: rgba(60, 62, 72, 0.45);
-        --glass-stroke: rgba(255, 255, 255, 0.12);
-        --panel: rgba(36, 38, 44, 0.72);
+        --capsule: rgba(60, 62, 72, 0.45);
+        --capsule-stroke: rgba(255, 255, 255, 0.12);
+        --panel: rgba(36, 38, 44, 0.74);
         --group: rgba(255, 255, 255, 0.06);
-        --group-stroke: rgba(255, 255, 255, 0.1);
-        --content: rgba(24, 25, 30, 0.5);
         --rim: rgba(255, 255, 255, 0.22);
         --field-bg: rgba(255, 255, 255, 0.07);
       }
@@ -118,7 +119,7 @@
       [hidden] { display: none !important; }
       html, body { height: 100%; margin: 0; }
       body {
-        font: 13px/1.38 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+        font: 13px/1.3 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
         color: var(--label);
         background: var(--window);
         overflow: hidden;
@@ -127,14 +128,13 @@
         user-select: none;
         -webkit-font-smoothing: antialiased;
       }
-      input, textarea { -webkit-user-select: text; user-select: text; }
+      input, textarea { -webkit-user-select: text; user-select: text; font: inherit; color: inherit; }
       button { font: inherit; color: inherit; cursor: default; }
-      svg { display: block; }
+      svg { display: block; flex: none; }
+      :focus { outline: none; }
       :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 1px; }
-      /* A slot nobody has filled takes no room. */
       [data-slot]:empty { display: none; }
 
-      /* The coloured light under the glass. */
       .backdrop { display: none; position: fixed; inset: -15%; z-index: -1; filter: blur(70px) saturate(140%); }
       .glass .backdrop {
         display: block;
@@ -145,75 +145,203 @@
           radial-gradient(40% 40% at 22% 88%, #9af5d4 0%, transparent 62%);
       }
       .glass.dark .backdrop { opacity: 0.45; }
-      .glass .sidebar, .glass .capsule, .glass .panel, .glass .toast, .glass .banner, .glass .group {
+      .glass .sidebar, .glass .capsule, .glass .panel, .glass .toast, .glass .banner, .glass .jobs {
         -webkit-backdrop-filter: blur(30px) saturate(190%); backdrop-filter: blur(30px) saturate(190%);
       }
-      .glass .sidebar, .glass .capsule, .glass .panel, .glass .group { box-shadow: inset 0 1px 0 var(--rim), 0 0 0 0.5px var(--glass-stroke), 0 8px 28px rgba(20, 30, 60, 0.12); }
-      .glass main { background: var(--content); }
-      /* The second layer: the app has put the system's own glass behind the page (src/glass.rs) and asks, through
-         glass.panes, for it under the sidebar, the capsules and the sheet, so the page draws nothing of its own there. */
+      .glass .sidebar, .glass .capsule, .glass .panel { box-shadow: inset 0 1px 0 var(--rim), 0 0 0 0.5px var(--capsule-stroke), 0 8px 28px rgba(20, 30, 60, 0.12); }
+      /* The second layer: the app has put the system's own glass behind the page and asks for it under the sidebar,
+         the capsules and the sheet, so the page draws nothing of its own there. */
       .glass.native, .glass.native body { background: transparent; }
       .glass.native .backdrop { display: none; }
-      .glass.native main { background: transparent; }
       .glass.native .sidebar, .glass.native .capsule, .glass.native .panel {
         background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none;
       }
 
-      .app { display: grid; grid-template-columns: 228px minmax(0, 1fr); height: 100%; }
+      .app { display: grid; grid-template-columns: var(--side-w, 220px) minmax(0, 1fr); height: 100%; }
+      .app.no-sidebar { grid-template-columns: 0 minmax(0, 1fr); }
+      .app.no-sidebar .sidebar { display: none; }
 
       /* The sidebar floats inset in the window, as on macOS 26, and holds the window's buttons at its top. */
       .sidebar {
-        margin: 8px 0 8px 8px;
-        border-radius: 18px;
-        background: var(--sidebar);
-        box-shadow: 0 0 0 0.5px var(--sidebar-stroke), 0 2px 10px rgba(0, 0, 0, 0.06);
+        position: relative; margin: 8px 0 8px 8px; border-radius: 16px; background: var(--sidebar);
+        box-shadow: 0 0 0 0.5px var(--sidebar-stroke), 0 2px 10px rgba(0, 0, 0, 0.05);
         display: flex; flex-direction: column; min-height: 0; overflow: hidden;
       }
-      .side-top { height: 44px; flex: none; }
-      nav { flex: 1; overflow-y: auto; padding: 0 10px 10px; }
-      .side-foot { flex: none; padding: 6px 10px 10px; border-top: 1px solid var(--separator); }
-      .nav-item {
-        display: flex; align-items: center; gap: 8px; width: 100%; height: 28px; padding: 0 8px;
-        border: 0; border-radius: 8px; background: transparent; text-align: left;
+      .side-top { height: 40px; flex: none; }
+      .side-scroll { flex: 1; overflow-y: auto; padding: 0 8px 10px; }
+      .side-scroll::-webkit-scrollbar { width: 0; }
+      .side-head {
+        display: flex; align-items: center; justify-content: space-between; height: 26px; margin-top: 8px; padding: 0 8px;
+        font-size: 11px; font-weight: 600; color: var(--secondary);
       }
-      .nav-item:hover { background: var(--hover); }
-      .nav-item svg { width: 16px; height: 16px; color: var(--accent); flex: none; }
+      .side-head:first-child { margin-top: 0; }
+      .side-item {
+        display: flex; align-items: center; gap: 7px; width: 100%; height: 26px; padding: 0 8px; border: 0; border-radius: 7px;
+        background: transparent; text-align: left; white-space: nowrap;
+      }
+      .side-item:hover { background: var(--hover); }
+      .side-item.on { background: var(--nav-selected); }
+      .side-item .ico { width: 16px; height: 16px; color: var(--secondary); }
+      .side-item .ico svg { width: 16px; height: 16px; }
+      .side-item .label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+      .side-item .end { flex: none; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; color: var(--secondary); opacity: 0.8; }
+      .side-item .end:hover { background: var(--pressed); opacity: 1; }
+      .side-item .end svg { width: 12px; height: 12px; }
+      .side-foot { flex: none; padding: 6px 8px 8px; }
+      .resizer { position: absolute; top: 0; right: -4px; width: 8px; height: 100%; cursor: col-resize; z-index: 2; }
 
       main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
-      .toolbar { height: 52px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 12px 0 20px; }
-      .address { flex: 1; min-width: 0; }
+
+      /* The toolbar: capsules of buttons in the strip where a title bar would be. */
+      .toolbar { height: 52px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 10px 0 12px; }
       .capsule {
-        display: flex; align-items: center; gap: 2px; height: 34px; padding: 0 3px; flex: none;
-        border-radius: 999px; background: var(--glass); box-shadow: 0 0 0 0.5px var(--glass-stroke), var(--shadow);
-        -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
+        display: flex; align-items: center; gap: 0; height: 32px; padding: 0 2px; flex: none; border-radius: 999px;
+        background: var(--capsule); box-shadow: 0 0 0 0.5px var(--capsule-stroke), var(--capsule-shadow);
       }
       .tb {
-        height: 28px; min-width: 32px; padding: 0 7px; border: 0; border-radius: 999px; background: transparent;
-        display: flex; align-items: center; justify-content: center; gap: 5px; color: var(--label);
+        height: 28px; min-width: 30px; padding: 0 6px; border: 0; border-radius: 999px; background: transparent;
+        display: flex; align-items: center; justify-content: center; gap: 4px; color: var(--label);
       }
       .tb:hover { background: var(--hover); }
       .tb:active { background: var(--pressed); }
-      .tb:disabled { opacity: 0.35; background: transparent; }
+      .tb:disabled { opacity: 0.3; background: transparent; }
+      .tb.on { background: var(--pressed); }
       .tb svg { width: 17px; height: 17px; }
+      .tb .caret { width: 9px; height: 9px; opacity: 0.7; }
+      .title { font-size: 15px; font-weight: 700; padding: 0 10px 0 4px; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .spacer { flex: 1; min-width: 8px; height: 100%; }
+      .search { display: flex; align-items: center; gap: 6px; width: 190px; padding: 0 10px; }
+      .search svg { width: 14px; height: 14px; color: var(--secondary); }
+      .search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; }
+      .search input::placeholder { color: var(--secondary); }
 
-      .workspace { flex: 1; min-height: 0; display: flex; padding: 0 12px; }
-      .pane-grid { flex: 1; min-width: 0; display: grid; gap: 8px; grid-template-columns: 1fr; grid-template-rows: 1fr; }
-      .pane-grid[data-layout="h2"] { grid-template-columns: 1fr 1fr; }
-      .pane-grid[data-layout="v2"] { grid-template-rows: 1fr 1fr; }
-      .pane-grid[data-layout="grid"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
-      .pane { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-      .tabs { flex: none; display: flex; gap: 4px; }
-      .tabs:empty { display: none; }
-      .list { position: relative; flex: 1; min-height: 0; overflow-y: auto; }
+      /* The panes: each with its own tabs, path bar, columns, rows and status. */
+      .workspace { flex: 1; min-height: 0; display: flex; }
+      .pane-grid { flex: 1; min-width: 0; display: grid; grid-template-columns: 1fr; grid-template-rows: 1fr; }
+      .pane { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: transparent; }
+      .pane + .pane { box-shadow: inset 1px 0 0 var(--separator); }
+      .pane-grid[data-layout="v2"] .pane + .pane, .pane-grid[data-layout="grid"] .pane:nth-child(n + 3) { box-shadow: inset 0 1px 0 var(--separator); }
+      .pane-grid[data-layout="grid"] .pane:nth-child(4) { box-shadow: inset 1px 1px 0 var(--separator); }
+      .pane-grid[data-layout="grid"] .pane:nth-child(2) { box-shadow: inset 1px 0 0 var(--separator); }
+
+      .tabs { flex: none; display: flex; gap: 2px; padding: 0 8px 4px; }
+      .tab {
+        position: relative; flex: 1; min-width: 0; height: 24px; display: flex; align-items: center; justify-content: center; padding: 0 22px;
+        border-radius: 7px; background: var(--field); color: var(--secondary); font-size: 12px; white-space: nowrap;
+      }
+      .tab span { overflow: hidden; text-overflow: ellipsis; }
+      .tab.on { background: var(--capsule); color: var(--label); box-shadow: 0 0 0 0.5px var(--capsule-stroke); }
+      .tab .x { position: absolute; left: 4px; width: 16px; height: 16px; border: 0; border-radius: 4px; background: transparent; display: none; place-items: center; color: var(--secondary); }
+      .tab:hover .x { display: grid; }
+      .tab .x:hover { background: var(--pressed); }
+      .tab .x svg { width: 9px; height: 9px; }
+
+      .pathbar { flex: none; height: 28px; display: flex; align-items: center; gap: 2px; padding: 0 6px 0 8px; color: var(--secondary); }
+      .pathbar .nav { width: 22px; height: 22px; border: 0; border-radius: 6px; background: transparent; display: grid; place-items: center; color: var(--secondary); }
+      .pathbar .nav:hover:not(:disabled) { background: var(--hover); color: var(--label); }
+      .pathbar .nav:disabled { opacity: 0.35; }
+      .pathbar .nav svg { width: 12px; height: 12px; }
+      .crumbs { flex: 1; min-width: 0; height: 22px; display: flex; align-items: center; gap: 0; overflow: hidden; padding-left: 4px; border-radius: 6px; }
+      .crumbs:hover { background: var(--hover); }
+      .crumb { flex: none; display: flex; align-items: center; gap: 5px; height: 20px; padding: 0 4px; border: 0; border-radius: 5px; background: transparent; color: var(--secondary); font-size: 12px; white-space: nowrap; max-width: 220px; }
+      .crumb span { overflow: hidden; text-overflow: ellipsis; }
+      .crumb:hover { color: var(--label); background: var(--pressed); }
+      .crumb:last-child { color: var(--label); }
+      .crumb img { width: 14px; height: 14px; }
+      .sep { flex: none; width: 12px; height: 12px; display: grid; place-items: center; color: var(--tertiary); }
+      .sep svg { width: 6px; height: 7px; }
+      .address { flex: 1; min-width: 0; height: 22px; padding: 0 8px; border: 0; border-radius: 6px; outline: none; background: var(--field-bg); box-shadow: 0 0 0 1px var(--accent), 0 0 0 3.5px color-mix(in srgb, var(--accent) 30%, transparent); font-size: 12px; color: var(--label); }
+      .pathbar .tool { width: 22px; height: 22px; border: 0; border-radius: 6px; background: transparent; display: grid; place-items: center; color: var(--secondary); }
+      .pathbar .tool:hover { background: var(--hover); color: var(--label); }
+      .pathbar .tool svg { width: 13px; height: 13px; }
+      .suggest {
+        position: absolute; z-index: 30; min-width: 280px; max-height: 300px; overflow-y: auto; padding: 4px; border-radius: 10px;
+        background: var(--menu); box-shadow: 0 0 0 0.5px var(--panel-stroke), 0 10px 30px rgba(0, 0, 0, 0.2);
+        -webkit-backdrop-filter: blur(30px); backdrop-filter: blur(30px);
+      }
+      .suggest div { height: 22px; line-height: 22px; padding: 0 8px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12.5px; }
+      .suggest div.on { background: var(--accent); color: #fff; }
+
+      .head {
+        flex: none; display: grid; grid-template-columns: var(--cols); height: 26px; align-items: center; margin: 0 8px;
+        font-size: 11px; font-weight: 600; color: var(--secondary); box-shadow: inset 0 -1px 0 var(--separator);
+      }
+      .col { position: relative; display: flex; align-items: center; gap: 4px; height: 100%; padding: 0 8px; border: 0; background: transparent; color: inherit; font-weight: inherit; font-size: inherit; text-align: left; min-width: 0; }
+      .col span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .col.num { justify-content: flex-end; }
+      .col.sorted { color: var(--label); }
+      .col svg { width: 8px; height: 8px; opacity: 0.8; }
+      .col + .col::before { content: ""; position: absolute; left: 0; top: 7px; bottom: 7px; width: 1px; background: var(--separator); }
+      .col .grip { position: absolute; left: -4px; top: 0; width: 8px; height: 100%; cursor: col-resize; z-index: 1; }
+
+      .list { position: relative; flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 0 8px; }
+      .list:focus-visible { outline: none; }
+      .list::-webkit-scrollbar { width: 11px; }
+      .list::-webkit-scrollbar-thumb { background: var(--track); border-radius: 8px; border: 3px solid transparent; background-clip: padding-box; }
+      .sizer { position: relative; width: 100%; }
+      .row {
+        position: absolute; left: 0; right: 0; height: 24px; display: grid; grid-template-columns: var(--cols); align-items: center; border-radius: 6px;
+        font-size: 13px; white-space: nowrap;
+      }
+      .row.odd { background: var(--stripe); }
+      .row .cell { padding: 0 8px; overflow: hidden; text-overflow: ellipsis; min-width: 0; color: var(--secondary); font-variant-numeric: tabular-nums; font-size: 12px; }
+      .row .cell.num { text-align: right; }
+      .row .name { display: flex; align-items: center; gap: 6px; color: var(--label); font-size: 13px; }
+      .row .name img { width: 16px; height: 16px; flex: none; }
+      .row .name span { overflow: hidden; text-overflow: ellipsis; }
+      .row.cut { opacity: 0.45; }
+      .row.hidden-item .name span { opacity: 0.55; }
+      .pane.focus .row.sel { background: var(--row-selected); }
+      .pane.focus .row.sel .cell, .pane.focus .row.sel .name { color: #fff; }
+      .inactive .pane.focus .row.sel { background: var(--row-selected-dim); }
+      .inactive .pane.focus .row.sel .cell { color: var(--secondary); }
+      .inactive .pane.focus .row.sel .name { color: var(--label); }
+      .row.sel { background: var(--row-selected-dim); }
+      .row.drop { box-shadow: inset 0 0 0 2px var(--accent); }
+      .rename {
+        flex: 1; min-width: 60px; height: 20px; margin-left: -3px; padding: 0 3px; border: 0; border-radius: 3px; outline: none;
+        background: var(--field-bg); color: var(--label); box-shadow: 0 0 0 1px var(--accent), 0 0 0 3.5px color-mix(in srgb, var(--accent) 30%, transparent);
+      }
+
+      .grid-view .row { display: block; height: auto; border-radius: 10px; background: none; }
+      .cell-icon {
+        position: absolute; width: 104px; height: 104px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 8px; border-radius: 10px;
+      }
+      .cell-icon .pic { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 6px; }
+      .cell-icon .pic img { max-width: 64px; max-height: 64px; }
+      .cell-icon .pic img.thumb { border-radius: 4px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); }
+      .cell-icon .label { max-width: 96px; padding: 1px 5px; border-radius: 4px; font-size: 12px; text-align: center; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word; }
+      .cell-icon.sel .pic { background: var(--row-selected-dim); }
+      .pane.focus .cell-icon.sel .label { background: var(--row-selected); color: #fff; }
+      .inactive .pane.focus .cell-icon.sel .label { background: var(--row-selected-dim); color: var(--label); }
+      .cell-icon.sel .label { background: var(--row-selected-dim); }
+      .cell-icon.cut { opacity: 0.45; }
+
+      .message { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 24px; text-align: center; color: var(--secondary); }
+      .message p { margin: 0; max-width: 420px; }
+      .status {
+        flex: none; height: 24px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 12px;
+        font-size: 11px; color: var(--secondary); font-variant-numeric: tabular-nums; box-shadow: inset 0 1px 0 var(--separator);
+      }
       .pane-overlay { position: absolute; inset: 0; pointer-events: none; }
       .pane-overlay > * { pointer-events: auto; }
-      .status { flex: none; }
-      .status:empty { display: none; }
-      .empty { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; padding: 0 24px 40px; }
-      .empty h2 { margin: 0; font-size: 15px; font-weight: 600; }
-      .empty p { margin: 0; color: var(--secondary); max-width: 340px; }
       .preview-slot { flex: none; }
-      .statusbar { flex: none; display: flex; align-items: center; gap: 12px; height: 26px; padding: 0 20px; font-size: 11px; color: var(--secondary); font-variant-numeric: tabular-nums; }
+
+      /* Running jobs float above the panes, bottom right. */
+      .jobs {
+        position: fixed; right: 14px; bottom: 34px; z-index: 25; width: 300px; display: flex; flex-direction: column; gap: 10px; padding: 12px 14px;
+        border-radius: 14px; background: var(--panel); box-shadow: 0 0 0 0.5px var(--panel-stroke), 0 12px 36px rgba(0, 0, 0, 0.18);
+      }
+      .jobs:empty { display: none; }
+      .job { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: center; font-size: 12px; }
+      .job .what { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+      .job .stop { width: 18px; height: 18px; border: 0; border-radius: 50%; background: var(--field); display: grid; place-items: center; color: var(--secondary); }
+      .job .stop svg { width: 8px; height: 8px; }
+      .job .bar { grid-column: 1 / -1; height: 4px; border-radius: 2px; background: var(--track); overflow: hidden; }
+      .job .bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 2px; transition: width 0.15s linear; }
+      .job .bar.wait i { width: 30%; animation: wait 1.1s ease-in-out infinite alternate; }
+      @keyframes wait { from { margin-left: 0; } to { margin-left: 70%; } }
+      .job .now { grid-column: 1 / -1; color: var(--secondary); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
       /* Buttons and fields as macOS draws them. */
       .push {
@@ -224,6 +352,7 @@
       .push.primary { background: var(--accent); color: #fff; box-shadow: 0 0.5px 1.5px rgba(0, 0, 0, 0.15); }
       .push:disabled { opacity: 0.5; }
       .beta { font-size: 9.5px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; color: #fff; background: #ff9500; padding: 1px 6px; border-radius: 999px; vertical-align: 1px; }
+      .check { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--secondary); }
 
       .switch { position: relative; width: 38px; height: 22px; flex: none; }
       .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
@@ -234,7 +363,6 @@
       }
       .switch input:checked + .knob { background: var(--accent); }
       .switch input:checked + .knob::before { transform: translateX(16px); }
-      .switch input:focus-visible + .knob { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 1px; }
 
       .segmented { display: flex; padding: 2px; border-radius: 999px; background: var(--field); }
       .seg { flex: 1; height: 24px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; font-weight: 500; white-space: nowrap; }
@@ -245,18 +373,22 @@
       }
 
       /* Sheets come down from the top of the window, over a dimmed one. */
-      .modal { position: fixed; inset: 0; z-index: 20; display: none; justify-content: center; align-items: flex-start; padding: 56px 16px 16px; background: rgba(0, 0, 0, 0.14); }
+      .modal { position: fixed; inset: 0; z-index: 40; display: none; justify-content: center; align-items: flex-start; padding: 56px 16px 16px; background: rgba(0, 0, 0, 0.14); }
       .modal.open { display: flex; }
       .panel {
-        width: min(520px, 100%); max-height: 100%; overflow-y: auto; padding: 20px; border-radius: 22px; background: var(--panel);
+        width: min(520px, 100%); max-height: 100%; overflow-y: auto; padding: 20px; border-radius: 20px; background: var(--panel);
         box-shadow: 0 0 0 0.5px var(--panel-stroke), 0 22px 70px rgba(0, 0, 0, 0.3);
         animation: sheet 0.24s cubic-bezier(0.32, 0.72, 0, 1);
       }
+      .panel.small { width: min(440px, 100%); }
       @keyframes sheet { from { transform: translateY(-14px) scale(0.98); opacity: 0; } }
-      .panel h2 { margin: 0 0 4px; font-size: 15px; font-weight: 700; }
-      .buttons { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+      .panel h2 { margin: 0 0 6px; font-size: 14px; font-weight: 700; }
+      .panel p { margin: 0 0 8px; color: var(--secondary); line-height: 1.45; }
+      .buttons { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+      .buttons .check { margin-right: auto; }
+      .compare { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 10px 0 0; font-size: 12px; color: var(--secondary); }
+      .compare b { color: var(--label); font-weight: 500; }
 
-      /* Settings, grouped rows as in System Settings. */
       .group-title { font-size: 12px; font-weight: 600; color: var(--secondary); margin: 16px 4px 6px; }
       .group { background: var(--group); border-radius: 12px; box-shadow: 0 0 0 0.5px var(--group-stroke); }
       .item { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 14px; min-height: 42px; }
@@ -267,15 +399,13 @@
 
       .banner {
         position: fixed; left: 50%; bottom: 16px; z-index: 30; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px);
-        padding: 8px 8px 8px 16px; border-radius: 999px; background: var(--glass); box-shadow: 0 0 0 0.5px var(--glass-stroke), 0 10px 30px rgba(0, 0, 0, 0.18);
-        -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+        padding: 8px 8px 8px 16px; border-radius: 999px; background: var(--panel); box-shadow: 0 0 0 0.5px var(--panel-stroke), 0 10px 30px rgba(0, 0, 0, 0.18);
         transform: translate(-50%, 160%); transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
       }
       .banner.show { transform: translate(-50%, 0); }
       .toast {
         position: fixed; left: 50%; top: 58px; z-index: 50; max-width: calc(100vw - 32px); padding: 8px 16px; border-radius: 999px;
-        background: var(--glass); box-shadow: 0 0 0 0.5px var(--glass-stroke), 0 8px 26px rgba(0, 0, 0, 0.16); font-weight: 500; text-align: center;
-        -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
+        background: var(--panel); box-shadow: 0 0 0 0.5px var(--panel-stroke), 0 8px 26px rgba(0, 0, 0, 0.16); font-weight: 500; text-align: center;
         opacity: 0; transform: translate(-50%, -8px); transition: opacity 0.2s ease, transform 0.25s ease; pointer-events: none;
       }
       .toast.show { opacity: 1; transform: translate(-50%, 0); }
@@ -284,54 +414,49 @@
   </head>
   <body>
     <div class="backdrop"></div>
-    <div class="app">
-      <aside class="sidebar">
+    <div class="app" id="app">
+      <aside class="sidebar" id="sidebar">
         <div class="side-top drag"></div>
-        <nav id="nav">
-          <div data-slot="sidebar.favourites"></div>
-          <div data-slot="sidebar.places"></div>
-          <div data-slot="sidebar.volumes"></div>
+        <div class="side-scroll" id="sideScroll">
+          <div id="sideBookmarks"></div>
           <div data-slot="sidebar.sections"></div>
-        </nav>
-        <div class="side-foot">
-          <div data-slot="sidebar.jobs"></div>
-          <button class="nav-item" id="openSettings">
-            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 13a7.7 7.7 0 000-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 00-1.7-1l-.4-2.5h-4l-.4 2.5a7.6 7.6 0 00-1.7 1l-2.4-1-2 3.4L4.6 11a7.7 7.7 0 000 2l-2 1.6 2 3.4 2.4-1c.5.4 1.1.7 1.7 1l.4 2.5h4l.4-2.5c.6-.3 1.2-.6 1.7-1l2.4 1 2-3.4-2-1.6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-            <span data-t="settings"></span>
-          </button>
+          <div id="sideLocations"></div>
         </div>
+        <div class="side-foot">
+          <div data-slot="sidebar.foot"></div>
+        </div>
+        <div class="resizer" id="sideResizer"></div>
       </aside>
 
       <main>
-        <header class="toolbar drag">
-          <div class="capsule" data-slot="toolbar.history"></div>
+        <header class="toolbar drag" id="toolbar">
+          <div class="capsule">
+            <button class="tb" id="tbBack" data-tt="back"></button>
+            <button class="tb" id="tbForward" data-tt="forward"></button>
+            <div class="title" id="title">LazySpace</div>
+          </div>
+          <div class="capsule" id="tbView">
+            <button class="tb" data-view="list" data-tt="asList"></button>
+            <button class="tb" data-view="icons" data-tt="asIcons"></button>
+          </div>
+          <div class="capsule" data-slot="toolbar.layout"></div>
+          <div class="capsule" id="tbActions">
+            <button class="tb" id="tbNewFolder" data-tt="newFolder"></button>
+            <button class="tb" id="tbTrash" data-tt="moveToTrash"></button>
+          </div>
           <div class="capsule" data-slot="toolbar.left"></div>
-          <div class="address" data-slot="address"></div>
+          <div class="spacer"></div>
           <div class="capsule" data-slot="toolbar.right"></div>
-          <div class="capsule" data-slot="toolbar.view"></div>
-          <div class="capsule" data-slot="toolbar.search"></div>
+          <div class="capsule search" id="tbSearch">
+            <span id="tbSearchIcon"></span>
+            <input id="searchInput" type="search" data-tp="searchHere" spellcheck="false" />
+          </div>
         </header>
 
         <div class="workspace">
-          <div class="pane-grid" data-layout="single">
-            <section class="pane" data-pane="p0">
-              <div class="tabs"></div>
-              <div class="list" role="listbox">
-                <div class="empty">
-                  <h2>LazySpace</h2>
-                  <p data-t="emptyText"></p>
-                </div>
-              </div>
-              <div class="pane-overlay" data-slot="pane.overlay"></div>
-              <div class="status"></div>
-            </section>
-          </div>
+          <div class="pane-grid" id="paneGrid" data-layout="single"></div>
+          <div class="preview-slot" data-slot="preview"></div>
         </div>
-        <div class="preview-slot" data-slot="preview" hidden></div>
-        <footer class="statusbar">
-          <span id="statusText"></span>
-          <span data-slot="status"></span>
-        </footer>
       </main>
     </div>
 
@@ -347,6 +472,14 @@
               <div class="control">
                 <select id="language"><option value="vi">Tiếng Việt</option><option value="en">English</option></select>
               </div>
+            </div>
+            <div class="item">
+              <div class="label"><span data-t="foldersFirst"></span><small data-t="foldersFirstHint"></small></div>
+              <div class="control"><label class="switch"><input type="checkbox" id="foldersFirst" /><span class="knob"></span></label></div>
+            </div>
+            <div class="item">
+              <div class="label"><span data-t="folderSizes"></span><small data-t="folderSizesHint"></small></div>
+              <div class="control"><label class="switch"><input type="checkbox" id="folderSizes" /><span class="knob"></span></label></div>
             </div>
           </div>
 
@@ -381,18 +514,48 @@
           <div class="buttons"><button class="push primary" id="settingsDone" data-t="done"></button></div>
         </div>
       </div>
+
+      <div class="modal" id="conflictSheet">
+        <div class="panel small" role="dialog" aria-labelledby="conflictTitle">
+          <h2 id="conflictTitle"></h2>
+          <p id="conflictText"></p>
+          <div class="compare" id="conflictCompare"></div>
+          <div class="buttons">
+            <label class="check"><input type="checkbox" id="conflictAll" /> <span data-t="applyAll"></span></label>
+            <button class="push" data-answer="stop" data-t="stop"></button>
+            <button class="push" data-answer="skip" data-t="skip"></button>
+            <button class="push" data-answer="merge" data-t="merge"></button>
+            <button class="push" data-answer="replace" data-t="replace"></button>
+            <button class="push primary" data-answer="keepBoth" data-t="keepBoth"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal" id="confirmSheet">
+        <div class="panel small" role="dialog">
+          <h2 id="confirmTitle"></h2>
+          <p id="confirmText"></p>
+          <div class="buttons">
+            <button class="push" id="confirmNo" data-t="cancel"></button>
+            <button class="push primary" id="confirmYes"></button>
+          </div>
+        </div>
+      </div>
       <div data-slot="sheets"></div>
     </div>
 
+    <div class="jobs" id="jobs"></div>
     <div class="banner" id="banner">
       <div id="bannerTxt"></div>
       <button class="push primary" id="bannerBtn" data-t="update"></button>
     </div>
-    <div class="toasts"><div class="toast" id="toast"></div></div>
-    <div id="templates"></div>
+    <div class="toast" id="toast"></div>
 
     <script>
       "use strict";
+      // Script errors go to the app's log (stderr), as the page has no console in a release.
+      window.addEventListener("error", (e) => window.ipc.postMessage(JSON.stringify({ id: 0, method: "app.log", args: { message: `${e.message} (${e.filename}:${e.lineno})` } })));
+      window.addEventListener("unhandledrejection", (e) => window.ipc.postMessage(JSON.stringify({ id: 0, method: "app.log", args: { message: `unhandled: ${e.reason}` } })));
       const $ = (id) => document.getElementById(id);
       const root = document.documentElement;
       const pending = new Map();
@@ -406,6 +569,11 @@
         });
       }
 
+      // Every page event goes to the handlers of its name; parts add theirs with `on`.
+      const handlers = {};
+      function on(name, fn) {
+        (handlers[name] ||= []).push(fn);
+      }
       window.app = {
         receive(msg) {
           if (msg.id != null && pending.has(msg.id)) {
@@ -414,56 +582,67 @@
             msg.ok ? resolve(msg.data) : reject(msg.error);
             return;
           }
-          if (msg.event) events[msg.event]?.(msg.data);
+          for (const fn of handlers[msg.event] || []) {
+            try {
+              fn(msg.data);
+            } catch (e) {
+              console.error(e);
+            }
+          }
         },
       };
 
-      // The page's words in both languages; {0} and {1} are what goes in them.
+      // The page's words in both languages; {0} and {1} are what goes in them. Parts add theirs with `words`.
       const WORDS = {
         vi: {
-          settings: "Cài đặt", done: "Xong", general: "Chung", appearance: "Giao diện", about: "Giới thiệu",
+          settings: "Cài đặt", done: "Xong", general: "Chung", appearance: "Giao diện", about: "Giới thiệu", cancel: "Hủy",
           language: "Ngôn ngữ", languageHint: "Ngôn ngữ của cửa sổ, menu và thông báo.",
           theme: "Chế độ màu", themeHint: "Theo hệ thống, hoặc luôn sáng, luôn tối.", system: "Hệ thống", light: "Sáng", dark: "Tối",
-          glassHint: "Thanh bên, thanh công cụ và các bảng thành kính mờ trên nền màu, như macOS 26. Bật hoặc tắt sẽ mở lại cửa sổ.",
+          glassHint: "Thanh bên, thanh công cụ và các bảng thành kính mờ, như macOS 26. Bật hoặc tắt sẽ mở lại cửa sổ.",
+          foldersFirst: "Thư mục lên đầu", foldersFirstHint: "Khi sắp xếp theo tên, thư mục luôn đứng trước tệp.",
+          folderSizes: "Tính dung lượng thư mục", folderSizesHint: "Cột Kích thước hiện dung lượng của từng thư mục, tính dần ở chế độ nền.",
           checkUpdate: "Kiểm tra cập nhật", checking: "Đang kiểm tra bản mới...", upToDate: "Bạn đang dùng bản mới nhất.",
           updateOut: "Có bản LazySpace {0}. Bạn đang dùng {1}.", update: "Cập nhật", updating: "Đang tải...", updatingPct: "Đang tải {0}%",
           updateReady: "Đã tải xong bản mới. Khởi động lại để dùng.", restart: "Khởi động lại",
-          emptyText: "Chưa mở thư mục nào.",
+          back: "Quay lại", forward: "Tiến tới", asList: "Dạng danh sách", asIcons: "Dạng biểu tượng", newFolder: "Thư mục mới",
+          moveToTrash: "Chuyển vào Thùng rác", searchHere: "Lọc thư mục này",
         },
         en: {
-          settings: "Settings", done: "Done", general: "General", appearance: "Appearance", about: "About",
+          settings: "Settings", done: "Done", general: "General", appearance: "Appearance", about: "About", cancel: "Cancel",
           language: "Language", languageHint: "The language of the window, the menus and the notifications.",
           theme: "Colour mode", themeHint: "As the system, or always light or dark.", system: "System", light: "Light", dark: "Dark",
-          glassHint: "The sidebar, the toolbar and the sheets turn to frosted glass over a coloured backdrop, as in macOS 26. Turning it on or off reopens the window.",
+          glassHint: "The sidebar, the toolbar and the sheets turn to frosted glass, as in macOS 26. Turning it on or off reopens the window.",
+          foldersFirst: "Folders on top", foldersFirstHint: "When sorting by name, folders always come before files.",
+          folderSizes: "Calculate folder sizes", folderSizesHint: "The Size column shows the size of each folder, worked out in the background.",
           checkUpdate: "Check for Updates", checking: "Checking for a new version...", upToDate: "You have the latest version.",
           updateOut: "LazySpace {0} is out. You have {1}.", update: "Update", updating: "Downloading...", updatingPct: "Downloading {0}%",
           updateReady: "The new version is ready. Restart to use it.", restart: "Restart",
-          emptyText: "No folder is open yet.",
+          back: "Back", forward: "Forward", asList: "as List", asIcons: "as Icons", newFolder: "New Folder",
+          moveToTrash: "Move to Trash", searchHere: "Filter this folder",
         },
       };
+      function words(more) {
+        for (const lang of ["vi", "en"]) Object.assign(WORDS[lang], more[lang] || {});
+        applyLang();
+      }
       let lang = root.lang === "en" ? "en" : "vi";
-      const t = (key, ...args) => (WORDS[lang][key] ?? WORDS.vi[key] ?? key).replace(/\{(\d)\}/g, (_, i) => args[i]);
+      const t = (key, ...args) => String(WORDS[lang][key] ?? WORDS.vi[key] ?? key).replace(/\{(\d)\}/g, (_, i) => args[i]);
 
       // The static words of the page: data-t is an element's text, data-tp a placeholder, data-tt a button's title and
-      // label, data-tl a label for assistive technology.
+      // label.
       function applyLang() {
         root.lang = lang;
         for (const el of document.querySelectorAll("[data-t]")) el.textContent = t(el.dataset.t);
         for (const el of document.querySelectorAll("[data-tp]")) el.placeholder = t(el.dataset.tp);
         for (const el of document.querySelectorAll("[data-tt]")) { el.title = t(el.dataset.tt); el.setAttribute("aria-label", t(el.dataset.tt)); }
-        for (const el of document.querySelectorAll("[data-tl]")) el.setAttribute("aria-label", t(el.dataset.tl));
       }
 
-      // What the page knows of itself; the panes, tabs and selection are added by the parts that own them.
+      // What the page knows of itself; the panes and tabs are kept by 02-core-panes.js.
       const S = {
         window: { role: "main", id: 0 },
-        layout: "single",
-        panes: [],
-        focus: "p0",
-        viewMode: "list",
-        showHidden: false,
+        settings: {},
         glassAvailable: false,
-        uri: null,
+        places: {},
       };
 
       let toastTimer;
@@ -471,19 +650,19 @@
         $("toast").textContent = text;
         $("toast").classList.add("show");
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => $("toast").classList.remove("show"), 3200);
+        toastTimer = setTimeout(() => $("toast").classList.remove("show"), 3600);
       }
       const say = (error) => toast(String(error));
+      const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
       // The window is dragged by its toolbar and the top of the sidebar, and zoomed by a double click there, as the
       // title bar the window no longer shows would.
       document.addEventListener("mousedown", (e) => {
-        if (e.button !== 0 || !e.target.closest(".drag") || e.target.closest("button, input, label, a, select, [data-slot]:not(:empty)")) return;
+        if (e.button !== 0 || !e.target.closest(".drag") || e.target.closest("button, input, label, a, select, .capsule")) return;
         call(e.detail === 2 ? "app.zoom" : "app.drag").catch(() => {});
       });
 
-      // The native glass behind the page (src/glass.rs) is told where the page lets it show: the sidebar, the
-      // capsules and the sheet that is open, in points from the top left of the window.
+      // The native glass behind the page (src/glass.rs) is told where the page lets it show.
       let glassTimer;
       function reportGlass() {
         clearTimeout(glassTimer);
@@ -506,16 +685,6 @@
         reportGlass();
       }
 
-      function showTheme(theme) {
-        root.dataset.theme = theme;
-        for (const seg of $("theme").children) seg.classList.toggle("on", seg.dataset.theme === theme);
-        paintLook();
-      }
-      function showGlass(on) {
-        root.toggleAttribute("data-glass", on);
-        $("glass").checked = on;
-        paintLook();
-      }
       const setSetting = (patch) => call("settings.set", { patch }).catch(say);
       $("theme").addEventListener("click", (e) => {
         const seg = e.target.closest("[data-theme]");
@@ -523,8 +692,10 @@
       });
       $("glass").addEventListener("change", () => setSetting({ glass: $("glass").checked }));
       $("language").addEventListener("change", () => setSetting({ language: $("language").value }));
+      $("foldersFirst").addEventListener("change", () => setSetting({ sort: { foldersFirst: $("foldersFirst").checked } }));
+      $("folderSizes").addEventListener("change", () => setSetting({ folder_sizes: $("folderSizes").checked }));
 
-      // Sheets: one open at a time, closed by Escape or a click beside it.
+      // Sheets: one open at a time, closed by Escape or a click beside it (unless it waits for an answer).
       function openSheet(id) {
         closeSheets();
         $(id).classList.add("open");
@@ -535,16 +706,33 @@
         for (const sheet of document.querySelectorAll(".modal.open")) sheet.classList.remove("open");
         reportGlass();
       }
-      $("openSettings").addEventListener("click", () => openSheet("settingsSheet"));
+      const sheetOpen = () => !!document.querySelector(".modal.open");
       $("settingsDone").addEventListener("click", closeSheets);
       document.querySelector(".sheets").addEventListener("mousedown", (e) => {
-        if (e.target.classList.contains("modal")) closeSheets();
+        if (e.target.classList.contains("modal") && !e.target.dataset.modal) closeSheets();
       });
       document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") closeSheets();
+        if (e.key === "Escape" && sheetOpen() && !document.querySelector(".modal.open[data-modal]")) closeSheets();
       });
 
-      // Updates: the app checks once when it starts and tells of a newer version; the button asks again.
+      // A question with two answers, as a sheet; resolves true for the first.
+      function confirmSheet(title, text, yes) {
+        return new Promise((resolve) => {
+          $("confirmTitle").textContent = title;
+          $("confirmText").textContent = text;
+          $("confirmYes").textContent = yes;
+          openSheet("confirmSheet");
+          const done = (answer) => {
+            $("confirmYes").onclick = $("confirmNo").onclick = null;
+            closeSheets();
+            resolve(answer);
+          };
+          $("confirmYes").onclick = () => done(true);
+          $("confirmNo").onclick = () => done(false);
+          setTimeout(() => $("confirmYes").focus(), 30);
+        });
+      }
+
       $("checkUpdate").addEventListener("click", () => {
         $("updateNote").textContent = t("checking");
         call("update.check", { manual: true }).catch(say);
@@ -556,53 +744,48 @@
       });
 
       function showSettings(s) {
+        S.settings = s;
         lang = s.language === "en" ? "en" : "vi";
         $("language").value = lang;
         applyLang();
-        S.viewMode = s.view_mode;
-        S.showHidden = s.show_hidden;
-        showTheme(s.theme);
-        showGlass(s.glass);
+        root.dataset.theme = s.theme;
+        for (const seg of $("theme").children) seg.classList.toggle("on", seg.dataset.theme === s.theme);
+        root.toggleAttribute("data-glass", s.glass);
+        $("glass").checked = s.glass;
+        $("foldersFirst").checked = s.sort?.foldersFirst !== false;
+        $("folderSizes").checked = !!s.folder_sizes;
+        paintLook();
       }
 
-      const events = {
-        "app.hello"(d) {
-          S.window = { role: d.windowRole, id: d.windowId };
-          S.glassAvailable = !!d.glassAvailable;
-          S.uri = d.uri;
-          S.saved = d.layout;
-          $("version").textContent = d.version;
-          showSettings(d.settings);
-        },
-        "settings.changed": showSettings,
-        // The system's light or dark changed; only matters while the theme follows it.
-        "theme.changed": () => paintLook(),
-        // From the menu bar.
-        "menu.action"(d) {
-          if (d.id === "app.settings") openSheet("settingsSheet");
-        },
-        "update.available"(d) {
-          $("bannerTxt").textContent = t("updateOut", d.latest, d.current);
-          $("banner").classList.add("show");
-        },
-        "update.none"() {
-          $("updateNote").textContent = t("upToDate");
-        },
-        "update.progress"(percent) {
-          $("bannerBtn").textContent = t("updatingPct", percent);
-        },
-        "update.ready"() {
-          $("bannerTxt").textContent = t("updateReady");
-          $("bannerBtn").textContent = t("restart");
-          $("bannerBtn").disabled = false;
-          $("bannerBtn").onclick = () => call("update.relaunch").catch(say);
-        },
-        toast,
-      };
+      on("app.hello", (d) => {
+        S.window = { role: d.windowRole, id: d.windowId };
+        S.glassAvailable = !!d.glassAvailable;
+        S.hello = d;
+        $("version").textContent = d.version;
+        showSettings(d.settings);
+      });
+      on("settings.changed", showSettings);
+      on("theme.changed", () => paintLook());
+      on("menu.action", (d) => {
+        if (d.id === "app.settings") openSheet("settingsSheet");
+      });
+      on("update.available", (d) => {
+        $("bannerTxt").textContent = t("updateOut", d.latest, d.current);
+        $("banner").classList.add("show");
+      });
+      on("update.none", () => ($("updateNote").textContent = t("upToDate")));
+      on("update.progress", (percent) => ($("bannerBtn").textContent = t("updatingPct", percent)));
+      on("update.ready", () => {
+        $("bannerTxt").textContent = t("updateReady");
+        $("bannerBtn").textContent = t("restart");
+        $("bannerBtn").disabled = false;
+        $("bannerBtn").onclick = () => call("update.relaunch").catch(say);
+      });
+      on("toast", toast);
 
-      for (const seg of $("theme").children) seg.classList.toggle("on", seg.dataset.theme === (root.dataset.theme || "system"));
       applyLang();
-      call("app.ready").catch(() => {});
+      // The page tells the app it is ready once every part has added its handlers (the last script, in ui/parts).
+      window.addEventListener("DOMContentLoaded", () => call("app.ready").catch(() => {}));
     </script>
     <!--parts-->
   </body>

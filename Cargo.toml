@@ -22,10 +22,19 @@ serde_json = "1"
 # The native layer: the glass behind the page, the web view's own settings, and work that must run on the main thread.
 objc2 = "0.6"
 objc2-foundation = "0.3"
-objc2-app-kit = "0.3"
+objc2-app-kit = { version = "0.3", features = ["objc2-uniform-type-identifiers"] }
 objc2-web-kit = "0.3"
 block2 = "0.6"
 dispatch2 = "0.3"
+# The icon of a file type and its name in words ("JPEG image"), and thumbnails of pictures, films and PDFs.
+objc2-uniform-type-identifiers = "0.3"
+# Without the default features, which would bring UIKit's bindings in as well.
+objc2-quick-look-thumbnailing = { version = "0.3", default-features = false, features = ["std", "QLThumbnailGenerator", "QLThumbnailGenerationRequest", "QLThumbnailRepresentation", "bitflags", "block2", "objc2-app-kit", "objc2-core-foundation", "objc2-core-graphics"] }
+objc2-core-foundation = "0.3"
+objc2-core-graphics = "0.3"
+# A folder on screen follows what changes in it (FSEvents), a few changes at a time.
+notify = "8"
+notify-debouncer-full = "0.7"
 # The update check: blocking HTTP, and the SHA-256 that GitHub publishes for a release.
 ureq = "3.4"
 sha2 = "0.10"

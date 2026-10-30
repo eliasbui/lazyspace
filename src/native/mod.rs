@@ -2,6 +2,10 @@
 //! and an NSImage as PNG. Code that uses AppKit is kept thin and holds no logic of its own, so the logic can be
 //! tested without a window.
 
+pub mod icons;
+pub mod trash;
+pub mod workspace;
+
 use crate::tr;
 use objc2_app_kit::{NSBitmapImageFileType, NSBitmapImageRep, NSImage, NSWindow, NSWorkspace};
 use objc2_foundation::{NSDictionary, NSString, NSURL};

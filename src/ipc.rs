@@ -92,6 +92,15 @@ pub fn register_core(d: &mut Dispatcher) {
         app.page_ready(window);
         Ok(Value::Null)
     });
+    // A script error of the page, written where the app's own errors go, since the page has no console in a release.
+    d.on("app.log", |_, _, a| {
+        #[derive(Deserialize)]
+        struct Log {
+            message: String,
+        }
+        eprintln!("page: {}", args::<Log>(a)?.message.chars().take(2000).collect::<String>());
+        Ok(Value::Null)
+    });
     d.on("app.drag", |app, window, _| {
         if let Some(surface) = app.surfaces.get(&window) {
             let _ = surface.window.drag_window();

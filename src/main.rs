@@ -1,10 +1,17 @@
+mod browse;
+mod clipboard;
+mod fswatch;
 mod glass;
 mod ipc;
+mod jobs;
 mod menus;
 mod native;
 mod protocol;
 mod settings;
+mod sizes;
 mod update;
+mod vfs;
+mod views;
 
 use glass::GlassLayer;
 use ipc::{Dispatcher, event};
@@ -132,6 +139,12 @@ pub struct App {
     pub settings: Settings,
     pub proxy: Proxy,
     pub surfaces: HashMap<WindowId, Surface>,
+    /// The listing of every tab (src/views.rs).
+    pub views: views::Views,
+    /// The long operations that run (src/jobs.rs).
+    pub jobs: jobs::Jobs,
+    /// The rest of the core browser: the watcher, the cut, the undo list, the folder sizes (src/browse.rs).
+    pub browse: browse::State,
     settings_path: PathBuf,
     layout_path: PathBuf,
     /// Windows asked for and not made yet, and windows asked to close: the event loop does both after each event,
@@ -148,8 +161,11 @@ impl App {
     pub fn new(settings: Settings, settings_path: PathBuf, layout_path: PathBuf, proxy: Proxy) -> App {
         App {
             settings,
+            browse: browse::State::new(proxy.clone()),
             proxy,
             surfaces: HashMap::new(),
+            views: views::Views::default(),
+            jobs: jobs::Jobs::default(),
             settings_path,
             layout_path,
             opening: Vec::new(),
@@ -248,6 +264,7 @@ impl App {
                 self.remember_size(&surface);
             }
         }
+        self.views.close_window(key);
     }
 
     /// A window the user closed: the same as `close_surface`, from the window's id.
@@ -459,6 +476,7 @@ fn main() {
     }
     let mut dispatcher = Dispatcher::new();
     ipc::register_core(&mut dispatcher);
+    browse::register(&mut dispatcher);
     let mut app = App::new(settings, settings_path, settings::layout_path(), proxy);
     app.menu_bar = menus::menu_bar();
 
