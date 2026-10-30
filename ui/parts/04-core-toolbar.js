@@ -129,6 +129,9 @@ const Toolbar = (() => {
       const pane = Panes.focused();
       const tab = pane?.tab;
       if (!tab?.generation) return;
+      // Search results are searched again with Enter (19-search.js): filtered as typed, they would lose the matches
+      // found without their accents.
+      if (schemeOf(tab.uri) === "search") return;
       tab.filter = $("searchInput").value;
       call("view.filter", { view: tab.id, text: tab.filter })
         .then((d) => pane.tab === tab && pane.regenerate(d.generation, d.count, d.groups))
