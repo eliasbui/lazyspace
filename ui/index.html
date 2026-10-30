@@ -147,7 +147,7 @@
       .glass body { background: var(--window); }
       /* The files' card: inset in the window as the sidebar is, so the two read as a pair on the glass. */
       .glass .workspace {
-        margin: 0 8px 8px 0; border-radius: 14px; overflow: hidden; background: var(--content);
+        margin: 0 8px 8px 8px; border-radius: 14px; overflow: hidden; background: var(--content);
         box-shadow: 0 0 0 0.5px var(--content-stroke), 0 2px 10px rgba(0, 0, 0, 0.06);
       }
       .glass .status { box-shadow: none; }
@@ -728,11 +728,15 @@
         call(e.detail === 2 ? "app.zoom" : "app.drag").catch(() => {});
       });
 
-      // The native glass behind the page (src/glass.rs) is told where the page lets it show.
-      let glassTimer;
+      // The native glass behind the page (src/glass.rs) is told where the page lets it show, once a frame at most and
+      // only when a pane moved: while the sidebar's edge or the window is dragged it follows frame by frame, rather
+      // than catching up once the drag stops.
+      let glassFrame = 0;
+      let glassSent = "";
       function reportGlass() {
-        clearTimeout(glassTimer);
-        glassTimer = setTimeout(() => {
+        if (glassFrame) return;
+        glassFrame = requestAnimationFrame(() => {
+          glassFrame = 0;
           if (!S.glassAvailable || !root.classList.contains("glass")) return;
           const panes = [];
           for (const el of document.querySelectorAll(".sidebar, .capsule, .modal.open .panel")) {
@@ -740,10 +744,15 @@
             if (r.width < 1 || r.height < 1) continue;
             panes.push([r.x, r.y, r.width, r.height, parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0]);
           }
-          call("glass.panes", { panes }).catch(() => {});
-        }, 60);
+          const sent = JSON.stringify(panes);
+          if (sent === glassSent) return;
+          glassSent = sent;
+          call("glass.panes", { panes }).catch(() => (glassSent = ""));
+        });
       }
-      new ResizeObserver(reportGlass).observe(document.body);
+      // The capsules move when the toolbar's width does, which the sidebar's width changes without the window's.
+      const glassWatch = new ResizeObserver(reportGlass);
+      for (const el of [document.body, $("sidebar"), $("toolbar")]) glassWatch.observe(el);
 
       function paintLook() {
         paintTheme();
