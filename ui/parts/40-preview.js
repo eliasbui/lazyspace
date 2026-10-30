@@ -129,7 +129,7 @@ const Preview = (() => {
       media = `<img class="pv-icon" src="${iconUrl(e, 128)}" alt="">`;
     } else {
       const thumb = `lazy://thumb/${512 * pixelRatio()}/${encodeURIComponent(pathOf(d.local || d.uri))}`;
-      media = `<img class="pv-thumb" src="${thumb}" alt="" onerror="this.onerror=null;this.className='pv-icon';this.src='${iconUrl(e, 128)}'">`;
+      media = thumbImg(thumb, iconUrl(e, 128), "pv-thumb", "pv-icon");
     }
     body.innerHTML = `<div class="pv-media ${d.kind}">${media}</div>${rows([...common, ...extra])}`;
     if (d.kind === "image") {

@@ -3,7 +3,7 @@
 LZ.words({
   vi: {
     syncTitle: "So sánh và đồng bộ", syncMenu: "So sánh và đồng bộ...", comparePanes: "So sánh với khung bên cạnh", modeLtr: "Trái sang phải", modeRtl: "Phải sang trái",
-    modeBoth: "Hai chiều", byTime: "Kích thước và ngày", byContent: "Nội dung", ignoreHidden: "Bỏ qua tệp ẩn", mirror: "Xóa mục thừa ở đích (vào Thùng rác)",
+    modeBoth: "Hai chiều", byTime: "Kích thước và ngày", byContent: "Nội dung", ignoreHidden: "Bỏ qua tệp ẩn", mirror: "Xóa mục thừa ở đích (vào Thùng rác; trên máy chủ thì xóa hẳn)",
     compare: "So sánh", doSync: "Đồng bộ", syncSummary: "{0} giống nhau, {1} khác biệt", syncTruncated: "Chỉ liệt kê 20.000 mục khác biệt đầu tiên.",
     "s.leftNewer": "Trái mới hơn", "s.rightNewer": "Phải mới hơn", "s.leftOnly": "Chỉ bên trái", "s.rightOnly": "Chỉ bên phải", "s.conflict": "Xung đột",
     "a.skip": "Bỏ qua", "a.ltr": "Chép sang phải", "a.rtl": "Chép sang trái", "a.deleteLeft": "Xóa bên trái", "a.deleteRight": "Xóa bên phải",
@@ -12,7 +12,7 @@ LZ.words({
   },
   en: {
     syncTitle: "Compare and Sync", syncMenu: "Compare and Sync...", comparePanes: "Compare with the Next Pane", modeLtr: "Left to right", modeRtl: "Right to left",
-    modeBoth: "Both ways", byTime: "Size and date", byContent: "Content", ignoreHidden: "Ignore hidden files", mirror: "Remove extra items from the target (to the Trash)",
+    modeBoth: "Both ways", byTime: "Size and date", byContent: "Content", ignoreHidden: "Ignore hidden files", mirror: "Remove extra items from the target (to the Trash; on a server for good)",
     compare: "Compare", doSync: "Sync", syncSummary: "{0} the same, {1} different", syncTruncated: "Only the first 20,000 differences are listed.",
     "s.leftNewer": "Left is newer", "s.rightNewer": "Right is newer", "s.leftOnly": "Left only", "s.rightOnly": "Right only", "s.conflict": "Conflict",
     "a.skip": "Skip", "a.ltr": "Copy to the right", "a.rtl": "Copy to the left", "a.deleteLeft": "Remove from the left", "a.deleteRight": "Remove from the right",

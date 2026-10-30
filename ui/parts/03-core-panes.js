@@ -433,9 +433,7 @@ class Pane {
       }
       const thumb = thumbUrl(e, 64);
       const fallback = iconUrl(e, 64);
-      const img = thumb
-        ? `<img class="thumb" src="${thumb}" draggable="false" alt="" onerror="this.onerror=null;this.className='';this.src='${fallback}'">`
-        : `<img src="${fallback}" draggable="false" alt="">`;
+      const img = thumb ? thumbImg(thumb, fallback, "thumb") : `<img src="${esc(fallback)}" draggable="false" alt="">`;
       el.innerHTML = `<div class="pic">${img}</div><div class="label">${esc(e.name)}</div>`;
       return;
     }
@@ -448,7 +446,7 @@ class Pane {
     const size = e.isDir || e.kind === "app" || e.kind === "package" ? (e.dirSize != null ? fmtSize(e.dirSize) : "--") : fmtSize(e.size);
     const thumb = thumbUrl(e, 16);
     const fallback = iconUrl(e, 16);
-    const img = thumb ? `<img src="${thumb}" draggable="false" alt="" onerror="this.onerror=null;this.src='${fallback}'">` : `<img src="${fallback}" draggable="false" alt="">`;
+    const img = thumb ? thumbImg(thumb, fallback) : `<img src="${esc(fallback)}" draggable="false" alt="">`;
     const cells = { mtime: `<div class="cell">${fmtDate(e.mtime)}</div>`, size: `<div class="cell num">${size}</div>`, kind: `<div class="cell">${esc(e.type || "")}</div>` };
     el.innerHTML = `<div class="cell name">${img}<span>${esc(e.name)}</span></div>${(this.columns || []).slice(1).map((c) => cells[c]).join("")}`;
   }

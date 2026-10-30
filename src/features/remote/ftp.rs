@@ -186,7 +186,7 @@ impl Provider for Ftp {
 
     fn list(&self, uri: &Uri, _cancel: &AtomicBool) -> Result<Vec<Entry>, String> {
         // MLSD also lists the folder itself and its parent, under "." and ".." or under their paths.
-        Ok(self.files(&uri.path)?.iter().filter(|f| f.name() != "." && f.name() != ".." && !f.name().contains('/')).map(|f| entry_of(uri, f.name(), f)).collect())
+        Ok(self.files(&uri.path)?.iter().filter(|f| crate::vfs::valid_name(f.name()).is_ok()).map(|f| entry_of(uri, f.name(), f)).collect())
     }
 
     fn stat(&self, uri: &Uri) -> Result<Entry, String> {
@@ -314,16 +314,24 @@ impl<T: TlsStream + Send + 'static> Commit for Upload<T> {
         }
         // RNTO onto an existing file replaces it on most servers; the others are given the old file's removal first.
         let mut moved = stream.rename(&self.partial, &self.target);
+        let mut old_gone = false;
         if moved.is_err() && stream.size(&self.target).is_ok() {
-            moved = stream.rm(&self.target).and_then(|()| stream.rename(&self.partial, &self.target));
+            moved = stream.rm(&self.target).and_then(|()| {
+                old_gone = true;
+                stream.rename(&self.partial, &self.target)
+            });
         }
-        if let Err(e) = moved {
-            let _ = stream.rm(&self.partial);
-            give(&self.idle, stream);
-            return Err(error(&self.target, &e));
-        }
+        let result = match moved {
+            Ok(()) => Ok(()),
+            // Once the old file is gone the partial one is all there is of it, so it stays, under its own name.
+            Err(e) if old_gone => Err(format!("{} ({}: {})", error(&self.target, &e), tr("nội dung mới nằm ở", "the new content is in"), self.partial)),
+            Err(e) => {
+                let _ = stream.rm(&self.partial);
+                Err(error(&self.target, &e))
+            }
+        };
         give(&self.idle, stream);
-        Ok(())
+        result
     }
 }
 
@@ -368,6 +376,8 @@ mod tests {
         let (user, password) = auth.split_once(':').unwrap_or((auth, ""));
         let (host, port) = host.split_once(':').map_or((host, None), |(h, p)| (h, p.parse().ok()));
         let conn = Connection { name: "test".into(), scheme: "ftp".into(), host: host.into(), port, user: user.into(), ..Default::default() };
+        let wrong = Ftp::new(conn.clone(), Some(format!("{password}-wrong"))).home().unwrap_err();
+        assert!(wrong.starts_with(crate::features::archive::NEEDS_PASSWORD), "a wrong password asks again: {wrong}");
         let ftp = Ftp::new(conn, Some(password.into()));
         let home = Uri { scheme: "ftp".into(), authority: "test".into(), path: ftp.home().unwrap() };
         let dir = home.join(&format!("lazyspace-test-{}", std::process::id()));

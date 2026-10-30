@@ -69,6 +69,23 @@ function fmtSize(bytes) {
 const pixelRatio = () => Math.min(3, Math.max(1, Math.round(window.devicePixelRatio || 2)));
 const iconUrl = (entry, points = 16) => `lazy://icon/${points * pixelRatio()}/${encodeURIComponent(entry.icon)}`;
 const THUMBNAILED = /^(jpe?g|png|gif|heic|heif|webp|tiff?|bmp|psd|mov|mp4|m4v|avi|pdf|key|pages|numbers|cr2|nef|arw|dng|raf|orf)$/i;
+// A picture that fails to load (a thumbnail Quick Look could not make) shows the URL in its data-fallback instead, with
+// the class in data-fallback-class. No handler is ever written into the markup, where a file's name could become code.
+document.addEventListener(
+  "error",
+  (e) => {
+    const img = e.target;
+    if (img?.tagName !== "IMG" || !img.dataset.fallback) return;
+    const url = img.dataset.fallback;
+    delete img.dataset.fallback;
+    img.className = img.dataset.fallbackClass || "";
+    img.src = url;
+  },
+  true,
+);
+// An <img> of a thumbnail that falls back to `fallback`, both URLs escaped for an attribute.
+const thumbImg = (thumb, fallback, cls = "", fallbackClass = "") =>
+  `<img${cls ? ` class="${cls}"` : ""} src="${esc(thumb)}" data-fallback="${esc(fallback)}"${fallbackClass ? ` data-fallback-class="${fallbackClass}"` : ""} draggable="false" alt="">`;
 // A Quick Look thumbnail for a picture, a film or a document, or null when the icon will do.
 const thumbUrl = (entry, points) =>
   entry.kind === "file" && THUMBNAILED.test(entry.ext) && isLocal(entry.uri) ? `lazy://thumb/${points * pixelRatio()}/${encodeURIComponent(pathOf(entry.uri))}` : null;

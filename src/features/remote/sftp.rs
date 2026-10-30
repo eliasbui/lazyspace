@@ -228,7 +228,7 @@ async fn run(sftp: Arc<SftpSession>, cmd: Cmd) {
                 let mut out = Vec::new();
                 for item in sftp.read_dir(path.as_str()).await.map_err(|e| error(&path, &e))? {
                     let name = item.file_name();
-                    if name == "." || name == ".." {
+                    if crate::vfs::valid_name(&name).is_err() {
                         continue;
                     }
                     let meta = item.metadata();
@@ -562,13 +562,22 @@ impl Commit for Upload {
         let s = &self.session;
         // SFTP's rename does not replace, so a file being saved over is removed first.
         let mut moved = s.ask(|r| Cmd::Rename(self.partial.clone(), self.target.path.clone(), r));
+        let mut old_gone = false;
         if moved.is_err() && s.ask(|r| Cmd::Stat(self.target.path.clone(), r)).is_ok_and(|a| !a.dir) {
-            moved = s.ask(|r| Cmd::Remove(self.target.path.clone(), false, r)).and_then(|()| s.ask(|r| Cmd::Rename(self.partial.clone(), self.target.path.clone(), r)));
+            moved = s.ask(|r| Cmd::Remove(self.target.path.clone(), false, r)).and_then(|()| {
+                old_gone = true;
+                s.ask(|r| Cmd::Rename(self.partial.clone(), self.target.path.clone(), r))
+            });
         }
-        if moved.is_err() {
-            let _ = s.ask(|r| Cmd::Remove(self.partial.clone(), false, r));
+        match moved {
+            Ok(()) => Ok(()),
+            // Once the old file is gone the partial one is all there is of it, so it stays, under its own name.
+            Err(e) if old_gone => Err(format!("{e} ({}: {})", tr("nội dung mới nằm ở", "the new content is in"), self.partial)),
+            Err(e) => {
+                let _ = s.ask(|r| Cmd::Remove(self.partial.clone(), false, r));
+                Err(e)
+            }
         }
-        moved
     }
 }
 

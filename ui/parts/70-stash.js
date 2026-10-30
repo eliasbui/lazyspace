@@ -163,7 +163,7 @@ const Stash = (() => {
         ? this.items
             .map((item, i) => {
               const thumb = thumbUrl(item, 48);
-              const pic = thumb ? `<img class="thumb" src="${thumb}" alt="" onerror="this.onerror=null;this.className='';this.src='${iconUrl(item, 48)}'">` : `<img src="${iconUrl(item, 48)}" alt="">`;
+              const pic = thumb ? thumbImg(thumb, iconUrl(item, 48), "thumb") : `<img src="${LZ.esc(iconUrl(item, 48))}" alt="">`;
               return `<div class="shelf-item${this.selected.has(item.uri) ? " sel" : ""}" data-i="${i}">${pic}<span>${LZ.esc(item.name)}</span></div>`;
             })
             .join("")

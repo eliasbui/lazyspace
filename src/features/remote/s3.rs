@@ -407,14 +407,14 @@ impl Provider for S3Provider {
             let page = s3.page(&bucket, &prefix, true, token.as_deref())?;
             for p in &page.prefixes {
                 let name = p[prefix.len().min(p.len())..].trim_end_matches('/');
-                if !name.is_empty() {
+                if crate::vfs::valid_name(name).is_ok() {
                     out.push(entry(uri, name, true, false, 0, 0));
                 }
             }
             for (k, size, time) in &page.keys {
                 let name = &k[prefix.len().min(k.len())..];
                 // The key of the folder itself, the marker a new folder is made with, is not an item in it.
-                if !name.is_empty() && !name.contains('/') {
+                if crate::vfs::valid_name(name).is_ok() {
                     out.push(entry(uri, name, false, false, *size, *time));
                 }
             }

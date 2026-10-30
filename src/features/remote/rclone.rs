@@ -121,7 +121,7 @@ fn entry_of(dir: &Uri, item: &Item) -> Entry {
 
 fn parse_list(dir: &Uri, json: &str) -> Result<Vec<Entry>, String> {
     let items: Vec<Item> = serde_json::from_str(json).map_err(|e| format!("rclone: {e}"))?;
-    Ok(items.iter().map(|i| entry_of(dir, i)).collect())
+    Ok(items.iter().filter(|i| crate::vfs::valid_name(&i.name).is_ok()).map(|i| entry_of(dir, i)).collect())
 }
 
 pub struct RcloneProvider;

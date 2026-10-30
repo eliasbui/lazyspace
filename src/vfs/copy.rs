@@ -137,6 +137,9 @@ fn transfer_item(run: &mut Run, src: &Uri, target: &Uri, mv: bool) -> Result<(),
 fn merge(run: &mut Run, sp: &dyn Provider, src: &Uri, target: &Uri, mv: bool) -> Result<(), String> {
     for child in sp.list(src, run.ctx.cancel_flag())? {
         run.check()?;
+        if !safe_child(run, &child) {
+            continue;
+        }
         transfer_item(run, &Uri::parse(&child.uri)?, &target.join(&child.name), mv)?;
     }
     if mv && sp.list(src, run.ctx.cancel_flag()).is_ok_and(|rest| rest.is_empty()) {
@@ -161,6 +164,9 @@ fn copy_tree(run: &mut Run, sp: &dyn Provider, dp: &dyn Provider, src: &Uri, ent
         dp.mkdir(target)?;
         let copied = (|| {
             for child in sp.list(src, run.ctx.cancel_flag())? {
+                if !safe_child(run, &child) {
+                    continue;
+                }
                 let child_src = Uri::parse(&child.uri)?;
                 copy_tree(run, sp, dp, &child_src, &child, &target.join(&child.name))?;
             }
@@ -200,6 +206,16 @@ fn copy_tree(run: &mut Run, sp: &dyn Provider, dp: &dyn Provider, src: &Uri, ent
     writer.commit()?;
     run.step(0, &entry.name);
     Ok(())
+}
+
+/// Whether an item a folder lists may be copied by its name: a server could name one "..", or put a slash in it, to
+/// write outside the folder the copy goes to. Such an item is skipped.
+fn safe_child(run: &mut Run, child: &Entry) -> bool {
+    let safe = super::valid_name(&child.name).is_ok();
+    if !safe {
+        run.out.skipped += 1;
+    }
+    safe
 }
 
 /// The bytes of an item and all it holds, for the progress bar; a place that is not on this Mac counts its own size.
@@ -387,6 +403,49 @@ mod tests {
         transfer(&ctx, &[elsewhere(&t.0.join("src/d"))], &Uri::file(&t.0.join("dst")), true).unwrap();
         assert_eq!(fs::read_to_string(t.0.join("dst/d/a.txt")).unwrap(), "a");
         assert!(!t.0.join("src/d").exists());
+    }
+
+    /// A server that names an item of a folder "..", or puts a slash in a name.
+    struct Hostile;
+
+    impl Provider for Hostile {
+        fn capabilities(&self, _: &Uri) -> Capabilities {
+            Capabilities { write: false, rename: false, trash: false, watch: false, sizes: false, local_path: false }
+        }
+        fn list(&self, uri: &Uri, _: &AtomicBool) -> Result<Vec<Entry>, String> {
+            let file = |name: &str| Entry { name: name.into(), uri: uri.join("x").to_string(), kind: "file", is_dir: false, size: 1, mtime: 0, ctime: 0, hidden: false, ext: String::new(), icon: String::new() };
+            Ok(vec![file(".."), file("a/../../escaped"), file("fine.txt")])
+        }
+        fn stat(&self, uri: &Uri) -> Result<Entry, String> {
+            Ok(Entry { name: uri.name(), uri: uri.to_string(), kind: if uri.path == "/d" { "dir" } else { "file" }, is_dir: uri.path == "/d", size: 1, mtime: 0, ctime: 0, hidden: false, ext: String::new(), icon: String::new() })
+        }
+        fn read(&self, _: &Uri) -> Result<Box<dyn Read + Send>, String> {
+            Ok(Box::new(io::Cursor::new(b"x".to_vec())))
+        }
+        fn write(&self, _: &Uri) -> Result<Box<dyn Commit>, String> {
+            Err("read only".into())
+        }
+        fn mkdir(&self, _: &Uri) -> Result<(), String> {
+            Err("read only".into())
+        }
+        fn rename(&self, _: &Uri, _: &Uri) -> Result<(), String> {
+            Err("read only".into())
+        }
+        fn delete(&self, _: &Uri, _: &AtomicBool) -> Result<(), String> {
+            Err("read only".into())
+        }
+    }
+
+    #[test]
+    fn names_from_a_server_never_write_outside_the_target() {
+        let t = Temp::new("copy-hostile");
+        fs::create_dir(t.0.join("dst")).unwrap();
+        registry().add("hostile", Arc::new(Hostile));
+        let (ctx, _answers, _) = test_ctx();
+        let done = transfer(&ctx, &[Uri::parse("hostile://srv/d").unwrap()], &Uri::file(&t.0.join("dst")), false).unwrap();
+        assert_eq!(done.skipped, 2);
+        assert_eq!(fs::read_dir(t.0.join("dst/d")).unwrap().count(), 1, "only fine.txt");
+        assert!(!t.0.join("escaped").exists() && !t.0.join("x").exists());
     }
 
     #[test]
