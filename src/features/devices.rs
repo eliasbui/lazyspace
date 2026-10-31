@@ -1,9 +1,11 @@
 //! Disks and devices as they are plugged in. Every window hears of a disk mounted, unmounted or renamed
 //! (`volumes.changed`), so its sidebar follows; the main window in front gets a note of what came (`devices.volume`,
-//! `devices.device`) with what can be done with it: open or eject a disk, install the app a disk image holds, or open
-//! the apps that read a phone or a camera, which macOS mounts as no disk. An app is installed as Finder copies one, with
-//! ditto, so it keeps its signature and the quarantine Gatekeeper checks at its first launch; its image is ejected after.
+//! `devices.device`) with what can be done with it: open or eject a disk, install the app a disk image holds, or browse
+//! a phone or a camera, which macOS mounts as no disk, here (src/features/phones.rs) or in the apps that read one. An
+//! app is installed as Finder copies one, with ditto, so it keeps its signature and the quarantine Gatekeeper checks at
+//! its first launch; its image is ejected after.
 
+use super::phones;
 use crate::{
     App, Proxy, UserEvent,
     ipc::{Dispatcher, args, event},
@@ -79,15 +81,21 @@ fn watch(proxy: &Proxy) {
     devices::observe_volumes(move |change| changed(&pages, change));
     let (added, removed) = (proxy.clone(), proxy.clone());
     devices::watch_usb(
-        move |device| {
+        move |device, before| {
+            // The sidebar shows every one; only one plugged in while the app runs gets a note.
+            phones::usb_added(&added, device.clone());
+            if before {
+                return;
+            }
             // The names of the apps are asked of the system on the main thread, as AppKit wants.
             added.send(UserEvent::Main(Box::new(move |app: &mut App| {
-                let mut note = json!(device);
+                let mut note = phones::note_of(&device);
                 note["helpers"] = helpers_of(device.kind);
                 to_front(app, "devices.device", note);
             })));
         },
         move |id| {
+            phones::usb_removed(&removed, id);
             removed.send(UserEvent::Post { window: None, message: event("devices.removed", json!({ "id": id })) });
         },
     );

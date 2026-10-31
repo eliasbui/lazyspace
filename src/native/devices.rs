@@ -1,7 +1,7 @@
 //! What macOS says of the disks and devices plugged in: a disk mounted, unmounted or renamed (NSWorkspace's
 //! notifications), what a disk is (DiskArbitration: on USB, a memory card, the network), the file a disk image was
-//! opened from (hdiutil), and the phones and cameras on USB, which come with no disk at all (IOKit): Image Capture and
-//! Photos read them over PTP, and nothing on a Mac reads MTP.
+//! opened from (hdiutil), and the phones and cameras on USB, which come with no disk at all (IOKit). Their files are
+//! read through ImageCaptureCore (src/native/camera.rs), over PTP; nothing on a Mac reads MTP.
 
 use block2::RcBlock;
 use objc2::{rc::Retained, runtime::AnyObject};
@@ -192,6 +192,11 @@ pub struct Device {
     pub kind: &'static str,
     pub name: String,
     pub vendor: String,
+    /// Where it is plugged in (the USB location id), which ImageCaptureCore gives its devices too; 0 when unknown.
+    pub location: u32,
+    /// The USB vendor and product ids.
+    #[serde(skip)]
+    pub ids: (u16, u16),
 }
 
 /// What a USB device is, from its vendor and product and one of its interfaces; None for the rest (a keyboard, a hub,
@@ -212,16 +217,18 @@ pub fn classify(vendor_id: i64, product: &str, interface_class: i64, interface_n
 }
 
 struct Usb {
-    added: Box<dyn Fn(Device) + Send>,
+    /// Called with whether the device was there before the watch began, which is no news to tell of.
+    added: Box<dyn Fn(Device, bool) + Send>,
     removed: Box<dyn Fn(u64) + Send>,
     /// The devices announced: a device matches once for each of its interfaces and is announced once, and its going
     /// is told only when its coming was.
     seen: Mutex<HashSet<u64>>,
 }
 
-/// Calls `added` with each phone or camera plugged in from now on, and `removed` with its id once it is unplugged, from
-/// a thread of its own that waits on IOKit for the life of the app.
-pub fn watch_usb(added: impl Fn(Device) + Send + 'static, removed: impl Fn(u64) + Send + 'static) {
+/// Calls `added` with each phone or camera plugged in, those already there first (with `true`), then those plugged in
+/// from now on, and `removed` with its id once it is unplugged, from a thread of its own that waits on IOKit for the
+/// life of the app.
+pub fn watch_usb(added: impl Fn(Device, bool) + Send + 'static, removed: impl Fn(u64) + Send + 'static) {
     let usb = Usb { added: Box::new(added), removed: Box::new(removed), seen: Mutex::new(HashSet::new()) };
     let spawned = thread::Builder::new().name("usb".into()).spawn(move || {
         let usb: *mut c_void = Box::into_raw(Box::new(usb)).cast();
@@ -239,8 +246,9 @@ pub fn watch_usb(added: impl Fn(Device) + Send + 'static, removed: impl Fn(u64) 
             {
                 return;
             }
-            // What was plugged in before is no news; going through it arms the notifications of what comes next.
-            each(interfaces, |_| {});
+            // Going through what is there arms the notifications of what comes next. What was plugged in before is told
+            // as already there: the sidebar shows it, but no note says it came.
+            announce(&*usb.cast::<Usb>(), interfaces, true);
             each(gone, |_| {});
             CFRunLoopRun();
         }
@@ -264,11 +272,14 @@ fn each(iterator: IoObject, mut f: impl FnMut(IoObject)) {
 
 extern "C" fn interface_matched(usb: *mut c_void, iterator: IoObject) {
     // SAFETY: `usb` is the one watch_usb leaked.
-    let usb = unsafe { &*usb.cast::<Usb>() };
+    announce(unsafe { &*usb.cast::<Usb>() }, iterator, false);
+}
+
+fn announce(usb: &Usb, iterator: IoObject, before: bool) {
     each(iterator, |interface| {
         let Some(device) = device_of(interface) else { return };
         if usb.seen.lock().is_ok_and(|mut seen| seen.insert(device.id)) {
-            (usb.added)(device);
+            (usb.added)(device, before);
         }
     });
 }
@@ -298,11 +309,13 @@ fn device_of(interface: IoObject) -> Option<Device> {
     let name = text("USB Product Name").or_else(|| text("kUSBProductString")).unwrap_or_else(|| name_of(device));
     let vendor = text("USB Vendor Name").or_else(|| text("kUSBVendorString")).unwrap_or_default();
     let vendor_id = property(device, "idVendor").as_i64().unwrap_or(0);
+    let location = property(device, "locationID").as_i64().unwrap_or(0) as u32;
+    let ids = (vendor_id as u16, property(device, "idProduct").as_i64().unwrap_or(0) as u16);
     let id = registry_id(device);
     // SAFETY: the parent was got above.
     unsafe { IOObjectRelease(device) };
     let kind = classify(vendor_id, &name, class, &interface_name)?;
-    Some(Device { id, kind, name, vendor })
+    Some(Device { id, kind, name, vendor, location, ids })
 }
 
 /// A property of an object of the registry as JSON; null when it has none.

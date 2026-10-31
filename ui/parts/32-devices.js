@@ -1,8 +1,8 @@
 // Disks and devices as they come and go (src/features/devices.rs). The sidebar follows a disk mounted, unmounted or
 // renamed, and a tab on a disk that went goes home; a note in the corner of the main window in front says what came,
-// with what can be done with it: open or eject a disk, install the app a disk image holds and eject the image, or open
-// the apps that read a phone or a camera, which macOS mounts as no disk. Settings can turn the notes off; what an eject
-// the user asked for has to say is shown either way.
+// with what can be done with it: open or eject a disk, install the app a disk image holds and eject the image, or browse
+// a phone or a camera, which macOS mounts as no disk, here (ui/parts/33-phones.js) or in the apps that read one.
+// Settings can turn the notes off; what an eject the user asked for has to say is shown either way.
 LZ.words({
   vi: {
     "dev.kind.usb": "Ổ USB", "dev.kind.card": "Thẻ nhớ", "dev.kind.thunderbolt": "Ổ Thunderbolt", "dev.kind.external": "Ổ ngoài",
@@ -20,9 +20,10 @@ LZ.words({
     "dev.installedEjected": "Trong {0}. Ảnh đĩa đã được đẩy ra.", "dev.installedNotEjected": "Trong {0}. Chưa đẩy ra được ảnh đĩa: {1}",
     "dev.launch": "Mở {0}", "dev.trashImage": "Bỏ tệp DMG vào Thùng rác",
     "dev.connected": "{0} đã kết nối",
-    "dev.appleText": "macOS không mở {0} như một ổ đĩa. Ảnh và video lấy bằng các ứng dụng dưới đây; tệp của ứng dụng chép trong Finder.",
-    "dev.cameraText": "Thiết bị gửi ảnh qua PTP nên không hiện thành ổ đĩa. Chép ảnh bằng các ứng dụng dưới đây.",
-    "dev.mtpText": "Điện thoại chia sẻ tệp qua MTP, macOS không đọc được. Trên điện thoại, chọn chế độ truyền ảnh (PTP) để chép ảnh bằng ứng dụng dưới đây.",
+    "dev.appleText": "Xem và chép ảnh, video của {0} ngay trong LazySpace, ở mục Thiết bị của thanh bên, hoặc bằng các ứng dụng dưới đây. Tệp của ứng dụng chép trong Finder.",
+    "dev.cameraText": "Thiết bị gửi ảnh qua PTP nên không hiện thành ổ đĩa. Xem và chép ảnh ngay trong LazySpace, hoặc bằng các ứng dụng dưới đây.",
+    "dev.mtpText": "Điện thoại chia sẻ tệp qua MTP, macOS không đọc được. Trên điện thoại, chọn chế độ truyền ảnh (PTP) để xem ảnh trong LazySpace hoặc chép bằng ứng dụng dưới đây.",
+    "dev.browse": "Xem tệp",
   },
   en: {
     "dev.kind.usb": "USB drive", "dev.kind.card": "Memory card", "dev.kind.thunderbolt": "Thunderbolt drive", "dev.kind.external": "External drive",
@@ -40,9 +41,10 @@ LZ.words({
     "dev.installedEjected": "In {0}. The disk image was ejected.", "dev.installedNotEjected": "In {0}. The disk image was not ejected: {1}",
     "dev.launch": "Open {0}", "dev.trashImage": "Move the DMG to the Trash",
     "dev.connected": "{0} connected",
-    "dev.appleText": "macOS does not open the {0} as a disk. Photos and videos come in through the apps below; the files of apps are copied in Finder.",
-    "dev.cameraText": "It sends pictures over PTP, so it shows as no disk. Copy them with the apps below.",
-    "dev.mtpText": "The phone shares its files over MTP, which macOS cannot read. Set it to transfer photos (PTP) to copy them with the app below.",
+    "dev.appleText": "Browse and copy the photos and videos of the {0} right here, under Devices in the sidebar, or with the apps below. The files of apps are copied in Finder.",
+    "dev.cameraText": "It sends pictures over PTP, so it shows as no disk. Browse and copy them right here, or with the apps below.",
+    "dev.mtpText": "The phone shares its files over MTP, which macOS cannot read. Set it to transfer photos (PTP) to browse them here or copy them with the app below.",
+    "dev.browse": "Browse Files",
   },
 });
 LZ.icons.add({ iphone: "iphone", ipad: "ipad", camera: "camera", "phone.other": "candybarphone,iphone" });
@@ -281,8 +283,13 @@ const Devices = (() => {
     if (!shown() || told.has(who)) return;
     told.add(who);
     const symbol = d.kind === "apple" ? (/^ipad/i.test(d.name) ? "ipad" : "iphone") : d.kind === "camera" ? "camera" : "phone.other";
-    const actions = (d.helpers || []).map((h, i) => ({ label: h.name, primary: i === 0, run: () => call("devices.open_app", { app: h.id }).catch(say) }));
-    note(`dev:${d.id}`, { symbol, title: t("dev.connected", d.name), text: t(`dev.${d.kind}Text`, d.name), actions, life: 20000 });
+    // Browsing it here comes first, except for a phone on MTP, which can only be read once it is set to PTP.
+    const key = `dev:${d.id}`;
+    const browse = d.uri ? [{ label: t("dev.browse"), run: () => (Panes.focused()?.newTab(d.uri), close(key)) }] : [];
+    const helpers = (d.helpers || []).map((h) => ({ label: h.name, run: () => call("devices.open_app", { app: h.id }).catch(say) }));
+    const actions = d.kind === "mtp" ? [...helpers, ...browse] : [...browse, ...helpers];
+    if (actions[0]) actions[0].primary = true;
+    note(key, { symbol, title: t("dev.connected", d.name), text: t(`dev.${d.kind}Text`, d.name), actions, life: 20000 });
   });
   on("devices.removed", (d) => close(`dev:${d.id}`));
 

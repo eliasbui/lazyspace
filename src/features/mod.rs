@@ -13,6 +13,7 @@ pub mod index;
 pub mod lanes;
 pub mod menuedit;
 pub mod openin;
+pub mod phones;
 pub mod preview;
 pub mod remote;
 pub mod rename;
@@ -39,6 +40,7 @@ pub fn register(d: &mut Dispatcher) {
     menuedit::register(d);
     lanes::register(d);
     openin::register(d);
+    phones::register(d);
     preview::register(d);
     remote::register(d);
     rename::register(d);

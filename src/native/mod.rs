@@ -2,6 +2,7 @@
 //! and an NSImage as PNG. Code that uses AppKit is kept thin and holds no logic of its own, so the logic can be
 //! tested without a window.
 
+pub mod camera;
 pub mod devices;
 pub mod drag;
 pub mod icons;

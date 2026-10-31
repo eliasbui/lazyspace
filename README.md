@@ -67,7 +67,9 @@ operation runs as a job you can watch, cancel and undo. It speaks English and Vi
   in the corner says what came: a USB drive or a memory card with its free space, to open or eject; a DMG with an app
   inside, installed in Applications with one button (the copy there before goes to the Trash, the image is ejected and
   the DMG can follow it); an iPhone, a camera or an Android phone, which macOS mounts as no disk, with the apps that
-  read it. Ejecting (Command-E, or a disk's menu) leaves the window free, names the apps that hold a disk that will not
+  read it. Phones and cameras stay under Devices in the sidebar while they are plugged in, and open in a pane as Image
+  Capture reads them, their photos and videos copied or dragged out like any file; an Android phone that shares its
+  files over MTP says to switch it to PTP. Ejecting (Command-E, or a disk's menu) leaves the window free, names the apps that hold a disk that will not
   eject, and can force it. Tabs on a disk that goes return home. Settings can turn the notes off.
 - **Pinned folders.** Any folder pinned to the sidebar from its menu, and taken out again from the sidebar.
 - **The desktop, by LazySpace (optional).** The Desktop folder's icons on the wallpaper, under every window and on
