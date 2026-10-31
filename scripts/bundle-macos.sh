@@ -107,8 +107,11 @@ EOT
 # allowed (folders, drives, Keychain items) holds across updates. Without it, an ad-hoc signature, whose requirement is
 # the hash of this one build: every update asks again. A release requires the certificate (scripts/release.sh).
 IDENTITY="LazySpace Code Signing"
-if security find-certificate -c "$IDENTITY" >/dev/null 2>&1; then
-    codesign --force --deep --sign "$IDENTITY" --identifier com.eliasbui.lazyspace "$APP"
+KEYCHAIN="$HOME/Library/Keychains/lazyspace-signing.keychain-db"
+SECRET="$HOME/.config/lazyspace/signing-keychain-password"
+if [ -f "$KEYCHAIN" ] && [ -f "$SECRET" ]; then
+    security unlock-keychain -p "$(cat "$SECRET")" "$KEYCHAIN"
+    codesign --force --deep --keychain "$KEYCHAIN" --sign "$IDENTITY" --identifier com.eliasbui.lazyspace "$APP"
 else
     [ "${REQUIRE_IDENTITY:-}" = 1 ] && { echo "\"$IDENTITY\" is not in the keychain: run scripts/make-signing-identity.sh" >&2; exit 1; }
     echo "signing ad hoc: macOS will ask for its permissions again after an update (scripts/make-signing-identity.sh)" >&2
