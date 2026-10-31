@@ -7,7 +7,7 @@ words({
     quickAccess: "Truy cập nhanh", quickEmpty: "Kéo một thư mục vào đây, hoặc chuột phải vào nó rồi chọn Ghim vào Truy cập nhanh.",
     pinQuick: "Ghim thư mục đang mở", unpinQuick: "Bỏ ghim khỏi Truy cập nhanh", pinnedQuick: "Đã ghim {0} vào Truy cập nhanh", notFolder: "Chỉ ghim được thư mục",
     moveUp: "Đưa lên trên", moveDown: "Đưa xuống dưới",
-    hideItem: "Ẩn khỏi thanh bên", showHidden: "Hiện lại {0} mục đã ẩn", signOutCloud: "Đăng xuất và gỡ khỏi LazySpace",
+    openWeb: "Mở trên web", hideItem: "Ẩn khỏi thanh bên", showHidden: "Hiện lại {0} mục đã ẩn", signOutCloud: "Đăng xuất và gỡ khỏi LazySpace",
     signOutTitle: "Gỡ {0}?", signOutText: "LazySpace và rclone sẽ quên tài khoản này. Các tệp trên đám mây vẫn còn nguyên; muốn dùng lại thì thêm lại tài khoản.",
     signOutDone: "Đã gỡ {0}", appCloudNote: "{0} do app của nó quản lý: muốn đăng xuất, mở app đó. Ở đây có thể ẩn nó khỏi thanh bên.",
   },
@@ -17,7 +17,7 @@ words({
     quickAccess: "Quick Access", quickEmpty: "Drag a folder here, or right-click it and choose Pin to Quick Access.",
     pinQuick: "Pin the Folder Open Here", unpinQuick: "Unpin from Quick Access", pinnedQuick: "{0} pinned to Quick Access", notFolder: "Only folders can be pinned",
     moveUp: "Move Up", moveDown: "Move Down",
-    hideItem: "Hide from Sidebar", showHidden: "Show {0} Hidden Items", signOutCloud: "Sign Out and Remove from LazySpace",
+    openWeb: "Open on the Web", hideItem: "Hide from Sidebar", showHidden: "Show {0} Hidden Items", signOutCloud: "Sign Out and Remove from LazySpace",
     signOutTitle: "Remove {0}?", signOutText: "LazySpace and rclone forget this account. The files in the cloud stay as they are; add the account again to use it.",
     signOutDone: "{0} removed", appCloudNote: "{0} is run by its own app: open that app to sign out. Here it can be hidden from the sidebar.",
   },
@@ -144,6 +144,7 @@ const Sidebar = (() => {
         { id: "open", label: t("m.open"), icon: "arrow.up.forward.app" },
         { id: "tab", label: t("m.openTab"), icon: "plus.rectangle.on.rectangle" },
         { id: "window", label: t("m.openWindow"), icon: "macwindow.badge.plus" },
+        ...(el.dataset.web ? [{ id: "web", label: t("openWeb"), icon: "globe" }] : []),
         ...(pinned
           ? [
               { separator: true },
@@ -162,6 +163,7 @@ const Sidebar = (() => {
     if (id === "open") Panes.open(uri);
     else if (id === "tab") Panes.focused()?.newTab(uri);
     else if (id === "window") call("app.new_window", { uri }).catch(say);
+    else if (id === "web") call("app.open_url", { url: el.dataset.web }).catch(say);
     else if (id === "unpin") pin(uri, false);
     else if (id === "pin") pin(uri, true);
     else if (id === "up" || id === "down") reorder(Number(el.dataset.quick), Number(el.dataset.quick) + (id === "up" ? -1 : 1));

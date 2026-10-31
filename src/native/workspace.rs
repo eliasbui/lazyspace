@@ -13,7 +13,7 @@ use objc2_foundation::{
 use objc2_uniform_type_identifiers::UTTypeFolder;
 use serde::Serialize;
 use std::{
-    path::Path,
+    path::{Path, PathBuf},
     process::{Command, Stdio},
 };
 
@@ -303,6 +303,12 @@ pub fn open_app(id: &str) -> Result<(), String> {
         .and_then(|u| u.path())
         .ok_or_else(|| format!("{id}: {}", tr("không có ứng dụng này trên máy", "this app is not on this Mac")))?;
     open(&[url.to_string()])
+}
+
+/// Where the app with the bundle identifier `id` is, when it is on this Mac.
+pub fn app_path(id: &str) -> Option<PathBuf> {
+    let path = NSWorkspace::sharedWorkspace().URLForApplicationWithBundleIdentifier(&NSString::from_str(id))?.path()?;
+    Some(PathBuf::from(path.to_string()))
 }
 
 /// The name the Finder shows for the app with the bundle identifier `id`, in the Mac's language.

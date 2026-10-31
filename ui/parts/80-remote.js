@@ -22,7 +22,7 @@ LZ.words({
     onedriveAppText: "App OneDrive sẽ mở. Đăng nhập bằng tài khoản cơ quan; nếu app đã có tài khoản khác, vào Cài đặt > Tài khoản > Thêm tài khoản.\n\nCách này không cần quản trị viên duyệt: tổ chức nào cũng cho phép app của chính Microsoft, và mật khẩu chỉ nhập vào app đó, LazySpace không giữ gì. Đăng nhập xong, thư mục OneDrive tự hiện ở mục Đám mây và mở trong một tab.",
     onedriveInstallTitle: "Cần app OneDrive của Microsoft", onedriveInstallText: "Máy chưa có app OneDrive. Cài miễn phí từ App Store (không cần mật khẩu quản trị), rồi đăng nhập bằng tài khoản cơ quan trong app đó. Thư mục OneDrive sẽ tự hiện ở mục Đám mây.",
     openOneDrive: "Mở OneDrive", openStore: "Mở App Store", onedriveWaiting: "Đang chờ bạn đăng nhập trong app OneDrive...", onedriveReady: "Đã có {0}",
-    onedriveWork: "OneDrive (cơ quan hoặc trường học)", cloudSite: "Trang SharePoint", cloudAdvanced: "Nâng cao", clientId: "Client ID", clientSecret: "Client secret", tenantId: "Tenant ID",
+    cloudRecent: "Gần đây", onedriveWork: "OneDrive (cơ quan hoặc trường học)", cloudSite: "Trang SharePoint", cloudAdvanced: "Nâng cao", clientId: "Client ID", clientSecret: "Client secret", tenantId: "Tenant ID",
     siteHint: "https://contoso.sharepoint.com/sites/nhom (để trống: trang gốc)",
     workNote: "Nếu trình duyệt báo \"Cần quản trị viên phê duyệt\", tổ chức của bạn chặn ứng dụng của rclone: nhờ IT phê duyệt nó, hoặc điền ứng dụng riêng của tổ chức ở phần Nâng cao. Cách khác: cài ứng dụng OneDrive của Microsoft, LazySpace tự hiện thư mục của nó.",
     advancedNote: "Chỉ cần khi tổ chức không cho ứng dụng của rclone vào: Client ID và Client secret của ứng dụng đăng ký trong Microsoft Entra ID (hoặc Google Cloud, Dropbox), Tenant ID là Directory ID của tổ chức.",
@@ -46,7 +46,7 @@ LZ.words({
     onedriveAppText: "The OneDrive app opens. Sign in with your work account; if the app has another account already, go to Settings > Account > Add an Account.\n\nThis needs no administrator's approval: every organisation allows Microsoft's own app, and the password goes only into that app, LazySpace keeps nothing. Once you are in, the OneDrive folder shows in the Cloud section and opens in a tab.",
     onedriveInstallTitle: "Microsoft's OneDrive app is needed", onedriveInstallText: "The OneDrive app is not on this Mac. Install it free from the App Store (no administrator's password), then sign in with your work account there. The OneDrive folder shows in the Cloud section by itself.",
     openOneDrive: "Open OneDrive", openStore: "Open the App Store", onedriveWaiting: "Waiting for you to sign in in the OneDrive app...", onedriveReady: "{0} is here",
-    onedriveWork: "OneDrive (work or school)", cloudSite: "SharePoint site", cloudAdvanced: "Advanced", clientId: "Client ID", clientSecret: "Client secret", tenantId: "Tenant ID",
+    cloudRecent: "Recent", onedriveWork: "OneDrive (work or school)", cloudSite: "SharePoint site", cloudAdvanced: "Advanced", clientId: "Client ID", clientSecret: "Client secret", tenantId: "Tenant ID",
     siteHint: "https://contoso.sharepoint.com/sites/team (empty: the root site)",
     workNote: "If the browser says \"Need admin approval\", your organisation blocks rclone's app: ask IT to approve it, or fill in your organisation's own app under Advanced. Or install Microsoft's OneDrive app, whose folder LazySpace shows by itself.",
     advancedNote: "Only needed when your organisation does not let rclone's app in: the Client ID and Client secret of an app registered in Microsoft Entra ID (or Google Cloud, Dropbox), and the Tenant ID, your organisation's Directory ID.",
@@ -127,6 +127,20 @@ const Remote = (() => {
     };
   }
 
+  // The web page of a cloud, to see there what its folder on this Mac does not hold (what was shared with you, the
+  // web's Recent): a work or school OneDrive goes to Microsoft 365, which finds the organisation's own.
+  function webOf(service, name, account) {
+    const office = "https://www.microsoft365.com/onedrive";
+    if (service === "onedrive_work") return office;
+    // The app's folders are "OneDrive - Personal" and "OneDrive - <organisation>"; rclone's personal one is "OneDrive".
+    if (service === "onedrive") return / - /.test(name) && !/personal/i.test(name) ? office : "https://onedrive.live.com/";
+    if (service === "drive") return account && account.includes("@") ? `https://drive.google.com/drive/my-drive?authuser=${encodeURIComponent(account)}` : "https://drive.google.com/";
+    if (service === "dropbox") return "https://www.dropbox.com/home";
+    if (service === "box") return "https://app.box.com/";
+    if (service === "icloud") return "https://www.icloud.com/iclouddrive/";
+    return "";
+  }
+
   // The Cloud section, above Servers: what the clouds' own apps keep on this Mac, then what rclone signed in to, each
   // with its account on a second line, so two accounts of one cloud are told apart. With nothing yet it offers the two
   // clouds most asked for, so signing in is found without opening a sheet. Each is a place files can be dropped on.
@@ -134,16 +148,23 @@ const Remote = (() => {
     id: "cloud",
     render(el) {
       if (S.window.role !== "main") return;
-      const item = (uri, name, sub, title) =>
-        `<button class="side-item${sub ? " cl-two" : ""}" data-uri="${LZ.esc(uri)}" title="${LZ.esc(title)}"><span class="ico" data-ico="icloud">${icon("icloud")}</span><span class="label"><span class="cl-name">${LZ.esc(name)}</span>${sub ? `<span class="cl-sub">${LZ.esc(sub)}</span>` : ""}</span></button>`;
+      const item = (uri, name, sub, title, web = "") =>
+        `<button class="side-item${sub ? " cl-two" : ""}" data-uri="${LZ.esc(uri)}"${web ? ` data-web="${LZ.esc(web)}"` : ""} title="${LZ.esc(title)}"><span class="ico" data-ico="icloud">${icon("icloud")}</span><span class="label"><span class="cl-name">${LZ.esc(name)}</span>${sub ? `<span class="cl-sub">${LZ.esc(sub)}</span>` : ""}</span></button>`;
       const head = `<div class="side-head"><span>${LZ.esc(t("clouds"))}</span><span class="end" data-cl-add title="${LZ.esc(t("addCloud"))}">${icon("plus")}</span></div>`;
       const remote = (r) => {
         const a = (rclone.accounts || {})[r] || {};
         const name = a.kind ? serviceName(a.kind) : r;
         const sub = a.account || (name !== r ? r : "");
-        return item(`rclone://${encodeURIComponent(r)}/`, name, sub, `${a.account ? `${name} - ${a.account}` : name} (rclone: ${r})`);
+        return item(`rclone://${encodeURIComponent(r)}/`, name, sub, `${a.account ? `${name} - ${a.account}` : name} (rclone: ${r})`, webOf(a.kind === "onedrive_work" || a.kind === "sharepoint" ? "onedrive_work" : a.kind, name, a.account));
       };
-      const items = [...local.map((c) => item(c.uri, c.name, c.account, c.account ? `${c.name} - ${c.account}` : c.name)), ...(rclone.remotes || []).map(remote)];
+      // Each cloud of an app with a way to its web page, and OneDrive with the files used lately in it on this Mac, as
+      // the web's Recent has them (Spotlight's recent items under its folder).
+      const recent = (c) =>
+        `<button class="side-item cl-recent" data-uri="${LZ.esc(`search://recent=1${c.uri.slice("file://".length)}`)}"><span class="ico" data-ico="clock">${icon("clock")}</span><span class="label">${LZ.esc(t("cloudRecent"))}</span></button>`;
+      const items = [
+        ...local.flatMap((c) => [item(c.uri, c.name, c.account, c.account ? `${c.name} - ${c.account}` : c.name, webOf(c.service, c.name, c.account)), ...(c.service === "onedrive" ? [recent(c)] : [])]),
+        ...(rclone.remotes || []).map(remote),
+      ];
       const offer = (kind, label) => `<button class="side-item offer" data-cl-kind="${kind}"><span class="ico">${icon("plus")}</span><span class="label">${LZ.esc(label)}</span></button>`;
       const offers = ["drive", "onedrive"].map((kind) => offer(kind, t("addService", CLOUDS[kind]))).join("") + offer("onedrive_app", t("addService", t("onedriveWork")));
       el.innerHTML = head + (items.length ? items.join("") : offers);

@@ -755,6 +755,12 @@ pub fn register(d: &mut Dispatcher) {
         workspace::open_with(&paths, Path::new(&args::<OpenWith>(a)?.app))?;
         Ok(Value::Null)
     });
+    // Word, Excel and PowerPoint where they are on this Mac, for "Open in Word" and the like: a file in the folder of
+    // OneDrive's app opened there is edited in place, and OneDrive sends the changes up as they are saved.
+    d.on("native.office_apps", |_, _, _| {
+        let at = |id: &str| workspace::app_path(id).map(|p| p.to_string_lossy().into_owned());
+        Ok(json!({ "word": at("com.microsoft.Word"), "excel": at("com.microsoft.Excel"), "powerpoint": at("com.microsoft.Powerpoint") }))
+    });
     d.on("native.apps_for", |_, _, a| {
         #[derive(Deserialize)]
         struct AppsFor {
