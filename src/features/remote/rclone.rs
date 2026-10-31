@@ -202,7 +202,8 @@ pub fn sign_in(ctx: &Ctx, kind: &str, name: &str, advanced: &Advanced) -> Result
     }
     ctx.progress(0, 0, tr("Đang xem tài khoản nào vừa đăng nhập", "Finding out which account signed in"));
     let account = lookup(name).ok();
-    if let Some(account) = &account {
+    // Only a user found is kept; the sidebar asks again for one not found yet.
+    if let Some(account) = account.as_ref().filter(|a| a.account.is_some()) {
         remember(name, account.clone());
     }
     Ok(json!({ "remote": name, "account": account }))
@@ -226,8 +227,8 @@ fn needs_admin(error: &str) -> bool {
 fn explain(kind: &str, ended: Ended) -> String {
     let microsoft = backend(kind) == "onedrive";
     let admin = tr(
-        "Microsoft chưa cho rclone vào tài khoản này. Với tài khoản cơ quan hoặc trường học, trình duyệt thường báo \"Cần quản trị viên phê duyệt\" (Need admin approval): tổ chức của bạn chỉ cho các ứng dụng đã được duyệt truy cập OneDrive. Có hai cách:\n1. Nhờ bộ phận IT phê duyệt ứng dụng rclone, hoặc đăng ký một ứng dụng riêng trong Microsoft Entra ID rồi điền Client ID, Client secret và Tenant ID ở phần Nâng cao (Thêm đám mây > Dịch vụ khác...).\n2. Cài ứng dụng OneDrive của Microsoft và đăng nhập trong đó: LazySpace tự hiện thư mục của nó trong mục Đám mây.",
-        "Microsoft did not let rclone into this account. With a work or school account the browser usually says \"Need admin approval\": your organisation lets only approved apps reach OneDrive. There are two ways around it:\n1. Ask your IT department to approve the rclone app, or register an app of your own in Microsoft Entra ID and fill in its Client ID, Client secret and Tenant ID under Advanced (Add a Cloud > Other Service...).\n2. Install Microsoft's OneDrive app and sign in there: LazySpace shows its folder in the Cloud section by itself.",
+        "Microsoft chưa cho rclone vào tài khoản này. Với tài khoản cơ quan hoặc trường học, trình duyệt thường báo \"Cần quản trị viên phê duyệt\" (Need admin approval): tổ chức của bạn chỉ cho các ứng dụng đã được duyệt truy cập OneDrive. Có hai cách:\n1. Nhờ bộ phận IT phê duyệt ứng dụng rclone, hoặc đăng ký một ứng dụng riêng trong Microsoft Entra ID rồi điền Client ID, Client secret và Tenant ID ở phần Nâng cao (Thêm đám mây > Dịch vụ khác...).\n2. Cách dễ nhất, không cần quản trị viên: Thêm đám mây > OneDrive cơ quan hoặc trường học (app OneDrive). Bạn đăng nhập trong app của chính Microsoft, LazySpace tự hiện thư mục OneDrive trong mục Đám mây.",
+        "Microsoft did not let rclone into this account. With a work or school account the browser usually says \"Need admin approval\": your organisation lets only approved apps reach OneDrive. There are two ways around it:\n1. Ask your IT department to approve the rclone app, or register an app of your own in Microsoft Entra ID and fill in its Client ID, Client secret and Tenant ID under Advanced (Add a Cloud > Other Service...).\n2. The easiest way, with no administrator: Add a Cloud > OneDrive for work or school (OneDrive app). You sign in in Microsoft's own app, and LazySpace shows the OneDrive folder in the Cloud section by itself.",
     );
     match ended {
         Ended::Stopped => tr("Đã dừng", "Stopped").into(),

@@ -25,10 +25,11 @@ use crate::{
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashMap,
     io::Read,
     path::{Path, PathBuf},
     sync::{Arc, Mutex, OnceLock, atomic::AtomicBool},
+    time::{Duration, Instant},
 };
 
 /// The start of an error about a server's key never seen before; its fingerprint follows. The page shows it and
@@ -244,11 +245,15 @@ pub fn cloud_root(path: &Path) -> Option<PathBuf> {
     storage::cloud_root(&dirs::home_dir()?, path)
 }
 
-/// The remotes asked for their account in this run, so one whose cloud does not answer is not asked at every listing.
-fn asked() -> &'static Mutex<HashSet<String>> {
-    static A: OnceLock<Mutex<HashSet<String>>> = OnceLock::new();
-    A.get_or_init(|| Mutex::new(HashSet::new()))
+/// When each remote was last asked for its account in this run, so one whose cloud does not answer is asked again a
+/// minute later rather than at every listing, or never.
+fn asked() -> &'static Mutex<HashMap<String, Instant>> {
+    static A: OnceLock<Mutex<HashMap<String, Instant>>> = OnceLock::new();
+    A.get_or_init(|| Mutex::new(HashMap::new()))
 }
+
+/// How long a remote whose account was not found waits before it is asked again.
+const ASK_AGAIN: Duration = Duration::from_secs(60);
 
 /// The names of rclone's remotes, and the account of each as far as it is known, by name. The accounts not known yet
 /// are looked up on a thread of their own, one remote after another; every window hears `remote.changed` when they
@@ -258,13 +263,21 @@ fn rclone_accounts(proxy: &crate::Proxy, listed: &[(String, String)]) -> (Vec<St
     let mut accounts = serde_json::Map::new();
     let mut missing = Vec::new();
     for (name, backend) in listed {
-        match known.get(name).filter(|a| &a.backend == backend) {
+        // An account kept without a user (from a version that kept the misses too) is asked for again.
+        match known.get(name).filter(|a| &a.backend == backend && a.account.is_some()) {
             Some(account) => {
                 accounts.insert(name.clone(), json!(account));
             }
             None => {
                 accounts.insert(name.clone(), json!({ "backend": backend, "kind": backend, "account": null }));
-                if asked().lock().is_ok_and(|mut a| a.insert(name.clone())) {
+                let due = asked().lock().is_ok_and(|mut a| {
+                    let due = a.get(name).is_none_or(|at| at.elapsed() >= ASK_AGAIN);
+                    if due {
+                        a.insert(name.clone(), Instant::now());
+                    }
+                    due
+                });
+                if due {
                     missing.push(name.clone());
                 }
             }
@@ -275,9 +288,14 @@ fn rclone_accounts(proxy: &crate::Proxy, listed: &[(String, String)]) -> (Vec<St
         std::thread::spawn(move || {
             let mut found = false;
             for name in missing {
-                if let Ok(account) = rclone::lookup(&name) {
-                    rclone::remember(&name, account);
-                    found = true;
+                // Only a user found is kept: a miss (no network, a token rclone could not renew) is tried again later.
+                match rclone::lookup(&name) {
+                    Ok(account) if account.account.is_some() => {
+                        rclone::remember(&name, account);
+                        found = true;
+                    }
+                    Ok(_) => eprintln!("cloud account: {name}: the cloud did not say who is signed in"),
+                    Err(e) => eprintln!("cloud account: {name}: {e}"),
                 }
             }
             if found {
@@ -286,6 +304,23 @@ fn rclone_accounts(proxy: &crate::Proxy, listed: &[(String, String)]) -> (Vec<St
         });
     }
     (listed.iter().map(|(name, _)| name.clone()).collect(), Value::Object(accounts))
+}
+
+/// The bundle identifiers of Microsoft's OneDrive app: from the App Store, and the one Microsoft hands out itself.
+const ONEDRIVE_APPS: [&str; 2] = ["com.microsoft.OneDrive-mac", "com.microsoft.OneDrive"];
+
+/// The OneDrive app on this Mac, by its bundle identifier.
+fn onedrive_app() -> Option<&'static str> {
+    ONEDRIVE_APPS.into_iter().find(|id| crate::native::workspace::app_name(id).is_some())
+}
+
+/// The OneDrive app's page in the App Store, where it installs without an administrator's password.
+const ONEDRIVE_STORE: &str = "macappstore://apps.apple.com/app/id823766827";
+
+fn open_store() -> Result<(), String> {
+    // A fixed address, given to `open` as one argument, never through a shell.
+    let status = std::process::Command::new("/usr/bin/open").arg(ONEDRIVE_STORE).status().map_err(|e| e.to_string())?;
+    if status.success() { Ok(()) } else { Err(tr("Không mở được App Store", "The App Store did not open").into()) }
 }
 
 pub fn register(d: &mut Dispatcher) {
@@ -430,7 +465,16 @@ pub fn register(d: &mut Dispatcher) {
         let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("/"));
         Ok(json!(storage::clouds(&home).into_iter().map(|c| json!({ "name": c.name, "account": c.account, "service": c.service, "uri": Uri::file(Path::new(&c.path)).to_string() })).collect::<Vec<_>>()))
     });
-    // Signing in to a cloud through rclone, and installing rclone first, are jobs: they wait on the browser or on
+    // OneDrive through Microsoft's own app: an organisation that lets only approved apps reach its OneDrive approves
+    // Microsoft's, so a work or school account signs in there without an administrator; the app keeps the files in
+    // ~/Library/CloudStorage, which the Cloud section shows by itself. `remote.onedrive_app` says whether it is on this
+    // Mac; `remote.onedrive_open` opens it, or its page in the App Store when it is not.
+    d.on("remote.onedrive_app", |_, _, _| Ok(json!({ "installed": onedrive_app().is_some() })));
+    d.on("remote.onedrive_open", |_, _, _| match onedrive_app() {
+        Some(id) => crate::native::workspace::open_app(id).map(|()| json!({ "opened": "app" })),
+        None => open_store().map(|()| json!({ "opened": "store" })),
+    });
+        // Signing in to a cloud through rclone, and installing rclone first, are jobs: they wait on the browser or on
     // Homebrew, show in the jobs panel, and can be stopped there. The page hears `jobs.finished` with the job's id.
     d.on("remote.rclone_add", |app, window, a| {
         #[derive(Deserialize)]

@@ -18,6 +18,10 @@ LZ.words({
     clouds: "Đám mây", addCloud: "Thêm đám mây", addService: "Thêm {0}", otherCloud: "Dịch vụ khác...", signInBrowser: "Đăng nhập trong trình duyệt vừa mở",
     rcloneNeeded: "Cần rclone", installRclone: "Cài rclone",
     rcloneNeededText: "LazySpace đăng nhập Google Drive, OneDrive, Dropbox qua rclone, một công cụ miễn phí và mã nguồn mở. Cài nó bằng Homebrew bây giờ?",
+    onedriveApp: "OneDrive cơ quan hoặc trường học (app OneDrive)", onedriveAppTitle: "Đăng nhập OneDrive bằng app của Microsoft",
+    onedriveAppText: "App OneDrive sẽ mở. Đăng nhập bằng tài khoản cơ quan; nếu app đã có tài khoản khác, vào Cài đặt > Tài khoản > Thêm tài khoản.\n\nCách này không cần quản trị viên duyệt: tổ chức nào cũng cho phép app của chính Microsoft, và mật khẩu chỉ nhập vào app đó, LazySpace không giữ gì. Đăng nhập xong, thư mục OneDrive tự hiện ở mục Đám mây và mở trong một tab.",
+    onedriveInstallTitle: "Cần app OneDrive của Microsoft", onedriveInstallText: "Máy chưa có app OneDrive. Cài miễn phí từ App Store (không cần mật khẩu quản trị), rồi đăng nhập bằng tài khoản cơ quan trong app đó. Thư mục OneDrive sẽ tự hiện ở mục Đám mây.",
+    openOneDrive: "Mở OneDrive", openStore: "Mở App Store", onedriveWaiting: "Đang chờ bạn đăng nhập trong app OneDrive...", onedriveReady: "Đã có {0}",
     onedriveWork: "OneDrive (cơ quan hoặc trường học)", cloudSite: "Trang SharePoint", cloudAdvanced: "Nâng cao", clientId: "Client ID", clientSecret: "Client secret", tenantId: "Tenant ID",
     siteHint: "https://contoso.sharepoint.com/sites/nhom (để trống: trang gốc)",
     workNote: "Nếu trình duyệt báo \"Cần quản trị viên phê duyệt\", tổ chức của bạn chặn ứng dụng của rclone: nhờ IT phê duyệt nó, hoặc điền ứng dụng riêng của tổ chức ở phần Nâng cao. Cách khác: cài ứng dụng OneDrive của Microsoft, LazySpace tự hiện thư mục của nó.",
@@ -38,6 +42,10 @@ LZ.words({
     clouds: "Cloud", addCloud: "Add a Cloud", addService: "Add {0}", otherCloud: "Other Service...", signInBrowser: "Sign in in the browser that opened",
     rcloneNeeded: "rclone is needed", installRclone: "Install rclone",
     rcloneNeededText: "LazySpace signs in to Google Drive, OneDrive and Dropbox through rclone, a free and open source tool. Install it with Homebrew now?",
+    onedriveApp: "OneDrive for work or school (OneDrive app)", onedriveAppTitle: "Sign in to OneDrive with Microsoft's app",
+    onedriveAppText: "The OneDrive app opens. Sign in with your work account; if the app has another account already, go to Settings > Account > Add an Account.\n\nThis needs no administrator's approval: every organisation allows Microsoft's own app, and the password goes only into that app, LazySpace keeps nothing. Once you are in, the OneDrive folder shows in the Cloud section and opens in a tab.",
+    onedriveInstallTitle: "Microsoft's OneDrive app is needed", onedriveInstallText: "The OneDrive app is not on this Mac. Install it free from the App Store (no administrator's password), then sign in with your work account there. The OneDrive folder shows in the Cloud section by itself.",
+    openOneDrive: "Open OneDrive", openStore: "Open the App Store", onedriveWaiting: "Waiting for you to sign in in the OneDrive app...", onedriveReady: "{0} is here",
     onedriveWork: "OneDrive (work or school)", cloudSite: "SharePoint site", cloudAdvanced: "Advanced", clientId: "Client ID", clientSecret: "Client secret", tenantId: "Tenant ID",
     siteHint: "https://contoso.sharepoint.com/sites/team (empty: the root site)",
     workNote: "If the browser says \"Need admin approval\", your organisation blocks rclone's app: ask IT to approve it, or fill in your organisation's own app under Advanced. Or install Microsoft's OneDrive app, whose folder LazySpace shows by itself.",
@@ -136,9 +144,8 @@ const Remote = (() => {
         return item(`rclone://${encodeURIComponent(r)}/`, name, sub, `${a.account ? `${name} - ${a.account}` : name} (rclone: ${r})`);
       };
       const items = [...local.map((c) => item(c.uri, c.name, c.account, c.account ? `${c.name} - ${c.account}` : c.name)), ...(rclone.remotes || []).map(remote)];
-      const offers = ["drive", "onedrive"]
-        .map((kind) => `<button class="side-item offer" data-cl-kind="${kind}"><span class="ico">${icon("plus")}</span><span class="label">${LZ.esc(t("addService", CLOUDS[kind]))}</span></button>`)
-        .join("");
+      const offer = (kind, label) => `<button class="side-item offer" data-cl-kind="${kind}"><span class="ico">${icon("plus")}</span><span class="label">${LZ.esc(label)}</span></button>`;
+      const offers = ["drive", "onedrive"].map((kind) => offer(kind, t("addService", CLOUDS[kind]))).join("") + offer("onedrive_app", t("addService", t("onedriveWork")));
       el.innerHTML = head + (items.length ? items.join("") : offers);
       Sidebar.mark();
     },
@@ -182,19 +189,60 @@ const Remote = (() => {
 
   cloudSection.el.addEventListener("click", async (e) => {
     const offer = e.target.closest("[data-cl-kind]");
-    if (offer) return signIn(offer.dataset.clKind);
+    if (offer) return offer.dataset.clKind === "onedrive_app" ? oneDriveApp() : signIn(offer.dataset.clKind);
     const add = e.target.closest("[data-cl-add]");
     if (!add) return;
     const r = add.getBoundingClientRect();
     const choice = await LZ.choose(
-      [...["drive", "onedrive", "onedrive_work", "sharepoint", "dropbox"].map((kind) => ({ id: kind, label: cloudLabel(kind), icon: "icloud" })), { separator: true }, { id: "other", label: t("otherCloud"), icon: "ellipsis.circle" }],
+      [
+        ...["drive", "onedrive"].map((kind) => ({ id: kind, label: cloudLabel(kind), icon: "icloud" })),
+        { id: "onedrive_app", label: t("onedriveApp"), icon: "building.2" },
+        { id: "dropbox", label: cloudLabel("dropbox"), icon: "icloud" },
+        { separator: true },
+        { id: "other", label: t("otherCloud"), icon: "ellipsis.circle" },
+      ],
       r.left,
       r.bottom + 4,
     );
-    // SharePoint asks for its site first; the others sign in straight away.
-    if (choice === "other" || choice === "sharepoint") showCloud(choice === "other" ? "drive" : choice);
+    // A work or school OneDrive goes through Microsoft's app; rclone's way to it (and to SharePoint) stays under Other
+    // Service, for organisations that approve rclone or have an app id of their own.
+    if (choice === "onedrive_app") oneDriveApp();
+    else if (choice === "other") showCloud("drive");
     else if (choice) signIn(choice);
   });
+
+  // OneDrive for work or school through Microsoft's own app, which no organisation has to approve: the app is opened
+  // (or its page in the App Store), and once a OneDrive folder that was not there shows in ~/Library/CloudStorage, it
+  // opens in a tab.
+  let waitingOneDrive = null;
+  async function oneDriveApp() {
+    try {
+      const { installed } = await LZ.call("remote.onedrive_app");
+      const ok = installed
+        ? await LZ.confirm(t("onedriveAppTitle"), t("onedriveAppText"), t("openOneDrive"))
+        : await LZ.confirm(t("onedriveInstallTitle"), t("onedriveInstallText"), t("openStore"));
+      if (!ok) return;
+      const before = new Set(local.filter((c) => c.service === "onedrive").map((c) => c.uri));
+      await LZ.call("remote.onedrive_open");
+      LZ.toast(t("onedriveWaiting"));
+      clearInterval(waitingOneDrive);
+      const started = Date.now();
+      waitingOneDrive = setInterval(async () => {
+        // Signing in and installing take a while; after half an hour the folder is left to show by itself.
+        if (Date.now() - started > 30 * 60 * 1000) return clearInterval(waitingOneDrive);
+        const clouds = await LZ.call("remote.clouds").catch(() => null);
+        const fresh = clouds?.find((c) => c.service === "onedrive" && !before.has(c.uri));
+        if (!fresh) return;
+        clearInterval(waitingOneDrive);
+        await load();
+        LZ.toast(t("onedriveReady", fresh.name));
+        Panes.focused()?.newTab(fresh.uri);
+      }, 3000);
+    } catch (e) {
+      LZ.say(e);
+    }
+  }
+  Panes.actions.addOneDriveApp = oneDriveApp;
 
   // The sheet open on a cloud to sign in to through rclone.
   function showCloud(kind) {
