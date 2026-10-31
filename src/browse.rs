@@ -755,6 +755,19 @@ pub fn register(d: &mut Dispatcher) {
         workspace::open_with(&paths, Path::new(&args::<OpenWith>(a)?.app))?;
         Ok(Value::Null)
     });
+    // Full Disk Access: with it macOS asks nothing more for the Desktop, Documents and Downloads folders, the drives
+    // and the network, one by one. Only an app that has it can open the privacy database, which tells without a
+    // question to the user; macOS never asks for it itself, so the page sends the user to its pane in System Settings.
+    d.on("native.full_disk", |_, _, _| {
+        let db = dirs::home_dir().unwrap_or_default().join("Library/Application Support/com.apple.TCC/TCC.db");
+        Ok(json!({ "granted": std::fs::File::open(db).is_ok() }))
+    });
+    d.on("native.open_full_disk", |_, _, _| {
+        // A fixed address, given to `open` as one argument, never through a shell.
+        let pane = "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles";
+        let opened = std::process::Command::new("/usr/bin/open").arg(pane).status().map_err(|e| e.to_string())?;
+        if opened.success() { Ok(Value::Null) } else { Err(tr("Không mở được Cài đặt hệ thống", "System Settings did not open").into()) }
+    });
     // Word, Excel and PowerPoint where they are on this Mac, for "Open in Word" and the like: a file in the folder of
     // OneDrive's app opened there is edited in place, and OneDrive sends the changes up as they are saved.
     d.on("native.office_apps", |_, _, _| {

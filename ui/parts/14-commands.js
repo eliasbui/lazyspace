@@ -69,6 +69,7 @@
     ["iconsSmaller", "view", "Biểu tượng nhỏ hơn", "Smaller Icons"],
     ["toggleHidden", "view", "Hiện hoặc ẩn tệp ẩn", "Show or Hide Hidden Files"],
     ["toggleSidebar", "view", "Hiện hoặc ẩn thanh bên", "Show or Hide the Sidebar"],
+    ["fullDiskAccess", "tools", "Cho phép truy cập toàn bộ ổ đĩa (hết hỏi quyền từng thư mục)", "Allow Full Disk Access (no more questions folder by folder)"],
     ["togglePreview", "view", "Hiện hoặc ẩn khung xem trước", "Show or Hide the Preview"],
     ["refresh", "view", "Tải lại", "Refresh"],
     ["find", "view", "Lọc thư mục này", "Filter This Folder"],
