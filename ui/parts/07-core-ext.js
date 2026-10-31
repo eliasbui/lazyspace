@@ -5,14 +5,16 @@ words({
   vi: {
     layout: "Bố cục", "layout.single": "Một khung", "layout.h2": "Hai khung cạnh nhau", "layout.v2": "Hai khung trên dưới",
     "layout.h3": "Ba khung cạnh nhau", "layout.l1r2": "Một trái, hai phải", "layout.grid": "Bốn khung (lưới 2x2)",
+    "layout.h4": "Bốn khung cạnh nhau", "layout.g6": "Sáu khung (lưới 3x2)", "layout.custom": "Bố cục tự chia",
   },
   en: {
     layout: "Layout", "layout.single": "One Pane", "layout.h2": "Two Panes Side by Side", "layout.v2": "Two Panes Stacked",
     "layout.h3": "Three Panes Side by Side", "layout.l1r2": "One Left, Two Right", "layout.grid": "Four Panes (2x2 Grid)",
+    "layout.h4": "Four Panes Side by Side", "layout.g6": "Six Panes (3x2 Grid)", "layout.custom": "Your Own Split",
   },
 });
 
-const LAYOUTS = { single: 1, h2: 2, v2: 2, h3: 3, l1r2: 3, grid: 4 };
+const LAYOUTS = { single: 1, h2: 2, v2: 2, h3: 3, l1r2: 3, grid: 4, h4: 4, g6: 6 };
 
 const LZ = (() => {
   const items = [];
@@ -80,7 +82,8 @@ const LZ = (() => {
   });
   on("menu.closed", () => (menuCtx = null));
 
-  // A small native menu of choices (the layout button, a sort): `choices` are { id, label, icon, checked }.
+  // A small native menu of choices (the layout button, a sort): `choices` are { id, label, icon, checked, enabled,
+  // submenu }, a submenu being a list of choices too.
   function choose(choices, x, y) {
     return new Promise((resolve) => {
       const done = (id) => {
@@ -95,7 +98,8 @@ const LZ = (() => {
       };
       on("menu.chosen", chosen);
       on("menu.closed", closed);
-      const items = choices.map((c) => (c.separator ? { separator: true } : { id: c.id, label: c.label, icon: c.icon, checked: !!c.checked, enabled: c.enabled !== false }));
+      const node = (c) => (c.separator ? { separator: true } : { id: c.id, label: c.label, icon: c.icon, checked: !!c.checked, enabled: c.enabled !== false, submenu: (c.submenu || []).map(node) });
+      const items = choices.map(node);
       call("menu.show", { items, x, y }).catch(() => done(null));
     });
   }
@@ -230,7 +234,7 @@ const LZ = (() => {
       const r = button.getBoundingClientRect();
       const now = $("paneGrid").dataset.layout;
       const id = await LZ.choose(
-        Object.keys(LAYOUTS).map((l) => ({ id: l, label: t(`layout.${l}`), icon: { single: "rectangle", h2: "rectangle.split.2x1", v2: "rectangle.split.1x2", h3: "rectangle.split.3x1", l1r2: "rectangle.righthalf.inset.filled", grid: "rectangle.split.2x2" }[l], checked: l === now })),
+        Object.keys(LAYOUTS).map((l) => ({ id: l, label: t(`layout.${l}`), icon: { single: "rectangle", h2: "rectangle.split.2x1", v2: "rectangle.split.1x2", h3: "rectangle.split.3x1", l1r2: "rectangle.righthalf.inset.filled", grid: "rectangle.split.2x2", h4: "rectangle.split.3x1", g6: "square.grid.3x2" }[l], checked: l === now })),
         r.left,
         r.bottom + 6,
       );
@@ -265,6 +269,9 @@ const LZ = (() => {
     if (!el) return null;
     const side = el.closest(".side-item[data-uri]");
     if (side) return { el: side, uri: side.dataset.uri };
+    // Over Quick Access but not on one of its folders: what is dropped is pinned there.
+    const quick = el.closest("#sideQuick");
+    if (quick) return { el: quick.querySelector(".quick-empty") || quick, quick: true };
     const paneEl = el.closest(".pane");
     const pane = paneEl && Panes.all().find((p) => p.el === paneEl);
     if (!pane) return null;
@@ -286,6 +293,7 @@ const LZ = (() => {
     if (!target) return;
     // A feature may take a drop itself: the desktop moves its own icons where they are dropped.
     if (Panes.onDrop?.(d, target)) return;
+    if (target.quick) return Sidebar.pinDropped(d.uris);
     call("fs.copy", { from: d.uris, to: target.uri, mode: d.mode }).catch(say);
   });
 })();

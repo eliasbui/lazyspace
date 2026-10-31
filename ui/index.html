@@ -173,6 +173,13 @@
       .side-item .ico { width: 18px; height: 16px; display: grid; place-items: center; color: var(--secondary); }
       .side-item .ico svg { width: 17px; height: 15px; }
       .side-item .label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+      /* Quick Access: the folders pinned as File Explorer pins them, dragged to a new place in the list, a folder dropped
+         on the section's head or its empty line pinned. */
+      #sideQuick .side-item .pin { width: 14px; height: 14px; display: grid; place-items: center; color: var(--tertiary); }
+      #sideQuick .side-item .pin svg { width: 10px; height: 11px; }
+      #sideQuick .side-item.lifted { position: relative; z-index: 3; background: var(--capsule); box-shadow: 0 0 0 0.5px var(--capsule-stroke), 0 6px 18px rgba(0, 0, 0, 0.18); transition: none; }
+      #sideQuick .quick-empty { margin: 0 0 2px; padding: 7px 10px; border: 1px dashed var(--separator); border-radius: 8px; font-size: 11.5px; color: var(--tertiary); line-height: 1.35; }
+      #sideQuick.drop .side-head, #sideQuick .quick-empty.drop { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 8px; }
       .side-item .end { flex: none; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; color: var(--secondary); opacity: 0.8; }
       .side-item .end:hover { background: var(--pressed); opacity: 1; }
       .side-item .end svg { width: 11px; height: 11px; }
@@ -221,18 +228,36 @@
 
       /* The panes: each with its own tabs, path bar, columns, rows and status. */
       .workspace { flex: 1; min-height: 0; display: flex; }
-      .pane-grid { flex: 1; min-width: 0; display: grid; grid-template-columns: 1fr; grid-template-rows: 1fr; }
-      .pane-grid[data-layout="h2"] { grid-template-columns: 1fr 1fr; }
-      .pane-grid[data-layout="v2"] { grid-template-rows: 1fr 1fr; }
-      .pane-grid[data-layout="h3"] { grid-template-columns: 1fr 1fr 1fr; }
-      .pane-grid[data-layout="l1r2"], .pane-grid[data-layout="grid"] { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
-      .pane-grid[data-layout="l1r2"] .pane:first-child { grid-row: 1 / span 2; }
+      .pane-grid { flex: 1; min-width: 0; min-height: 0; display: flex; }
+      /* The panes are laid out as a tree of splits: each split a row or a column of panes and splits, a line between
+         two of them that is dragged to give one more room. */
+      .split { display: flex; min-width: 0; min-height: 0; }
+      .split[data-dir="row"] { flex-direction: row; }
+      .split[data-dir="col"] { flex-direction: column; }
+      .split[data-dir="row"] > .pane, .split[data-dir="row"] > .split { min-width: 160px; }
+      .split[data-dir="col"] > .pane, .split[data-dir="col"] > .split { min-height: 120px; }
       .pane { position: relative; min-width: 0; min-height: 0; display: flex; flex-direction: column; background: transparent; }
-      /* The lines between panes: on the left of every pane not in the first column, on top of every one not in the
-         first row. */
-      [data-layout="h2"] .pane + .pane, [data-layout="h3"] .pane + .pane, [data-layout="l1r2"] .pane:nth-child(2), [data-layout="grid"] .pane:nth-child(2) { box-shadow: inset 1px 0 0 var(--separator); }
-      [data-layout="v2"] .pane + .pane, [data-layout="grid"] .pane:nth-child(3) { box-shadow: inset 0 1px 0 var(--separator); }
-      [data-layout="l1r2"] .pane:nth-child(3), [data-layout="grid"] .pane:nth-child(4) { box-shadow: inset 1px 1px 0 var(--separator); }
+      .splitter { position: relative; flex: none; z-index: 5; background: var(--separator); transition: background-color 0.12s; }
+      .split[data-dir="row"] > .splitter { width: 1px; cursor: col-resize; }
+      .split[data-dir="col"] > .splitter { height: 1px; cursor: row-resize; }
+      .split[data-dir="row"] > .splitter::after { content: ""; position: absolute; top: 0; bottom: 0; left: -4px; right: -4px; }
+      .split[data-dir="col"] > .splitter::after { content: ""; position: absolute; left: 0; right: 0; top: -4px; bottom: -4px; }
+      .splitter:hover, .splitter.active { background: var(--accent); }
+      body.resizing-col, body.resizing-col * { cursor: col-resize !important; user-select: none; }
+      body.resizing-row, body.resizing-row * { cursor: row-resize !important; user-select: none; }
+      /* Where a dragged tab would go when let go near a pane's edge: the half that becomes a new pane, or the whole pane
+         that takes it. */
+      .split-zone {
+        position: absolute; z-index: 8; pointer-events: none; border-radius: 10px; margin: 6px;
+        background: color-mix(in srgb, var(--accent) 16%, transparent); box-shadow: inset 0 0 0 2px var(--accent);
+        transition: inset 0.12s ease-out;
+      }
+      .split-zone[data-side="left"] { inset: 0 50% 0 0; }
+      .split-zone[data-side="right"] { inset: 0 0 0 50%; }
+      .split-zone[data-side="top"] { inset: 0 0 50% 0; }
+      .split-zone[data-side="bottom"] { inset: 50% 0 0 0; }
+      .split-zone[data-side="center"] { inset: 0; }
+      body.tab-dragging, body.tab-dragging * { cursor: default !important; }
       /* With more than one pane, the focused one is the one the toolbar and the keys act on: its path takes a tint of the
          accent; the others step back. */
       .multi .pane:not(.focus) .pathbar, .multi .pane:not(.focus) .head, .multi .pane:not(.focus) .tabs { opacity: 0.62; }
@@ -242,30 +267,54 @@
       .side-item.drop, .tab.drop { box-shadow: inset 0 0 0 2px var(--accent); }
       .cell-icon.drop .pic { box-shadow: 0 0 0 2px var(--accent); }
 
-      /* Each pane's tabs, as File Explorer has them: a bar with one tab or more and the button for a new one after the
-         last; each tab a pill as wide as its name needs up to a limit, the one shown raised. A tab is dragged along the
-         bar or to another pane's, with a line where it would go. */
-      .tabs { position: relative; flex: none; display: flex; align-items: center; gap: 4px; height: 38px; padding: 4px 10px 2px; }
-      .tab-strip { position: relative; flex: 0 1 auto; min-width: 0; display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+      /* Each pane's tabs, as File Explorer has them on Windows 11: tabs of the same width that shrink as more open, each
+         with its folder's icon and name (or the name given to it) and its close button; the tab shown stands out of the
+         bar in the colour of the path bar under it, which it joins, with rounded feet; the others are parted by thin
+         lines. A tab can be marked with a colour, which shows as a band along its top and a tint. It is dragged along
+         the bar, to another pane's, onto a pane, or near a pane's edge to split it. */
+      .pane { --tab-surface: color-mix(in srgb, var(--capsule) 72%, transparent); }
+      .tabs { position: relative; flex: none; display: flex; align-items: flex-end; gap: 2px; height: 38px; padding: 6px 8px 0; }
+      .tab-strip { position: relative; flex: 0 1 auto; min-width: 0; height: 100%; display: flex; align-items: flex-end; gap: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; padding: 0 8px; }
       .tab-strip::-webkit-scrollbar { display: none; }
       .tab {
-        position: relative; flex: 0 1 auto; width: 184px; min-width: 104px; height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 6px 0 10px;
-        border-radius: 999px; color: var(--secondary); font-size: 12px; white-space: nowrap; transition: background-color 0.15s, color 0.15s;
+        position: relative; flex: 0 1 220px; min-width: 96px; height: 32px; display: flex; align-items: center; gap: 8px; padding: 0 6px 0 12px;
+        border-radius: 8px 8px 0 0; color: var(--secondary); font-size: 12.5px; white-space: nowrap; transition: background-color 0.12s, color 0.12s;
       }
       .tab img { width: 16px; height: 16px; flex: none; }
-      .tab span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-      .tab:hover { background: var(--hover); color: var(--label); }
-      .tab.on { background: var(--capsule); color: var(--label); font-weight: 500; box-shadow: inset 0 0.5px 0 var(--rim), 0 0 0 0.5px var(--capsule-stroke), var(--capsule-shadow); }
-      .tab.lifted { z-index: 3; opacity: 0.92; transition: none; box-shadow: inset 0 0.5px 0 var(--rim), 0 0 0 0.5px var(--capsule-stroke), 0 8px 24px rgba(0, 0, 0, 0.2); background: var(--capsule); }
-      .tab .x { flex: none; width: 18px; height: 18px; border: 0; border-radius: 50%; background: transparent; display: grid; place-items: center; color: var(--secondary); opacity: 0; transition: opacity 0.15s; }
+      .tab .tab-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+      .tab.named .tab-name { font-style: italic; }
+      .tab:not(.on):hover { background: color-mix(in srgb, var(--hover) 100%, transparent); color: var(--label); height: 28px; margin-bottom: 4px; border-radius: 7px; }
+      /* The lines between two tabs that are neither shown nor under the pointer. */
+      .tab:not(.on):not(:hover) + .tab:not(.on):not(:hover)::before { content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 1px; background: var(--separator); }
+      .tab.on { background: var(--tab-surface); color: var(--label); font-weight: 500; z-index: 1; }
+      .tab.on::before, .tab.on::after { content: ""; position: absolute; bottom: 0; width: 8px; height: 8px; pointer-events: none; }
+      .tab.on::before { left: -8px; background: radial-gradient(circle at 0 0, transparent 8px, var(--tab-surface) 8.5px); }
+      .tab.on::after { right: -8px; background: radial-gradient(circle at 100% 0, transparent 8px, var(--tab-surface) 8.5px); }
+      .tab[data-color] { --mark: var(--secondary); }
+      .tab[data-color="red"] { --mark: #ff453a; }
+      .tab[data-color="orange"] { --mark: #ff9f0a; }
+      .tab[data-color="yellow"] { --mark: #ffd60a; }
+      .tab[data-color="green"] { --mark: #30d158; }
+      .tab[data-color="blue"] { --mark: #0a84ff; }
+      .tab[data-color="purple"] { --mark: #bf5af2; }
+      .tab[data-color="gray"] { --mark: #98989d; }
+      .tab[data-color]:not(.on) { background: color-mix(in srgb, var(--mark) 13%, transparent); height: 28px; margin-bottom: 4px; border-radius: 7px; }
+      .tab[data-color].on { background: color-mix(in srgb, var(--mark) 14%, var(--tab-surface)); box-shadow: inset 0 2.5px 0 var(--mark); }
+      .tab[data-color]:not(.on) { box-shadow: inset 3px 0 0 var(--mark); }
+      .tab.lifted { z-index: 9; opacity: 0.94; transition: none; border-radius: 8px; background: var(--capsule); box-shadow: 0 0 0 0.5px var(--capsule-stroke), 0 10px 28px rgba(0, 0, 0, 0.24); }
+      .tab.lifted::before, .tab.lifted::after { display: none; }
+      .tab .x { flex: none; width: 20px; height: 20px; border: 0; border-radius: 5px; background: transparent; display: grid; place-items: center; color: var(--secondary); opacity: 0; transition: opacity 0.12s, background-color 0.12s; }
       .tab:hover .x, .tab.on .x { opacity: 1; }
       .tab .x:hover { background: var(--pressed); color: var(--label); }
       .tab .x svg { width: 8px; height: 8px; }
-      .tab-add { flex: none; width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; display: grid; place-items: center; color: var(--secondary); transition: background-color 0.15s; }
+      .tab-field { flex: 1; min-width: 0; height: 22px; padding: 0 5px; border: 0; border-radius: 5px; outline: none; font: inherit; color: var(--label); background: var(--field-bg); box-shadow: 0 0 0 1px var(--accent); }
+      .tab-add { flex: none; width: 28px; height: 28px; margin-bottom: 2px; border: 0; border-radius: 7px; background: transparent; display: grid; place-items: center; color: var(--secondary); transition: background-color 0.12s; }
       .tab-add:hover { background: var(--hover); color: var(--label); }
       .tab-add:active { background: var(--pressed); }
       .tab-add svg { width: 13px; height: 13px; }
-      .tab-caret { position: absolute; top: 10px; bottom: 6px; width: 2px; border-radius: 1px; background: var(--accent); pointer-events: none; }
+      .tab-caret { position: absolute; top: 10px; bottom: 4px; width: 2px; border-radius: 1px; background: var(--accent); pointer-events: none; }
+      /* Under the tabs, the path bar is the surface the shown tab stands on. */
+      .tabs:not([hidden]) + .pathbar { background: var(--tab-surface); padding-top: 5px; padding-bottom: 5px; }
 
       /* The path bar of a pane, as File Explorer's address bar: up and reload beside a field of crumbs, a menu of the
          folders in each crumb behind the arrow after it, the history at its end. Back and forward come with more than
@@ -492,6 +541,7 @@
       <aside class="sidebar" id="sidebar">
         <div class="side-top drag"></div>
         <div class="side-scroll" id="sideScroll">
+          <div id="sideQuick"></div>
           <div id="sideBookmarks"></div>
           <div data-slot="sidebar.sections"></div>
           <div id="sideLocations"></div>

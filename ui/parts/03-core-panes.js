@@ -9,7 +9,10 @@ words({
     duplicateTab: "Nhân bản tab", tabToWindow: "Chuyển tab sang cửa sổ mới", tabToOtherPane: "Chuyển tab sang khung bên kia",
     closeOtherTabs: "Đóng các tab khác", closeTabsRight: "Đóng các tab bên phải", enclosingFolder: "Lên thư mục cha", refresh: "Tải lại",
     recentPlaces: "Nơi đã đến gần đây", noHistory: "Chưa có nơi nào", clearHistory: "Xóa lịch sử đường dẫn", noSubfolders: "Không có thư mục con",
-    hiddenCrumbs: "Các thư mục phía trên",
+    hiddenCrumbs: "Các thư mục phía trên", renameTab: "Đổi tên tab...", resetTabName: "Dùng lại tên thư mục", tabColor: "Đánh dấu màu",
+    noColor: "Không màu", "color.red": "Đỏ", "color.orange": "Cam", "color.yellow": "Vàng", "color.green": "Xanh lá", "color.blue": "Xanh dương",
+    "color.purple": "Tím", "color.gray": "Xám", splitRight: "Chia sang phải", splitDown: "Chia xuống dưới", moveToPane: "Chuyển sang khung",
+    paneN: "Khung {0}", closePane: "Đóng khung này", tooManyPanes: "Tối đa {0} khung trong một cửa sổ",
   },
   en: {
     colName: "Name", colModified: "Date Modified", colSize: "Size", colKind: "Kind", loading: "Loading...", emptyFolder: "This folder is empty",
@@ -19,7 +22,10 @@ words({
     duplicateTab: "Duplicate Tab", tabToWindow: "Move Tab to New Window", tabToOtherPane: "Move Tab to Other Pane",
     closeOtherTabs: "Close Other Tabs", closeTabsRight: "Close Tabs to the Right", enclosingFolder: "Enclosing Folder", refresh: "Refresh",
     recentPlaces: "Recent Places", noHistory: "No places yet", clearHistory: "Clear Path History", noSubfolders: "No folders inside",
-    hiddenCrumbs: "Folders Above",
+    hiddenCrumbs: "Folders Above", renameTab: "Rename Tab...", resetTabName: "Use the Folder's Name", tabColor: "Mark with a Colour",
+    noColor: "No Colour", "color.red": "Red", "color.orange": "Orange", "color.yellow": "Yellow", "color.green": "Green", "color.blue": "Blue",
+    "color.purple": "Purple", "color.gray": "Grey", splitRight: "Split to the Right", splitDown: "Split Down", moveToPane: "Move to Pane",
+    paneN: "Pane {0}", closePane: "Close This Pane", tooManyPanes: "A window has at most {0} panes",
   },
 });
 
@@ -55,6 +61,9 @@ const GROUPS = [
   ["date", "groupDate"],
   ["size", "groupSize"],
 ];
+// The colours a tab can be marked with, as Finder's tags have them.
+const TAB_COLORS = ["red", "orange", "yellow", "green", "blue", "purple", "gray"];
+
 const fileUri = (path) => `file://${path.split("/").map(encodeURIComponent).join("/")}`;
 // A path with every byte but the unreserved ones encoded, `!` included, as the app's own URIs are.
 const encodePath = (path) => path.split("/").map((p) => encodeURIComponent(p).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)).join("/");
@@ -73,6 +82,9 @@ class Tab {
     this.forward = [];
     this.mode = mode || S.settings.view_mode || "list";
     this.sort = null;
+    // A name the user gave the tab in place of its folder's, and the colour it is marked with.
+    this.title = null;
+    this.color = null;
     this.reset();
   }
 
@@ -265,8 +277,11 @@ class Pane {
       const tab = e.button === 1 && e.target.closest(".tab");
       if (tab) this.closeTab(Number(tab.dataset.i));
     });
+    // A double click on a tab names it; on the empty bar it opens a new one.
     this.tabsEl.addEventListener("dblclick", (e) => {
-      if (!e.target.closest(".tab, .tab-add")) this.newTab();
+      const tab = e.target.closest(".tab");
+      if (tab && !e.target.closest(".x")) this.renameTab(Number(tab.dataset.i));
+      else if (!e.target.closest(".tab, .tab-add")) this.newTab();
     });
     this.tabsEl.addEventListener("contextmenu", (e) => {
       e.preventDefault();
@@ -460,7 +475,10 @@ class Pane {
       .map((tab, i) => {
         const key = tab.uri && isLocal(tab.uri) ? `path:${pathOf(tab.uri)}` : "type:public.folder";
         const where = tab.uri ? (isLocal(tab.uri) ? pathOf(tab.uri) : placeName(tab.uri)) : "";
-        return `<div class="tab${i === this.active ? " on" : ""}" data-i="${i}" title="${esc(where)}"><img src="lazy://icon/${16 * pixelRatio()}/${encodeURIComponent(key)}" alt="" draggable="false"><span>${esc(tab.uri ? placeName(tab.uri) : t("newTab"))}</span><button class="x" data-i="${i}" title="${esc(t("closeTab"))}">${icon("xmark")}</button></div>`;
+        const name = tab.title || (tab.uri ? placeName(tab.uri) : t("newTab"));
+        const color = TAB_COLORS.includes(tab.color) ? ` data-color="${tab.color}"` : "";
+        const tip = tab.title && where ? `${tab.title}\n${where}` : where;
+        return `<div class="tab${i === this.active ? " on" : ""}${tab.title ? " named" : ""}" data-i="${i}"${color} title="${esc(tip)}"><img src="lazy://icon/${16 * pixelRatio()}/${encodeURIComponent(key)}" alt="" draggable="false"><span class="tab-name">${esc(name)}</span><button class="x" data-i="${i}" title="${esc(t("closeTab"))}">${icon("xmark")}</button></div>`;
       })
       .join("");
     // The tab shown stays in sight when there are more tabs than room; only the bar scrolls, never the window.
@@ -1290,21 +1308,37 @@ class Pane {
     this.navigate(uri || from || S.places.home, { history: false, select });
   }
 
-  // Drags tab `i` along the bar, or to the bar of another pane: a line shows where it would go.
+  // Drags tab `i`: along the bar or to another pane's bar, where a line shows where it would go; onto a pane, which
+  // takes it, or near one of a pane's edges, which splits that pane in two with the tab in the new half, as File
+  // Explorer and Windows' snap do; let go outside the window, it opens in a window of its own.
   dragTab(down, i) {
     const el = this.tabStrip.children[i];
     if (!el) return;
     const caret = document.createElement("div");
     caret.className = "tab-caret";
+    const zone = document.createElement("div");
+    zone.className = "split-zone";
     let moving = false;
     let target = null;
+    let outside = false;
     const move = (m) => {
       if (!moving && Math.hypot(m.clientX - down.clientX, m.clientY - down.clientY) < 5) return;
       moving = true;
       el.classList.add("lifted");
-      el.style.transform = `translateX(${m.clientX - down.clientX}px)`;
-      target = Panes.tabDropAt(m.clientX, m.clientY, el);
-      if (!target) return caret.remove();
+      document.body.classList.add("tab-dragging");
+      const bar = this.tabStrip.getBoundingClientRect();
+      const onBar = m.clientY >= bar.top - 14 && m.clientY <= bar.bottom + 14;
+      el.style.transform = `translate(${m.clientX - down.clientX}px, ${onBar ? 0 : m.clientY - down.clientY}px)`;
+      outside = m.clientX < 0 || m.clientY < 0 || m.clientX > innerWidth || m.clientY > innerHeight;
+      target = outside ? null : Panes.tabDropAt(m.clientX, m.clientY, el) || Panes.paneDropAt(m.clientX, m.clientY, this, i);
+      if (!target || target.side) caret.remove();
+      if (!target?.side) zone.remove();
+      if (!target) return;
+      if (target.side) {
+        target.pane.el.appendChild(zone);
+        zone.dataset.side = target.side;
+        return;
+      }
       target.pane.tabsEl.appendChild(caret);
       caret.style.left = `${target.x}px`;
     };
@@ -1312,48 +1346,131 @@ class Pane {
       removeEventListener("mousemove", move);
       removeEventListener("mouseup", up);
       caret.remove();
+      zone.remove();
       el.classList.remove("lifted");
+      document.body.classList.remove("tab-dragging");
       el.style.transform = "";
-      if (moving && target) Panes.moveTab(this, i, target.pane, target.index);
+      if (!moving) return;
+      if (outside) return this.tabToWindow(i);
+      if (!target) return;
+      if (target.side === "center") Panes.moveTab(this, i, target.pane, target.pane.tabs.length);
+      else if (target.side) Panes.splitWith(this, i, target.pane, target.side);
+      else Panes.moveTab(this, i, target.pane, target.index);
     };
     addEventListener("mousemove", move);
     addEventListener("mouseup", up);
   }
 
-  // The menu of tab `i`, as File Explorer and the browsers have it.
+  // Opens tab `i` in a new window; the tab leaves this one unless it is the last.
+  tabToWindow(i) {
+    const tab = this.tabs[i];
+    if (!tab) return;
+    call("app.new_window", { uri: tab.uri }).catch(say);
+    if (this.tabs.length > 1 || Panes.all().length > 1) this.closeTab(i);
+  }
+
+  // Names tab `i` in place, in a field over its name: Return keeps the name, Escape leaves it, and an empty name gives
+  // the tab its folder's name back.
+  renameTab(i) {
+    const tab = this.tabs[i];
+    const label = this.tabStrip.children[i]?.querySelector(".tab-name");
+    if (!tab || !label) return;
+    const field = document.createElement("input");
+    field.className = "tab-field";
+    field.spellcheck = false;
+    field.value = tab.title || (tab.uri ? placeName(tab.uri) : "");
+    label.replaceWith(field);
+    field.focus();
+    field.select();
+    let done = false;
+    const finish = (keep) => {
+      if (done) return;
+      done = true;
+      if (keep) {
+        const name = field.value.trim();
+        tab.title = name && !(tab.uri && name === placeName(tab.uri)) ? name.slice(0, 80) : null;
+        Panes.saveSoon();
+      }
+      this.renderTabs();
+      this.list.focus({ preventScroll: true });
+    };
+    field.addEventListener("keydown", (e) => {
+      e.stopPropagation();
+      if (e.key === "Enter") finish(true);
+      else if (e.key === "Escape") finish(false);
+    });
+    field.addEventListener("mousedown", (e) => e.stopPropagation());
+    field.addEventListener("dblclick", (e) => e.stopPropagation());
+    field.addEventListener("blur", () => finish(true));
+  }
+
+  // The menu of tab `i`, as File Explorer and the browsers have it, with the panes to send it to, its name and colour.
   async tabMenu(i, x, y) {
     const n = this.tabs.length;
-    const other = Panes.all().find((p) => p !== this);
+    const all = Panes.all();
+    const others = all.filter((p) => p !== this);
+    const tab = this.tabs[i];
+    if (!tab) return;
     const id = await LZ.choose(
       [
         { id: "new", label: t("newTab"), icon: "plus" },
         { id: "duplicate", label: t("duplicateTab"), icon: "plus.square.on.square" },
-        { id: "window", label: t("tabToWindow"), icon: "macwindow.badge.plus" },
-        ...(other ? [{ id: "other", label: t("tabToOtherPane"), icon: "arrow.right.square" }] : []),
         { separator: true },
-        { id: "close", label: t("closeTab"), icon: "xmark", enabled: n > 1 },
+        { id: "rename", label: t("renameTab"), icon: "pencil" },
+        ...(tab.title ? [{ id: "unname", label: t("resetTabName"), icon: "arrow.counterclockwise" }] : []),
+        {
+          id: "colors",
+          label: t("tabColor"),
+          icon: "circle.fill",
+          submenu: [
+            { id: "color:", label: t("noColor"), checked: !tab.color },
+            { separator: true },
+            ...TAB_COLORS.map((c) => ({ id: `color:${c}`, label: t(`color.${c}`), checked: tab.color === c })),
+          ],
+        },
+        { separator: true },
+        { id: "split:right", label: t("splitRight"), icon: "rectangle.split.2x1", enabled: all.length < Panes.MAX_PANES },
+        { id: "split:bottom", label: t("splitDown"), icon: "rectangle.split.1x2", enabled: all.length < Panes.MAX_PANES },
+        ...(others.length ? [{ id: "panes", label: t("moveToPane"), icon: "arrow.right.square", submenu: others.map((p) => ({ id: `pane:${all.indexOf(p)}`, label: `${t("paneN", all.indexOf(p) + 1)}: ${p.tab?.title || (p.tab?.uri ? placeName(p.tab.uri) : "")}` })) }] : []),
+        { id: "window", label: t("tabToWindow"), icon: "macwindow.badge.plus" },
+        { separator: true },
+        { id: "close", label: t("closeTab"), icon: "xmark", enabled: n > 1 || all.length > 1 },
         { id: "others", label: t("closeOtherTabs"), enabled: n > 1 },
         { id: "right", label: t("closeTabsRight"), enabled: i < n - 1 },
+        ...(all.length > 1 ? [{ id: "closePane", label: t("closePane"), icon: "xmark.square" }] : []),
         { separator: true },
         { id: "reopen", label: t("cmd.reopenTab"), icon: "arrow.uturn.backward" },
       ],
       x,
       y,
     );
-    const tab = this.tabs[i];
-    if (!tab) return;
+    if (!id || this.tabs[i] !== tab) return;
     if (id === "new") this.newTab();
-    else if (id === "duplicate") this.newTab(tab.uri, null, { at: i + 1 });
-    else if (id === "window") {
-      call("app.new_window", { uri: tab.uri }).catch(say);
-      if (n > 1) this.closeTab(i);
-    } else if (id === "other") Panes.moveTab(this, i, other, other.tabs.length);
+    else if (id === "duplicate") {
+      this.newTab(tab.uri, null, { at: i + 1 });
+      Object.assign(this.tab, { title: tab.title, color: tab.color });
+      this.renderTabs();
+    } else if (id === "rename") this.renameTab(i);
+    else if (id === "unname") {
+      tab.title = null;
+      this.renderTabs();
+      Panes.saveSoon();
+    } else if (id.startsWith("color:")) {
+      tab.color = id.slice(6) || null;
+      this.renderTabs();
+      Panes.saveSoon();
+    } else if (id.startsWith("split:")) n > 1 ? Panes.splitWith(this, i, this, id.slice(6)) : Panes.splitNew(this, id.slice(6));
+    else if (id.startsWith("pane:")) {
+      const to = all[Number(id.slice(5))];
+      if (to) Panes.moveTab(this, i, to, to.tabs.length);
+    } else if (id === "window") this.tabToWindow(i);
     else if (id === "close") this.closeTab(i);
     else if (id === "others") {
       for (let k = n - 1; k >= 0; k--) if (k !== i) this.closeTab(k);
     } else if (id === "right") {
       for (let k = n - 1; k > i; k--) this.closeTab(k);
-    } else if (id === "reopen") Panes.action("reopenTab", this);
+    } else if (id === "closePane") Panes.closePane(this);
+    else if (id === "reopen") Panes.action("reopenTab", this);
   }
 
   activate(i) {
@@ -1372,8 +1489,9 @@ class Pane {
     }
   }
 
+  // Closes tab `i`; the last tab of a pane closes the pane, when the window has another.
   closeTab(i) {
-    if (this.tabs.length < 2) return;
+    if (this.tabs.length < 2) return Panes.all().length > 1 && Panes.closePane(this);
     const [tab] = this.tabs.splice(i, 1);
     call("view.close", { view: tab.id }).catch(() => {});
     if (this.active >= this.tabs.length) this.active = this.tabs.length - 1;
@@ -1395,16 +1513,296 @@ const Panes = (() => {
     for (const fn of listeners[name] || []) fn(detail);
   }
 
-  function addPane(tabs) {
+  // A pane with the tabs `tabs` ({ uri, mode, sort, title, color }), not yet in the layout.
+  function makePane(tabs) {
     const pane = new Pane(panes.length);
-    panes.push(pane);
-    grid.appendChild(pane.el);
     for (const saved of tabs) {
       const tab = new Tab(saved.uri, saved.mode);
       tab.sort = saved.sort || null;
+      tab.title = typeof saved.title === "string" && saved.title ? saved.title.slice(0, 80) : null;
+      tab.color = TAB_COLORS.includes(saved.color) ? saved.color : null;
       pane.tabs.push(tab);
     }
     return pane;
+  }
+
+  // Shows a pane that has just been made at the place of its tab.
+  function show(pane) {
+    const tab = pane.tab;
+    const uri = tab.uri;
+    tab.uri = null;
+    pane.navigate(uri, { history: false });
+  }
+
+  // The layout is a tree: a leaf is a pane ({ pane }), a split lays its children in a row or a column ({ dir: "row" |
+  // "col", kids, sizes }), each child taking its share of the split (the sizes add up to 1). The panes in the order of
+  // the tree, left to right and top to bottom, are `panes`: the order F5 and Tab go through.
+  const MAX_PANES = 6;
+  let tree = null;
+  const leaf = (pane) => ({ pane });
+  const split = (dir, kids) => ({ dir, kids: kids.map((k) => (k instanceof Pane ? leaf(k) : k)), sizes: kids.map(() => 1 / kids.length) });
+  const PRESETS = {
+    single: (p) => leaf(p[0]),
+    h2: (p) => split("row", [p[0], p[1]]),
+    v2: (p) => split("col", [p[0], p[1]]),
+    h3: (p) => split("row", [p[0], p[1], p[2]]),
+    l1r2: (p) => split("row", [p[0], split("col", [p[1], p[2]])]),
+    grid: (p) => split("col", [split("row", [p[0], p[1]]), split("row", [p[2], p[3]])]),
+    h4: (p) => split("row", [p[0], p[1], p[2], p[3]]),
+    g6: (p) => split("col", [split("row", [p[0], p[1], p[2]]), split("row", [p[3], p[4], p[5]])]),
+  };
+
+  function leaves(node, out = []) {
+    if (node.pane) out.push(node.pane);
+    else node.kids.forEach((k) => leaves(k, out));
+    return out;
+  }
+
+  // The split that holds `node`, and where among its children.
+  function parentOf(node, from = tree) {
+    if (from.pane) return null;
+    const i = from.kids.indexOf(node);
+    if (i >= 0) return [from, i];
+    for (const kid of from.kids) {
+      const found = parentOf(node, kid);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  function leafOf(pane, from = tree) {
+    if (from.pane) return from.pane === pane ? from : null;
+    for (const kid of from.kids) {
+      const found = leafOf(pane, kid);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  // Puts `node` where `old` was in the tree.
+  function replace(old, node) {
+    const found = parentOf(old);
+    if (!found) tree = node;
+    else found[0].kids[found[1]] = node;
+  }
+
+  // A split left with one child gives way to it; a split inside a split of the same way joins it.
+  function tidy(node = tree) {
+    if (node.pane) return node;
+    node.kids = node.kids.map(tidy);
+    const kids = [];
+    const sizes = [];
+    node.kids.forEach((kid, i) => {
+      if (!kid.pane && kid.dir === node.dir) {
+        kid.kids.forEach((k, j) => {
+          kids.push(k);
+          sizes.push(node.sizes[i] * kid.sizes[j]);
+        });
+      } else {
+        kids.push(kid);
+        sizes.push(node.sizes[i]);
+      }
+    });
+    const total = sizes.reduce((a, b) => a + b, 0) || 1;
+    node.kids = kids;
+    node.sizes = sizes.map((x) => x / total);
+    return kids.length === 1 ? kids[0] : node;
+  }
+
+  // Draws the tree: each split a flex box with a line between its children that is dragged to share the room
+  // differently, and double-clicked to share it evenly. The panes keep where their lists were scrolled.
+  function renderTree() {
+    tree = tidy(tree);
+    const scrolled = new Map(leaves(tree).map((p) => [p, p.list.scrollTop]));
+    const build = (node) => {
+      if (node.pane) return node.pane.el;
+      const el = document.createElement("div");
+      // The way of a split is an attribute: "row" is already the class of a row of files.
+      el.className = "split";
+      el.dataset.dir = node.dir;
+      node.kids.forEach((kid, i) => {
+        if (i) {
+          const line = document.createElement("div");
+          line.className = "splitter";
+          line.addEventListener("mousedown", (e) => dragSplitter(e, node, i, el, line));
+          line.addEventListener("dblclick", () => {
+            node.sizes = node.kids.map(() => 1 / node.kids.length);
+            renderTree();
+            saveSoon();
+          });
+          el.appendChild(line);
+        }
+        const child = build(kid);
+        child.style.flex = `${node.sizes[i]} 1 0px`;
+        el.appendChild(child);
+      });
+      return el;
+    };
+    const root = build(tree);
+    root.style.flex = "1 1 0px";
+    grid.replaceChildren(root);
+    panes.splice(0, panes.length, ...leaves(tree));
+    panes.forEach((p, i) => {
+      p.index = i;
+      p.el.dataset.pane = `p${i}`;
+      p.list.scrollTop = scrolled.get(p) || 0;
+      p.renderSoon();
+    });
+    $("app").classList.toggle("multi", panes.length > 1);
+    paintLayoutButton();
+  }
+
+  // Drags the line before child `i` of `node`: the two children beside it share their room as the pointer says, each
+  // kept at least as wide (or tall) as a pane can be used.
+  function dragSplitter(down, node, i, el, line) {
+    down.preventDefault();
+    const row = node.dir === "row";
+    const kids = [...el.children].filter((c) => !c.classList.contains("splitter"));
+    const [a, b] = [kids[i - 1], kids[i]];
+    const size = (k) => (row ? k.getBoundingClientRect().width : k.getBoundingClientRect().height);
+    const [startA, startB] = [size(a), size(b)];
+    const share = node.sizes[i - 1] + node.sizes[i];
+    const least = row ? 160 : 120;
+    const from = row ? down.clientX : down.clientY;
+    line.classList.add("active");
+    document.body.classList.add(row ? "resizing-col" : "resizing-row");
+    const move = (m) => {
+      const total = startA + startB;
+      const sizeA = Math.min(Math.max(least, startA + (row ? m.clientX : m.clientY) - from), Math.max(least, total - least));
+      node.sizes[i - 1] = (share * sizeA) / total;
+      node.sizes[i] = share - node.sizes[i - 1];
+      a.style.flex = `${node.sizes[i - 1]} 1 0px`;
+      b.style.flex = `${node.sizes[i]} 1 0px`;
+    };
+    const up = () => {
+      removeEventListener("mousemove", move);
+      removeEventListener("mouseup", up);
+      line.classList.remove("active");
+      document.body.classList.remove("resizing-col", "resizing-row");
+      grid.dataset.layout = "custom";
+      paintLayoutButton();
+      saveSoon();
+    };
+    addEventListener("mousemove", move);
+    addEventListener("mouseup", up);
+  }
+
+  // Splits `target` at its `side` ("left", "right", "top", "bottom") with a new pane that takes tab `i` of `from`; a
+  // pane left without tabs closes. Returns the new pane.
+  function splitWith(from, i, target, side) {
+    const tab = from.tabs[i];
+    if (!tab) return null;
+    if (panes.length >= MAX_PANES) {
+      LZ.toast(t("tooManyPanes", MAX_PANES));
+      return null;
+    }
+    // The only tab of a pane split beside itself would leave the pane empty where it is: nothing changes.
+    if (from === target && from.tabs.length < 2) return null;
+    const pane = makePane([]);
+    const dir = side === "left" || side === "right" ? "row" : "col";
+    const first = side === "left" || side === "top";
+    const old = leafOf(target);
+    const found = parentOf(old);
+    if (found && found[0].dir === dir) {
+      const [parent, at] = found;
+      const half = parent.sizes[at] / 2;
+      parent.sizes[at] = half;
+      parent.kids.splice(first ? at : at + 1, 0, leaf(pane));
+      parent.sizes.splice(first ? at : at + 1, 0, half);
+    } else replace(old, split(dir, first ? [pane, target] : [target, pane]));
+    grid.dataset.layout = "custom";
+    from.tabs.splice(i, 1);
+    pane.tabs.push(tab);
+    pane.active = -1;
+    renderTree();
+    if (!from.tabs.length) closePane(from);
+    else {
+      const left = i < from.active ? from.active - 1 : Math.min(from.active, from.tabs.length - 1);
+      from.active = -1;
+      from.activate(left);
+    }
+    pane.activate(0);
+    focus(pane);
+    saveSoon();
+    return pane;
+  }
+
+  // Splits `pane` at `side` with a new pane at the same place, its own tab staying where it is.
+  function splitNew(pane, side) {
+    if (panes.length >= MAX_PANES) return LZ.toast(t("tooManyPanes", MAX_PANES));
+    pane.newTab(pane.tab.uri, null, { background: true });
+    return splitWith(pane, pane.tabs.length - 1, pane, side);
+  }
+
+  // Closes a pane and its tabs; the pane beside it takes its room.
+  function closePane(pane) {
+    if (panes.length < 2 || !panes.includes(pane)) return;
+    for (const tab of pane.tabs) call("view.close", { view: tab.id }).catch(() => {});
+    const old = leafOf(pane);
+    const [parent, at] = parentOf(old);
+    const room = parent.sizes[at];
+    parent.kids.splice(at, 1);
+    parent.sizes.splice(at, 1);
+    parent.sizes[Math.max(0, at - 1)] += room;
+    pane.el.remove();
+    grid.dataset.layout = "custom";
+    const near = leaves(parent.kids[Math.max(0, at - 1)])[0];
+    renderTree();
+    if (focused === pane) {
+      focused = null;
+      focus(near);
+      near.list.focus({ preventScroll: true });
+    }
+    saveSoon();
+  }
+
+  // Where a tab dragged to (x, y) over a pane's rows would go: near an edge of the pane, a new pane on that side; in
+  // the middle of another pane, among its tabs. Nothing over the pane it comes from unless it can be split.
+  function paneDropAt(x, y, from, i) {
+    for (const pane of panes) {
+      const r = pane.el.getBoundingClientRect();
+      if (x < r.left || x > r.right || y < r.top || y > r.bottom) continue;
+      const top = pane.tabsEl.hidden ? r.top : pane.tabsEl.getBoundingClientRect().bottom;
+      const [fx, fy] = [(x - r.left) / r.width, (y - top) / (r.bottom - top)];
+      const canSplit = panes.length < MAX_PANES && (pane !== from || from.tabs.length > 1);
+      let side = "center";
+      if (canSplit) {
+        const edge = Math.min(fx, 1 - fx, fy, 1 - fy);
+        if (edge < 0.28) side = edge === fx ? "left" : edge === 1 - fx ? "right" : edge === fy ? "top" : "bottom";
+      }
+      if (side === "center" && pane === from) return null;
+      return { pane, side };
+    }
+    return null;
+  }
+
+  // The tree as layout.json keeps it, each pane by its place in `panes`.
+  function treeState(node) {
+    return node.pane ? { p: panes.indexOf(node.pane) } : { dir: node.dir, sizes: node.sizes.map((x) => Math.round(x * 10000) / 10000), kids: node.kids.map(treeState) };
+  }
+
+  // The tree kept in layout.json over the panes `list`, each used once; null when it does not fit them.
+  function treeFrom(saved, list) {
+    const used = new Set();
+    const walk = (node, depth) => {
+      if (!node || typeof node !== "object" || depth > 8) throw 0;
+      if (Number.isInteger(node.p)) {
+        if (!list[node.p] || used.has(node.p)) throw 0;
+        used.add(node.p);
+        return leaf(list[node.p]);
+      }
+      if ((node.dir !== "row" && node.dir !== "col") || !Array.isArray(node.kids) || node.kids.length < 2) throw 0;
+      const kids = node.kids.map((k) => walk(k, depth + 1));
+      const sizes = kids.map((_, i) => (Number(node.sizes?.[i]) > 0.02 ? Number(node.sizes[i]) : 1 / kids.length));
+      const total = sizes.reduce((a, b) => a + b, 0);
+      return { dir: node.dir, kids, sizes: sizes.map((x) => x / total) };
+    };
+    try {
+      const built = walk(saved, 0);
+      return used.size === list.length ? built : null;
+    } catch {
+      return null;
+    }
   }
 
   function focus(pane) {
@@ -1446,10 +1844,11 @@ const Panes = (() => {
   function state() {
     return {
       layout: grid.dataset.layout,
+      tree: tree ? treeState(tree) : null,
       focus: panes.indexOf(focused),
       sidebarWidth: Sidebar.width(),
       sidebarHidden: $("app").classList.contains("no-sidebar"),
-      panes: panes.map((p) => ({ active: p.active, cols: p.cols, tabs: p.tabs.map((tab) => ({ uri: tab.uri, mode: tab.mode, sort: tab.sort })) })),
+      panes: panes.map((p) => ({ active: p.active, cols: p.cols, tabs: p.tabs.map((tab) => ({ uri: tab.uri, mode: tab.mode, sort: tab.sort, title: tab.title, color: tab.color })) })),
     };
   }
 
@@ -1466,6 +1865,7 @@ const Panes = (() => {
       pane.el.remove();
     }
     panes.length = 0;
+    tree = null;
     focused = null;
     $("app").classList.remove("no-sidebar");
     start(saved);
@@ -1475,70 +1875,67 @@ const Panes = (() => {
   // Builds the panes from the layout the window had (layout.json), or one pane at home.
   function start(saved, uri) {
     const home = S.places.home || "file:///";
-    const layouts = Array.isArray(saved?.panes) && saved.panes.length ? saved.panes.slice(0, 4) : [{ tabs: [{ uri: home }] }];
+    const layouts = Array.isArray(saved?.panes) && saved.panes.length ? saved.panes.slice(0, MAX_PANES) : [{ tabs: [{ uri: home }] }];
     if (saved?.sidebarWidth) $("app").style.setProperty("--side-w", saved.sidebarWidth);
     if (saved?.sidebarHidden) $("app").classList.add("no-sidebar");
-    grid.dataset.layout = LAYOUTS[saved?.layout] ? saved.layout : "single";
-    for (const p of layouts) {
-      const tabs = (Array.isArray(p.tabs) ? p.tabs : []).filter((t) => typeof t?.uri === "string").slice(0, 20);
-      const pane = addPane(tabs.length ? tabs : [{ uri: home }]);
+    const list = layouts.map((p) => {
+      const tabs = (Array.isArray(p.tabs) ? p.tabs : []).filter((t) => typeof t?.uri === "string").slice(0, 30);
+      const pane = makePane(tabs.length ? tabs : [{ uri: home }]);
       pane.active = Math.min(Math.max(0, p.active | 0), pane.tabs.length - 1);
       if (p.cols) Object.assign(pane.cols, p.cols);
       pane.applyCols();
+      return pane;
+    });
+    tree = treeFrom(saved?.tree, list);
+    if (tree) grid.dataset.layout = typeof saved.layout === "string" ? saved.layout : "custom";
+    else if (!PRESETS[saved?.layout] && list.length > 1) {
+      // Panes whose tree was lost stand side by side.
+      tree = split("row", list);
+      grid.dataset.layout = "custom";
+    } else {
+      // A preset layout (what windows kept before the tree), with panes at home for those that were not saved.
+      const layout = PRESETS[saved?.layout] ? saved.layout : "single";
+      while (list.length < LAYOUTS[layout]) list.push(makePane([{ uri: home }]));
+      list.splice(LAYOUTS[layout]);
+      tree = PRESETS[layout](list);
+      grid.dataset.layout = layout;
     }
-    // A layout with more panes than were saved gets panes at home.
-    while (panes.length < LAYOUTS[grid.dataset.layout]) addPane([{ uri: home }]);
-    while (panes.length > LAYOUTS[grid.dataset.layout]) panes.pop().el.remove();
-    $("app").classList.toggle("multi", panes.length > 1);
-    paintLayoutButton();
+    renderTree();
     if (uri) panes[0].tab.uri = uri;
     api.sizesOn = !!S.settings.folder_sizes;
     focus(panes[Math.min(Math.max(0, saved?.focus | 0), panes.length - 1)]);
-    for (const pane of panes) {
-      const tab = pane.tab;
-      const target = tab.uri;
-      tab.uri = null;
-      pane.navigate(target, { history: false });
-    }
     // Every other tab lists when it is first shown.
+    panes.forEach(show);
     focused.list.focus({ preventScroll: true });
   }
 
-  // Changes the number and arrangement of panes; a new pane opens where the focused one is, a pane that goes closes
-  // its tabs.
+  // Changes to one of the preset layouts: the panes there are keep their place in order, a new pane opens where the
+  // focused one is, a pane that goes closes its tabs.
   function setLayout(layout) {
     const n = LAYOUTS[layout];
-    if (!n) return;
-    grid.dataset.layout = layout;
-    $("app").classList.toggle("multi", n > 1);
-    while (panes.length < n) {
-      const pane = addPane([{ uri: focused?.tab?.uri || S.places.home }]);
-      const uri = pane.tab.uri;
-      pane.tab.uri = null;
-      pane.navigate(uri, { history: false });
+    if (!n || !PRESETS[layout]) return;
+    const list = [...panes];
+    while (list.length < n) {
+      const pane = makePane([{ uri: focused?.tab?.uri || S.places.home }]);
+      list.push(pane);
+      show(pane);
     }
-    while (panes.length > n) {
-      const pane = panes.pop();
+    for (const pane of list.splice(n)) {
       for (const tab of pane.tabs) call("view.close", { view: tab.id }).catch(() => {});
       pane.el.remove();
-      if (focused === pane) {
-        focused = null;
-        focus(panes[panes.length - 1]);
-      }
+      if (focused === pane) focused = null;
     }
-    panes.forEach((p, i) => {
-      p.index = i;
-      p.el.dataset.pane = `p${i}`;
-      p.renderSoon();
-    });
-    paintLayoutButton();
+    tree = PRESETS[layout](list);
+    grid.dataset.layout = layout;
+    renderTree();
+    if (!focused) focus(panes[panes.length - 1]);
     saveSoon();
   }
 
   function paintLayoutButton() {
     const layout = grid.dataset.layout;
     if (!api.layoutButton) return;
-    api.layoutButton.dataset.sym = `layout.${layout === "h3" ? "h2" : layout === "l1r2" ? "grid" : layout}`;
+    api.layoutButton.dataset.sym = `layout.${{ single: "single", h2: "h2", h3: "h2", h4: "h2", v2: "v2" }[layout] || "grid"}`;
     api.layoutButton.innerHTML = icon(api.layoutButton.dataset.sym);
   }
 
@@ -1581,11 +1978,14 @@ const Panes = (() => {
       from.renderTabs();
       return saveSoon();
     }
-    if (from.tabs.length < 2) return to.newTab(tab.uri, null, { at: index });
     from.tabs.splice(i, 1);
-    const left = i < from.active ? from.active - 1 : Math.min(from.active, from.tabs.length - 1);
-    from.active = -1;
-    from.activate(left);
+    // A pane whose last tab goes closes, and the pane that takes the tab has its room.
+    if (!from.tabs.length) closePane(from);
+    else {
+      const left = i < from.active ? from.active - 1 : Math.min(from.active, from.tabs.length - 1);
+      from.active = -1;
+      from.activate(left);
+    }
     to.tabs.splice(index, 0, tab);
     to.active = -1;
     to.activate(index);
@@ -1670,6 +2070,11 @@ const Panes = (() => {
     layoutH3: () => setLayout("h3"),
     layoutL1R2: () => setLayout("l1r2"),
     layoutGrid: () => setLayout("grid"),
+    layoutH4: () => setLayout("h4"),
+    layoutG6: () => setLayout("g6"),
+    splitRight: (pane) => pane.tabs.length > 1 ? splitWith(pane, pane.active, pane, "right") : splitNew(pane, "right"),
+    splitDown: (pane) => pane.tabs.length > 1 ? splitWith(pane, pane.active, pane, "bottom") : splitNew(pane, "bottom"),
+    closePane: (pane) => closePane(pane),
     back(pane) {
       const tab = pane.tab;
       if (!tab.back.length) return;
@@ -1939,7 +2344,12 @@ const Panes = (() => {
     all: () => panes,
     findTab,
     tabDropAt,
+    paneDropAt,
     moveTab,
+    splitWith,
+    splitNew,
+    closePane,
+    MAX_PANES,
     stackMenu,
     changed,
     selectionChanged,

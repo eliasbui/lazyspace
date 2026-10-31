@@ -5,7 +5,7 @@
 <h1 align="center">LazySpace</h1>
 
 <p align="center">
-  Trình quản lý tệp cho macOS với tối đa bốn khung, workspace, tệp nén, máy chủ và khay tạm.<br />
+  Trình quản lý tệp cho macOS với tối đa sáu khung, workspace, tệp nén, máy chủ và khay tạm.<br />
   Giao diện và phím tắt như Finder, nhanh như một trình quản lý hai khung, trong cửa sổ Liquid&nbsp;Glass.
 </p>
 
@@ -31,11 +31,15 @@ thao tác tệp chạy thành một tác vụ có tiến độ, có thể hủy 
 
 ## Tính năng
 
-- **Tối đa bốn khung, có tab như File Explorer.** Sáu bố cục: một khung, hai khung cạnh nhau hoặc trên dưới, ba khung,
-  một trái hai phải, hoặc lưới bốn khung. Mỗi khung có tab, lịch sử và kiểu xem riêng (danh sách hoặc biểu tượng).
-  Thanh tab hiện cả khi chỉ có một tab, kèm nút tab mới; kéo tab để đổi chỗ hoặc sang khung khác, bấm chuột giữa để
-  đóng, chuột phải có menu riêng (nhân bản, chuyển sang cửa sổ mới hoặc khung bên kia, đóng các tab khác hoặc bên
-  phải). Chuột giữa hoặc Command và nhấp đúp mở thư mục trong tab mới. Khung hẹp thì bớt cột, như QSpace.
+- **Tối đa sáu khung, có tab như File Explorer của Windows 11.** Kéo một tab tới gần mép một khung để chia đôi khung
+  đó, tab nằm ở nửa mới (trái, phải, trên hoặc dưới); thả vào giữa một khung để chuyển tab sang đó; kéo ra ngoài cửa
+  sổ để mở tab trong cửa sổ riêng. Kéo đường ngăn giữa hai khung để nới rộng một bên, nhấp đúp để chia đều. Command-\\
+  chia sang phải, Command-Shift-\\ chia xuống dưới. Có sẵn các bố cục: một khung, hai khung cạnh nhau hoặc trên dưới,
+  ba khung, một trái hai phải, bốn khung cạnh nhau, lưới bốn hoặc sáu khung. Mỗi khung có tab, lịch sử và kiểu xem
+  riêng. Các tab chia đều thanh tab, tab đang mở nối liền với thanh đường dẫn bên dưới; tab mang tên thư mục đang mở,
+  nhấp đúp để đặt tên khác, và đánh dấu màu được từ menu của tab (menu này còn chia khung, chuyển tab sang khung khác
+  hoặc cửa sổ mới, đóng các tab khác hoặc bên phải). Đóng tab cuối của một khung là đóng khung đó. Chuột giữa hoặc
+  Command và nhấp đúp mở thư mục trong tab mới. Khung hẹp thì bớt cột, như QSpace.
 - **Workspace.** Bố cục, các khung, các tab và vị trí của cửa sổ được lưu theo tên ở thanh bên, bấm là trở lại
   (Command-Option-W để lưu).
 - **Thanh đường dẫn như File Explorer.** Bấm vào từng phần, mũi tên sau mỗi phần liệt kê thư mục con của nó, bên cạnh
@@ -68,7 +72,9 @@ thao tác tệp chạy thành một tác vụ có tiến độ, có thể hủy 
   máy ảnh hay điện thoại Android, những thứ macOS không gắn thành ổ đĩa, kèm các ứng dụng đọc được chúng. Đẩy ra
   (Command-E, hoặc menu của ổ) không làm đứng cửa sổ, nói rõ ứng dụng nào đang giữ ổ khi không đẩy ra được, và đẩy ra
   bắt buộc được. Tab đang mở ổ vừa rút tự về thư mục nhà. Tắt thông báo được trong Cài đặt.
-- **Ghim thư mục.** Ghim bất kỳ thư mục nào vào thanh bên từ menu của nó, bỏ ghim ngay trên thanh bên.
+- **Truy cập nhanh.** Các thư mục được ghim ở đầu thanh bên, như File Explorer: ghim từ menu của thư mục, từ nút cạnh
+  tên mục hoặc Command-Control-P (thư mục đang mở), hoặc kéo thả thư mục vào mục này; kéo lên xuống để sắp thứ tự, bỏ
+  ghim từ menu.
 - **Màn hình nền do LazySpace hiện (tùy chọn).** Các mục của thư mục Màn hình nền trên hình nền, dưới mọi cửa sổ và ở
   mọi Space, mỗi biểu tượng nằm đúng chỗ bạn đặt, có menu chuột phải, phím tắt, Xem nhanh và kéo thả như một khung.
   Biểu tượng của Finder có thể ẩn khi bật, và trở lại khi tắt.

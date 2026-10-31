@@ -56,6 +56,12 @@
     ["layoutH3", "panes", "Bố cục: ba khung", "Layout: Three Panes"],
     ["layoutL1R2", "panes", "Bố cục: một trái, hai phải", "Layout: One Left, Two Right"],
     ["layoutGrid", "panes", "Bố cục: lưới bốn khung", "Layout: Grid of Four"],
+    ["layoutH4", "panes", "Bố cục: bốn khung cạnh nhau", "Layout: Four Side by Side"],
+    ["layoutG6", "panes", "Bố cục: lưới sáu khung", "Layout: Grid of Six"],
+    ["splitRight", "panes", "Chia khung sang phải", "Split the Pane to the Right"],
+    ["splitDown", "panes", "Chia khung xuống dưới", "Split the Pane Down"],
+    ["closePane", "panes", "Đóng khung", "Close the Pane"],
+    ["pinQuick", "panes", "Ghim thư mục đang mở vào Truy cập nhanh", "Pin the Folder to Quick Access"],
     ["saveWorkspace", "panes", "Lưu workspace", "Save Workspace"],
     ["viewList", "view", "Xem dạng danh sách", "View as List"],
     ["viewIcons", "view", "Xem dạng biểu tượng", "View as Icons"],
@@ -115,6 +121,7 @@
     if (pane.tabs.length > 1) pane.activate((pane.active + by + pane.tabs.length) % pane.tabs.length);
   };
   Object.assign(Panes.actions, {
+    pinQuick: () => Sidebar.pinHere(),
     copyToOther: (pane) => toOther(pane, "copy"),
     moveToOther: (pane) => toOther(pane, "move"),
     openInOther(pane) {
@@ -154,6 +161,7 @@
   LZ.menu.add({ id: "moveToOther", label: "cmd.moveToOther", icon: "arrow.right.square", group: 30, order: 5, when: twoPanes, action: "moveToOther", run: (c) => Panes.action("moveToOther", c.pane) });
 
   Keys.add({
+    "Cmd+Ctrl+P": "pinQuick",
     F5: "copyToOther",
     F6: "moveToOther",
     "Ctrl+Tab": "nextTab",

@@ -5,7 +5,7 @@
 <h1 align="center">LazySpace</h1>
 
 <p align="center">
-  A file manager for macOS with up to four panes, workspaces, archives, servers and a stash shelf.<br />
+  A file manager for macOS with up to six panes, workspaces, archives, servers and a stash shelf.<br />
   Finder's look and keys, a dual-pane manager's speed, in a Liquid&nbsp;Glass window.
 </p>
 
@@ -31,12 +31,16 @@ operation runs as a job you can watch, cancel and undo. It speaks English and Vi
 
 ## Features
 
-- **Up to four panes, with tabs as in File Explorer.** Six layouts: one pane, two side by side or stacked, three, one
-  on the left and two on the right, or a grid of four. Each pane has its own tabs, history and view (list or icons).
-  The tab bar shows with one tab too, with a button for a new one; tabs are dragged to a new place or to another pane,
-  closed with the middle button, and have a menu of their own (duplicate, move to a new window or the other pane,
-  close the others or those to the right). The middle button or Command and a double click open a folder in a new
-  tab. Columns drop as a pane gets narrow, as in QSpace.
+- **Up to six panes, with tabs as in File Explorer on Windows 11.** Drag a tab near a pane's edge to split it in two
+  with the tab in the new half (left, right, top or bottom), onto a pane to move it there, or out of the window to open
+  it in a window of its own; drag the line between two panes to give one more room, double-click it to share the room
+  evenly. Command-\\ splits to the right and Command-Shift-\\ down. Presets too: one pane, two side by side or stacked,
+  three, one on the left and two on the right, four side by side, a grid of four or of six. Each pane has its own
+  tabs, history and view. Tabs share the bar evenly and the one shown joins the path bar under it; each is named
+  after its folder, or renamed with a double click, and can be marked with a colour from its menu (which also splits,
+  moves it to another pane or a window, and closes the others or those to the right). The last tab of a pane closes
+  the pane. The middle button or Command and a double click open a folder in a new tab. Columns drop as a pane gets
+  narrow, as in QSpace.
 - **Workspaces.** The window's layout, panes, tabs and places saved under a name in the sidebar and brought back with a
   click (Command-Option-W saves one).
 - **A path bar as File Explorer's.** Breadcrumbs to click, each with an arrow that lists the folders inside it, up and
@@ -69,7 +73,9 @@ operation runs as a job you can watch, cancel and undo. It speaks English and Vi
   the DMG can follow it); an iPhone, a camera or an Android phone, which macOS mounts as no disk, with the apps that
   read it. Ejecting (Command-E, or a disk's menu) leaves the window free, names the apps that hold a disk that will not
   eject, and can force it. Tabs on a disk that goes return home. Settings can turn the notes off.
-- **Pinned folders.** Any folder pinned to the sidebar from its menu, and taken out again from the sidebar.
+- **Quick Access.** Folders pinned at the top of the sidebar, as File Explorer pins them: from a folder's menu, the
+  button beside the section's name or Command-Control-P (the folder open here), or by dropping folders on the section;
+  dragged up and down to order them, unpinned from their menu.
 - **The desktop, by LazySpace (optional).** The Desktop folder's icons on the wallpaper, under every window and on
   every Space, each icon where you put it, with the context menu, keys, Quick Look and drag and drop of a pane.
   Finder's own icons can be hidden while it is on, and come back when it is off.
