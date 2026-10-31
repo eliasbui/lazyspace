@@ -100,7 +100,9 @@ operation runs as a job you can watch, cancel and undo. It speaks English and Vi
 - **Clouds.** The sidebar's Cloud section shows iCloud Drive and the folders of the Google Drive, OneDrive, Dropbox and
   Box apps. Without those apps, Google Drive, OneDrive, Dropbox and other clouds are signed in to from LazySpace
   itself: the browser opens to sign in through [rclone](https://rclone.org), which is installed with Homebrew when it
-  is missing.
+  is missing. OneDrive for work or school and SharePoint are choices of their own, with an organisation's own app id
+  under Advanced when it does not let rclone's in. Each cloud shows its account under its name, and files are dragged
+  from one account to another, onto a pane or onto the cloud in the sidebar.
 - **Archives as folders.** Zip (with AES passwords), 7z (with passwords and encrypted names), RAR, tar with gzip, xz or
   bzip2, ISO and more open as read-only folders. Extraction keeps every file inside the folder it goes to. Compress to
   zip, 7z or tar, with a password and split volumes where the format allows.

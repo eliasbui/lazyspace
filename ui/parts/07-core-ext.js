@@ -296,4 +296,54 @@ const LZ = (() => {
     if (target.quick) return Sidebar.pinDropped(d.uris);
     call("fs.copy", { from: d.uris, to: target.uri, mode: d.mode }).catch(say);
   });
+
+  // Items not on this Mac (in a cloud through rclone, on a server, in an archive) have no file a drag of the system
+  // could carry; within the window the page drags them itself, onto the same targets: a pane, a folder, a tab, a
+  // place of the sidebar. As with a drop of files, Option copies, Command moves, and otherwise a move stays on one
+  // disk and anything else is copied.
+  Panes.on("pointerdown", ({ pane, event, index }) => {
+    if (event.button !== 0 || event.shiftKey || event.metaKey) return;
+    const tab = pane.tab;
+    const e = tab.rows.get(index);
+    if (!e || !tab.isSel(e.name) || isLocal(e.uri)) return;
+    const from = tab.selectedEntries().map((x) => x.uri);
+    const source = tab.uri;
+    let ghost = null;
+    const fits = (target) => target && !samePlace(target.uri, source) && !from.some((u) => samePlace(u, target.uri));
+    const move = (m) => {
+      if (!ghost && Math.hypot(m.clientX - event.clientX, m.clientY - event.clientY) < 4) return;
+      if (!ghost) {
+        ghost = document.createElement("div");
+        ghost.textContent = from.length > 1 ? `${e.name} +${from.length - 1}` : e.name;
+        ghost.style.cssText =
+          "position:fixed;z-index:1000;pointer-events:none;max-width:240px;padding:3px 8px;border-radius:6px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--accent);color:#fff;opacity:0.9";
+        document.body.appendChild(ghost);
+      }
+      ghost.style.left = `${m.clientX + 12}px`;
+      ghost.style.top = `${m.clientY + 8}px`;
+      const target = targetAt(m.clientX, m.clientY);
+      light(fits(target) ? target.el : null);
+    };
+    const end = (u) => {
+      removeEventListener("mousemove", move);
+      removeEventListener("mouseup", end);
+      removeEventListener("keydown", escape, true);
+      light(null);
+      if (!ghost) return;
+      ghost.remove();
+      if (u.type !== "mouseup") return;
+      const target = targetAt(u.clientX, u.clientY);
+      if (!fits(target)) return;
+      const mode = u.altKey ? "copy" : u.metaKey ? "move" : "auto";
+      call("fs.copy", { from, to: target.uri, mode }).catch(say);
+    };
+    const escape = (k) => {
+      if (k.key !== "Escape" || !ghost) return;
+      k.stopPropagation();
+      end(k);
+    };
+    addEventListener("mousemove", move);
+    addEventListener("mouseup", end);
+    addEventListener("keydown", escape, true);
+  });
 })();

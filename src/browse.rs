@@ -809,11 +809,17 @@ pub fn register(d: &mut Dispatcher) {
     });
 }
 
-/// Whether two local places are on the same disk, where a drop moves rather than copies.
+/// Whether two places are on the same disk, where a drop moves rather than copies. The folders of two clouds (or a
+/// cloud and the rest of the disk) count as two disks: what goes from one account to another is copied. Off this Mac,
+/// one server or one cloud account through rclone is one disk.
 fn same_disk(a: &Uri, b: &Uri) -> bool {
     use std::os::unix::fs::MetadataExt;
+    if a.scheme != "file" || b.scheme != "file" {
+        return a.scheme == b.scheme && a.authority == b.authority;
+    }
     let dev = |u: &Uri| u.local_path().and_then(|p| std::fs::symlink_metadata(&p).ok()).map(|m| m.dev());
-    matches!((dev(a), dev(b)), (Some(x), Some(y)) if x == y)
+    let cloud = |u: &Uri| u.local_path().and_then(|p| crate::features::remote::cloud_root(&p));
+    matches!((dev(a), dev(b)), (Some(x), Some(y)) if x == y) && cloud(a) == cloud(b)
 }
 
 fn one_mib() -> u64 {
@@ -857,6 +863,17 @@ fn run_undo(undo: &Undo, ctx: &crate::jobs::Ctx) -> Result<Value, String> {
 mod tests {
     use super::*;
     use crate::{jobs::test_ctx, vfs::local::tests::Temp};
+
+    #[test]
+    fn a_drop_moves_within_one_disk_or_account_and_copies_across() {
+        let home = dirs::home_dir().unwrap();
+        let file = |p: &str| Uri::file(&home.join(p));
+        let rclone = |p: &str| Uri::parse(p).unwrap();
+        assert!(same_disk(&file(""), &file("Library")));
+        assert!(same_disk(&rclone("rclone://work/a"), &rclone("rclone://work/b/c")));
+        assert!(!same_disk(&rclone("rclone://work/a"), &rclone("rclone://home/a")));
+        assert!(!same_disk(&rclone("rclone://work/a"), &file("")));
+    }
 
     #[test]
     fn a_copy_is_checked_byte_for_byte_and_a_changed_one_fails() {

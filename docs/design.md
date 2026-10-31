@@ -723,6 +723,7 @@ Thư mục `~/Library/Application Support/LazySpace/` (`settings::data_dir()`, n
 | `rename-undo.json` | W5 | nhật ký lần đổi tên cuối: `[{from, to}]`, cho Undo |
 | `stash.json` | W7 | `[{ uri, added, note, origin: "local" \| "remote" \| "web" \| "clipboard" }]`; mục clipboard và web lưu thành tệp trong `stash/` |
 | `connections.json` | W8 | `[{ id, name, scheme, host, port, user, path, region, endpoint, bucket, rclone_remote }]` không có bí mật |
+| `cloud-accounts.json` | W8 | tài khoản của từng remote rclone, theo tên remote: `{ backend, kind, account }`, để thanh bên không phải chờ mạng; không có token |
 | Keychain | W8 | service `com.eliasbui.lazyspace`, account `<connection id>`, data = mật khẩu hoặc secret key hoặc passphrase; `security-framework::passwords` |
 | `~/Library/Caches/LazySpace/` | F2 | `thumbs/`, `tmp/` (bản sao tạm), xóa được bất kỳ lúc nào |
 
