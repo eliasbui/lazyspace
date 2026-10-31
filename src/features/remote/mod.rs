@@ -25,7 +25,7 @@ use crate::{
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     io::Read,
     path::{Path, PathBuf},
     sync::{Arc, Mutex, OnceLock, atomic::AtomicBool},
@@ -239,6 +239,55 @@ fn keep(id: &str, secret: &str) -> bool {
     kept
 }
 
+/// The folder of the cloud a local place is in, if any (src/features/remote/storage.rs).
+pub fn cloud_root(path: &Path) -> Option<PathBuf> {
+    storage::cloud_root(&dirs::home_dir()?, path)
+}
+
+/// The remotes asked for their account in this run, so one whose cloud does not answer is not asked at every listing.
+fn asked() -> &'static Mutex<HashSet<String>> {
+    static A: OnceLock<Mutex<HashSet<String>>> = OnceLock::new();
+    A.get_or_init(|| Mutex::new(HashSet::new()))
+}
+
+/// The names of rclone's remotes, and the account of each as far as it is known, by name. The accounts not known yet
+/// are looked up on a thread of their own, one remote after another; every window hears `remote.changed` when they
+/// are in, and lists again.
+fn rclone_accounts(proxy: &crate::Proxy, listed: &[(String, String)]) -> (Vec<String>, Value) {
+    let known = rclone::accounts();
+    let mut accounts = serde_json::Map::new();
+    let mut missing = Vec::new();
+    for (name, backend) in listed {
+        match known.get(name).filter(|a| &a.backend == backend) {
+            Some(account) => {
+                accounts.insert(name.clone(), json!(account));
+            }
+            None => {
+                accounts.insert(name.clone(), json!({ "backend": backend, "kind": backend, "account": null }));
+                if asked().lock().is_ok_and(|mut a| a.insert(name.clone())) {
+                    missing.push(name.clone());
+                }
+            }
+        }
+    }
+    if !missing.is_empty() {
+        let proxy = proxy.clone();
+        std::thread::spawn(move || {
+            let mut found = false;
+            for name in missing {
+                if let Ok(account) = rclone::lookup(&name) {
+                    rclone::remember(&name, account);
+                    found = true;
+                }
+            }
+            if found {
+                proxy.send(crate::UserEvent::Post { window: None, message: crate::ipc::event("remote.changed", Value::Null) });
+            }
+        });
+    }
+    (listed.iter().map(|(name, _)| name.clone()).collect(), Value::Object(accounts))
+}
+
 pub fn register(d: &mut Dispatcher) {
     let p = providers();
     registry().add("ftp", p.ftp.clone());
@@ -249,7 +298,8 @@ pub fn register(d: &mut Dispatcher) {
     registry().add("rclone", Arc::new(rclone::RcloneProvider));
 
     d.on("remote.list", |app, _, _| {
-        defer(app, || {
+        let proxy = app.proxy.clone();
+        defer(app, move || {
             let list: Vec<Value> = connections::load(&connections::path())
                 .into_iter()
                 .filter_map(|c| {
@@ -260,8 +310,9 @@ pub fn register(d: &mut Dispatcher) {
                 })
                 .collect();
             let installed = rclone::binary().is_some();
-            let remotes = if installed { rclone::remotes().unwrap_or_default() } else { Vec::new() };
-            Ok(json!({ "connections": list, "rclone": { "installed": installed, "remotes": remotes, "kinds": rclone::KINDS } }))
+            let listed = if installed { rclone::listed().unwrap_or_default() } else { Vec::new() };
+            let (remotes, accounts) = rclone_accounts(&proxy, &listed);
+            Ok(json!({ "connections": list, "rclone": { "installed": installed, "remotes": remotes, "accounts": accounts, "kinds": rclone::KINDS } }))
         })
     });
     d.on("remote.save", |app, _, a| {
@@ -386,10 +437,12 @@ pub fn register(d: &mut Dispatcher) {
         struct Add {
             kind: String,
             name: String,
+            #[serde(default)]
+            advanced: rclone::Advanced,
         }
         let a: Add = args(a)?;
         let title = format!("{} {}", tr("Đăng nhập", "Signing in to"), a.name);
-        let job = app.jobs.spawn(&app.proxy, Some(window), "cloud", title, move |ctx| rclone::sign_in(ctx, &a.kind, &a.name), None);
+        let job = app.jobs.spawn(&app.proxy, Some(window), "cloud", title, move |ctx| rclone::sign_in(ctx, &a.kind, &a.name, &a.advanced), None);
         Ok(json!({ "job": job }))
     });
     d.on("remote.rclone_install", |app, window, _| {

@@ -91,7 +91,9 @@ thao tác tệp chạy thành một tác vụ có tiến độ, có thể hủy 
 - **Đám mây.** Mục Đám mây của thanh bên hiện iCloud Drive và thư mục của các app Google Drive, OneDrive, Dropbox, Box
   chính hãng. Không cài các app đó vẫn đăng nhập được Google Drive, OneDrive, Dropbox và các đám mây khác ngay trong
   LazySpace: trình duyệt mở ra để đăng nhập qua [rclone](https://rclone.org), và rclone được cài bằng Homebrew nếu
-  chưa có.
+  chưa có. OneDrive cơ quan hoặc trường học và SharePoint có lựa chọn riêng, kèm ô điền ứng dụng riêng của tổ chức ở
+  phần Nâng cao khi tổ chức chặn ứng dụng của rclone. Mỗi đám mây hiện tài khoản ngay dưới tên, và kéo được tệp từ tài
+  khoản này sang tài khoản khác, thả vào ô bên kia hoặc vào đám mây trên thanh bên.
 - **Tệp nén mở như thư mục.** Zip (cả mật khẩu AES), 7z (cả mật khẩu và tên mã hóa), RAR, tar với gzip, xz hoặc bzip2,
   ISO và nhiều loại khác mở như thư mục chỉ đọc. Giải nén giữ mọi tệp trong thư mục đích. Nén thành zip, 7z hoặc tar,
   có mật khẩu và chia nhỏ khi định dạng cho phép.

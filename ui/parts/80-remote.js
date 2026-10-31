@@ -18,6 +18,10 @@ LZ.words({
     clouds: "Đám mây", addCloud: "Thêm đám mây", addService: "Thêm {0}", otherCloud: "Dịch vụ khác...", signInBrowser: "Đăng nhập trong trình duyệt vừa mở",
     rcloneNeeded: "Cần rclone", installRclone: "Cài rclone",
     rcloneNeededText: "LazySpace đăng nhập Google Drive, OneDrive, Dropbox qua rclone, một công cụ miễn phí và mã nguồn mở. Cài nó bằng Homebrew bây giờ?",
+    onedriveWork: "OneDrive (cơ quan hoặc trường học)", cloudSite: "Trang SharePoint", cloudAdvanced: "Nâng cao", clientId: "Client ID", clientSecret: "Client secret", tenantId: "Tenant ID",
+    siteHint: "https://contoso.sharepoint.com/sites/nhom (để trống: trang gốc)",
+    workNote: "Nếu trình duyệt báo \"Cần quản trị viên phê duyệt\", tổ chức của bạn chặn ứng dụng của rclone: nhờ IT phê duyệt nó, hoặc điền ứng dụng riêng của tổ chức ở phần Nâng cao. Cách khác: cài ứng dụng OneDrive của Microsoft, LazySpace tự hiện thư mục của nó.",
+    advancedNote: "Chỉ cần khi tổ chức không cho ứng dụng của rclone vào: Client ID và Client secret của ứng dụng đăng ký trong Microsoft Entra ID (hoặc Google Cloud, Dropbox), Tenant ID là Directory ID của tổ chức.",
   },
   en: {
     servers: "Servers", connectServer: "Connect to Server", editServer: "Edit Connection", newServer: "New Connection", serverKind: "Kind", serverName: "Name",
@@ -34,6 +38,10 @@ LZ.words({
     clouds: "Cloud", addCloud: "Add a Cloud", addService: "Add {0}", otherCloud: "Other Service...", signInBrowser: "Sign in in the browser that opened",
     rcloneNeeded: "rclone is needed", installRclone: "Install rclone",
     rcloneNeededText: "LazySpace signs in to Google Drive, OneDrive and Dropbox through rclone, a free and open source tool. Install it with Homebrew now?",
+    onedriveWork: "OneDrive (work or school)", cloudSite: "SharePoint site", cloudAdvanced: "Advanced", clientId: "Client ID", clientSecret: "Client secret", tenantId: "Tenant ID",
+    siteHint: "https://contoso.sharepoint.com/sites/team (empty: the root site)",
+    workNote: "If the browser says \"Need admin approval\", your organisation blocks rclone's app: ask IT to approve it, or fill in your organisation's own app under Advanced. Or install Microsoft's OneDrive app, whose folder LazySpace shows by itself.",
+    advancedNote: "Only needed when your organisation does not let rclone's app in: the Client ID and Client secret of an app registered in Microsoft Entra ID (or Google Cloud, Dropbox), and the Tenant ID, your organisation's Directory ID.",
   },
 });
 LZ.icons.add({
@@ -64,7 +72,17 @@ const Remote = (() => {
   // The labels of KINDS that are words to translate rather than names.
   const WORDS = new Set(["s3Compatible", "cloudRclone"]);
   const PORTS = { sftp: 22, ftp: 21, ftps: 21, smb: 445, afp: 548, nfs: 2049, dav: 80, davs: 443 };
-  const CLOUDS = { drive: "Google Drive", dropbox: "Dropbox", onedrive: "OneDrive", box: "Box", pcloud: "pCloud", mega: "MEGA", yandex: "Yandex Disk", koofr: "Koofr", jottacloud: "Jottacloud", sharefile: "ShareFile" };
+  // The clouds rclone signs in to, by the kinds of src/features/remote/rclone.rs: a name, or a word to translate.
+  const CLOUDS = { drive: "Google Drive", dropbox: "Dropbox", onedrive: "OneDrive", onedrive_work: "onedriveWork", sharepoint: "SharePoint", box: "Box", pcloud: "pCloud", mega: "MEGA", yandex: "Yandex Disk", koofr: "Koofr", jottacloud: "Jottacloud", sharefile: "ShareFile" };
+  const CLOUD_WORDS = new Set(["onedriveWork"]);
+  const cloudLabel = (kind) => (CLOUD_WORDS.has(CLOUDS[kind]) ? t(CLOUDS[kind]) : CLOUDS[kind] || kind);
+  // The service a remote is shown as in the sidebar, beside its account; the remote's own name a user may have given
+  // stays in its tooltip.
+  const SERVICES = { onedrive_work: "OneDrive", sharepoint: "SharePoint" };
+  const serviceName = (kind) => SERVICES[kind] || cloudLabel(kind);
+  // The name a sign in gives a remote when none is typed: "OneDriveWork", then "OneDriveWork2".
+  const BASES = { onedrive_work: "OneDriveWork", sharepoint: "SharePoint" };
+  const MICROSOFT = ["onedrive", "onedrive_work", "sharepoint"];
   let conns = [];
   let rclone = { installed: false, remotes: [], kinds: [] };
   // The folders of the clouds' own apps: { name, account, service, uri }.
@@ -101,16 +119,23 @@ const Remote = (() => {
     };
   }
 
-  // The Cloud section, above Servers: what the clouds' own apps keep on this Mac, then what rclone signed in to. With
-  // nothing yet it offers the two clouds most asked for, so signing in is found without opening a sheet.
+  // The Cloud section, above Servers: what the clouds' own apps keep on this Mac, then what rclone signed in to, each
+  // with its account on a second line, so two accounts of one cloud are told apart. With nothing yet it offers the two
+  // clouds most asked for, so signing in is found without opening a sheet. Each is a place files can be dropped on.
   const cloudSection = LZ.sidebar.section({
     id: "cloud",
     render(el) {
       if (S.window.role !== "main") return;
-      const item = (uri, name, title) =>
-        `<button class="side-item" data-uri="${LZ.esc(uri)}"${title ? ` title="${LZ.esc(title)}"` : ""}><span class="ico" data-ico="icloud">${icon("icloud")}</span><span class="label">${LZ.esc(name)}</span></button>`;
+      const item = (uri, name, sub, title) =>
+        `<button class="side-item${sub ? " cl-two" : ""}" data-uri="${LZ.esc(uri)}" title="${LZ.esc(title)}"><span class="ico" data-ico="icloud">${icon("icloud")}</span><span class="label"><span class="cl-name">${LZ.esc(name)}</span>${sub ? `<span class="cl-sub">${LZ.esc(sub)}</span>` : ""}</span></button>`;
       const head = `<div class="side-head"><span>${LZ.esc(t("clouds"))}</span><span class="end" data-cl-add title="${LZ.esc(t("addCloud"))}">${icon("plus")}</span></div>`;
-      const items = [...local.map((c) => item(c.uri, c.name, c.account)), ...(rclone.remotes || []).map((r) => item(`rclone://${encodeURIComponent(r)}/`, r, "rclone"))];
+      const remote = (r) => {
+        const a = (rclone.accounts || {})[r] || {};
+        const name = a.kind ? serviceName(a.kind) : r;
+        const sub = a.account || (name !== r ? r : "");
+        return item(`rclone://${encodeURIComponent(r)}/`, name, sub, `${a.account ? `${name} - ${a.account}` : name} (rclone: ${r})`);
+      };
+      const items = [...local.map((c) => item(c.uri, c.name, c.account, c.account ? `${c.name} - ${c.account}` : c.name)), ...(rclone.remotes || []).map(remote)];
       const offers = ["drive", "onedrive"]
         .map((kind) => `<button class="side-item offer" data-cl-kind="${kind}"><span class="ico">${icon("plus")}</span><span class="label">${LZ.esc(t("addService", CLOUDS[kind]))}</span></button>`)
         .join("");
@@ -132,7 +157,7 @@ const Remote = (() => {
   }
 
   // Signs in to a cloud through rclone, installing rclone first when it is not there, then opens the cloud in a tab.
-  async function signIn(kind, name = "") {
+  async function signIn(kind, name = "", advanced = {}) {
     try {
       if (!rclone.installed) {
         if (!(await LZ.confirm(t("rcloneNeeded"), t("rcloneNeededText"), t("installRclone")))) return;
@@ -141,11 +166,11 @@ const Remote = (() => {
         if (!rclone.installed) return;
       }
       if (!name) {
-        const base = CLOUDS[kind].replace(/[^A-Za-z0-9]/g, "");
+        const base = BASES[kind] || CLOUDS[kind].replace(/[^A-Za-z0-9]/g, "");
         name = base;
         for (let i = 2; rclone.remotes.includes(name); i++) name = `${base}${i}`;
       }
-      const { job } = await LZ.call("remote.rclone_add", { kind, name });
+      const { job } = await LZ.call("remote.rclone_add", { kind, name, advanced });
       LZ.toast(t("signInBrowser"));
       if (!(await finished(job))) return;
       await load();
@@ -162,16 +187,22 @@ const Remote = (() => {
     if (!add) return;
     const r = add.getBoundingClientRect();
     const choice = await LZ.choose(
-      [...["drive", "onedrive", "dropbox"].map((kind) => ({ id: kind, label: CLOUDS[kind], icon: "icloud" })), { separator: true }, { id: "other", label: t("otherCloud"), icon: "ellipsis.circle" }],
+      [...["drive", "onedrive", "onedrive_work", "sharepoint", "dropbox"].map((kind) => ({ id: kind, label: cloudLabel(kind), icon: "icloud" })), { separator: true }, { id: "other", label: t("otherCloud"), icon: "ellipsis.circle" }],
       r.left,
       r.bottom + 4,
     );
-    if (choice === "other") {
-      show(null);
-      q(".rm-kind").value = "rclone";
-      paint();
-    } else if (choice) signIn(choice);
+    // SharePoint asks for its site first; the others sign in straight away.
+    if (choice === "other" || choice === "sharepoint") showCloud(choice === "other" ? "drive" : choice);
+    else if (choice) signIn(choice);
   });
+
+  // The sheet open on a cloud to sign in to through rclone.
+  function showCloud(kind) {
+    show(null);
+    q(".rm-kind").value = "rclone";
+    q(".rm-cloud").value = kind;
+    paint();
+  }
 
   // The sidebar section.
   const section = LZ.sidebar.section({
@@ -286,8 +317,13 @@ const Remote = (() => {
       ${row("path", "serverFolder", '<input data-v="path" spellcheck="false">')}
       ${row("bucket", "serverBucket", '<input data-v="bucket" spellcheck="false">')}
       ${row("guest", "serverGuest", '<input data-v="guest" type="checkbox">')}
-      ${row("cloud", "cloudKind", `<select class="rm-cloud">${Object.entries(CLOUDS).map(([k, label]) => `<option value="${k}">${label}</option>`).join("")}</select>`)}
+      ${row("cloud", "cloudKind", `<select class="rm-cloud">${Object.entries(CLOUDS).map(([k, label]) => `<option value="${k}"${CLOUD_WORDS.has(label) ? ` data-t="${label}"` : ""}>${label}</option>`).join("")}</select>`)}
       ${row("cloudName", "cloudName", '<input class="rm-cloud-name" spellcheck="false" placeholder="gdrive">')}
+      ${row("site", "cloudSite", '<input class="rm-site" spellcheck="false" data-tp="siteHint">')}
+      ${row("advanced", "cloudAdvanced", '<input class="rm-advanced" type="checkbox">')}
+      ${row("clientId", "clientId", '<input class="rm-client-id" spellcheck="false" autocomplete="off">')}
+      ${row("clientSecret", "clientSecret", '<input class="rm-client-secret" type="password" autocomplete="off">')}
+      ${row("tenant", "tenantId", '<input class="rm-tenant" spellcheck="false" autocomplete="off" placeholder="contoso.onmicrosoft.com">')}
     </div>
     <div class="rm-help"></div>
     <div class="rm-note"></div>
@@ -299,6 +335,8 @@ const Remote = (() => {
   // Shows the fields of the chosen kind, with the words that kind uses.
   function paint() {
     const kind = q(".rm-kind").value;
+    const cloud = q(".rm-cloud").value;
+    const advanced = kind === "rclone" && q(".rm-advanced").checked;
     const s3 = ["s3", "s3c", "oss"].includes(kind);
     const mounted = ["smb", "afp", "nfs", "dav", "davs"].includes(kind);
     const shown = {
@@ -315,6 +353,11 @@ const Remote = (() => {
       guest: kind === "smb" || kind === "afp",
       cloud: kind === "rclone",
       cloudName: kind === "rclone",
+      site: kind === "rclone" && cloud === "sharepoint",
+      advanced: kind === "rclone",
+      clientId: advanced,
+      clientSecret: advanced,
+      tenant: advanced && MICROSOFT.includes(cloud),
     };
     for (const el of panel.querySelectorAll(".rm-row")) el.hidden = el.dataset.f !== "kind" && !shown[el.dataset.f];
     const label = (f, word) => (panel.querySelector(`.rm-row[data-f="${f}"] label`).dataset.t = word);
@@ -328,11 +371,12 @@ const Remote = (() => {
     field("path").placeholder = kind === "smb" || kind === "afp" ? "Public" : mounted ? "/" : `/ (${t("optional")})`;
     q('[data-rm="test"]').hidden = mounted || kind === "rclone";
     q('[data-rm="save"]').dataset.t = kind === "rclone" ? "signIn" : "saveConnect";
-    q(".rm-help").innerHTML = kind === "rclone" ? `<p>${LZ.esc(t("rcloneNote"))}</p>` : "";
+    const notes = kind !== "rclone" ? [] : ["rcloneNote", ...(["onedrive_work", "sharepoint"].includes(cloud) ? ["workNote"] : []), ...(advanced ? ["advancedNote"] : [])];
+    q(".rm-help").innerHTML = notes.map((n) => `<p>${LZ.esc(t(n))}</p>`).join("");
     q(".rm-note").textContent = "";
     applyLang();
   }
-  q(".rm-kind").addEventListener("change", paint);
+  for (const s of [".rm-kind", ".rm-cloud", ".rm-advanced"]) q(s).addEventListener("change", paint);
 
   function show(conn) {
     editing = conn || null;
@@ -343,6 +387,8 @@ const Remote = (() => {
     field("port").value = conn?.port || "";
     field("secret").value = "";
     field("guest").checked = !!conn?.guest;
+    for (const s of [".rm-site", ".rm-client-id", ".rm-client-secret", ".rm-tenant"]) q(s).value = "";
+    q(".rm-advanced").checked = false;
     LZ.sheet.open("serverSheet");
     paint();
     // Whether rclone is installed may have changed since the list was loaded.
@@ -390,8 +436,16 @@ const Remote = (() => {
     const kind = q(".rm-kind").value;
     const note = q(".rm-note");
     if (kind === "rclone") {
+      const cloud = q(".rm-cloud").value;
+      const own = q(".rm-advanced").checked;
+      const advanced = {
+        site: cloud === "sharepoint" ? q(".rm-site").value.trim() : "",
+        clientId: own ? q(".rm-client-id").value.trim() : "",
+        clientSecret: own ? q(".rm-client-secret").value : "",
+        tenant: own && MICROSOFT.includes(cloud) ? q(".rm-tenant").value.trim() : "",
+      };
       LZ.sheet.close();
-      return signIn(q(".rm-cloud").value, q(".rm-cloud-name").value.trim());
+      return signIn(cloud, q(".rm-cloud-name").value.trim(), advanced);
     }
     if (kind === "s3c" && !field("endpoint").value.trim()) return (note.textContent = `${t("serverEndpoint")}?`);
     try {
@@ -452,6 +506,8 @@ const Remote = (() => {
   Panes.actions.connectServer = () => show(null);
   Keys.add({ "Cmd+K": "connectServer" });
   LZ.on("app.hello", () => S.window.role === "main" && load());
+  // The accounts of rclone's remotes, found on the network after a listing, are in.
+  LZ.on("remote.changed", () => S.window.role === "main" && load());
   // Clouds whose apps were signed in to meanwhile, and connections made in another window, show when the window comes
   // forward.
   window.addEventListener("focus", () => S.window.role === "main" && load());

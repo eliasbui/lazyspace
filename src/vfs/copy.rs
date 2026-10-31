@@ -68,6 +68,11 @@ fn same_place(a: &Uri, b: &Uri) -> bool {
     a == b
 }
 
+/// Whether two places are on one server or in one cloud account: the same provider and the same connection or remote.
+fn same_account(a: &Uri, b: &Uri) -> bool {
+    a.scheme == b.scheme && a.authority == b.authority
+}
+
 fn summary(entry: &Entry) -> Value {
     json!({ "size": entry.size, "mtime": entry.mtime, "isDir": entry.is_dir })
 }
@@ -116,6 +121,13 @@ fn transfer_item(run: &mut Run, src: &Uri, target: &Uri, mv: bool) -> Result<(),
             Err(e) if e.kind() == io::ErrorKind::CrossesDevices => {}
             Err(e) => return Err(local::error(Path::new(&src.path), &e)),
         }
+    }
+    // A move within one server or one cloud account is its own rename (rclone's `moveto`, done by the cloud itself),
+    // so nothing goes through this Mac; where that fails, the copy below does it.
+    if mv && replace.is_none() && src.scheme != "file" && same_account(src, &target) && sp.capabilities(src).rename && dp.rename(src, &target).is_ok() {
+        run.step(entry.size, &entry.name);
+        run.out.pairs.push((src.clone(), target));
+        return Ok(());
     }
     let write_to = match &replace {
         Some(_) => unique(&*dp, &target.parent().unwrap_or_else(|| target.clone()).join(&format!(".lazyspace-replace-{}", entry.name)), false, false)?,
