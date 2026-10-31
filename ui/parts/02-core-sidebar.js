@@ -7,6 +7,9 @@ words({
     quickAccess: "Truy cập nhanh", quickEmpty: "Kéo một thư mục vào đây, hoặc chuột phải vào nó rồi chọn Ghim vào Truy cập nhanh.",
     pinQuick: "Ghim thư mục đang mở", unpinQuick: "Bỏ ghim khỏi Truy cập nhanh", pinnedQuick: "Đã ghim {0} vào Truy cập nhanh", notFolder: "Chỉ ghim được thư mục",
     moveUp: "Đưa lên trên", moveDown: "Đưa xuống dưới",
+    hideItem: "Ẩn khỏi thanh bên", showHidden: "Hiện lại {0} mục đã ẩn", signOutCloud: "Đăng xuất và gỡ khỏi LazySpace",
+    signOutTitle: "Gỡ {0}?", signOutText: "LazySpace và rclone sẽ quên tài khoản này. Các tệp trên đám mây vẫn còn nguyên; muốn dùng lại thì thêm lại tài khoản.",
+    signOutDone: "Đã gỡ {0}", appCloudNote: "{0} do app của nó quản lý: muốn đăng xuất, mở app đó. Ở đây có thể ẩn nó khỏi thanh bên.",
   },
   en: {
     bookmarks: "Favourites", locations: "Locations", unpin: "Remove from Sidebar", desktop: "Desktop", downloads: "Downloads", documents: "Documents",
@@ -14,6 +17,9 @@ words({
     quickAccess: "Quick Access", quickEmpty: "Drag a folder here, or right-click it and choose Pin to Quick Access.",
     pinQuick: "Pin the Folder Open Here", unpinQuick: "Unpin from Quick Access", pinnedQuick: "{0} pinned to Quick Access", notFolder: "Only folders can be pinned",
     moveUp: "Move Up", moveDown: "Move Down",
+    hideItem: "Hide from Sidebar", showHidden: "Show {0} Hidden Items", signOutCloud: "Sign Out and Remove from LazySpace",
+    signOutTitle: "Remove {0}?", signOutText: "LazySpace and rclone forget this account. The files in the cloud stay as they are; add the account again to use it.",
+    signOutDone: "{0} removed", appCloudNote: "{0} is run by its own app: open that app to sign out. Here it can be hidden from the sidebar.",
   },
 });
 
@@ -56,7 +62,23 @@ const Sidebar = (() => {
       disks += item(`file://${v.path.split("/").map(encodeURIComponent).join("/")}`, v.internal ? "drive" : "drive.external", v.name, eject);
     }
     $("sideLocations").innerHTML = disks;
+    applyHidden();
     mark();
+  }
+
+  // The places hidden from the sidebar (clouds, devices, disks), by URI, kept in Settings until shown again.
+  const hiddenList = () => (Array.isArray(S.settings.sidebar_hidden) ? S.settings.sidebar_hidden : []);
+  function applyHidden(root = $("sideScroll")) {
+    const hidden = hiddenList();
+    for (const el of root.querySelectorAll(".side-item[data-uri]")) {
+      if (el.closest("#sideQuick, #sideBookmarks")) continue;
+      el.hidden = hidden.some((u) => samePlace(u, el.dataset.uri));
+    }
+  }
+  function hide(uri, on) {
+    const now = hiddenList().filter((u) => !samePlace(u, uri));
+    if (on) now.push(uri);
+    setSetting({ sidebar_hidden: now });
   }
 
   // Marks the place the focused pane shows.
@@ -96,12 +118,27 @@ const Sidebar = (() => {
   // A place's own menu, unless its section has one: open it here, in a new tab or window, take a pinned folder out, or
   // eject a disk.
   $("sidebar").addEventListener("contextmenu", async (e) => {
+    // On a section's head: the items hidden from it come back.
+    const head = !e.defaultPrevented && e.target.closest(".side-head");
+    if (head) {
+      const gone = [...head.parentElement.querySelectorAll(".side-item[data-uri][hidden]")].map((h) => h.dataset.uri);
+      if (!gone.length) return;
+      e.preventDefault();
+      const id = await LZ.choose([{ id: "show", label: t("showHidden", gone.length), icon: "eye" }], e.clientX, e.clientY);
+      if (id === "show") setSetting({ sidebar_hidden: hiddenList().filter((u) => !gone.some((g) => samePlace(g, u))) });
+      return;
+    }
     const el = e.target.closest(".side-item[data-uri]");
     if (!el || e.defaultPrevented) return;
     e.preventDefault();
     const uri = el.dataset.uri;
     const pinned = el.hasAttribute("data-pinned");
     const disk = el.querySelector("[data-eject]")?.dataset.eject;
+    // Clouds, devices and disks can be hidden; a cloud rclone signed in to can be signed out of; the startup disk stays.
+    const section = el.closest("[data-section]")?.dataset.section;
+    const removable = !el.closest("#sideQuick, #sideBookmarks") && !(el.closest("#sideLocations") && samePlace(uri, "file:///"));
+    const rclone = schemeOf(uri) === "rclone";
+    const appCloud = section === "cloud" && !rclone;
     const id = await LZ.choose(
       [
         { id: "open", label: t("m.open"), icon: "arrow.up.forward.app" },
@@ -116,6 +153,8 @@ const Sidebar = (() => {
             ]
           : [{ separator: true }, { id: "pin", label: t("m.pin"), icon: "pin" }]),
         ...(disk ? [{ separator: true }, { id: "eject", label: t("eject"), icon: "eject" }] : []),
+        ...(removable ? [{ separator: true }, { id: "hide", label: t("hideItem"), icon: "eye.slash" }] : []),
+        ...(rclone ? [{ id: "signout", label: t("signOutCloud"), icon: "rectangle.portrait.and.arrow.right" }] : []),
       ],
       e.clientX,
       e.clientY,
@@ -127,6 +166,22 @@ const Sidebar = (() => {
     else if (id === "pin") pin(uri, true);
     else if (id === "up" || id === "down") reorder(Number(el.dataset.quick), Number(el.dataset.quick) + (id === "up" ? -1 : 1));
     else if (id === "eject") Devices.eject(disk);
+    else if (id === "hide") {
+      hide(uri, true);
+      if (appCloud) LZ.toast(t("appCloudNote", el.querySelector(".cl-name, .label")?.textContent || placeName(uri)));
+    } else if (id === "signout") {
+      const name = authorityOf(uri);
+      const shown = el.querySelector(".cl-name")?.textContent || name;
+      if (!(await LZ.confirm(t("signOutTitle", shown), t("signOutText"), t("signOutCloud")))) return;
+      call("remote.rclone_remove", { name })
+        .then(() => {
+          LZ.toast(t("signOutDone", shown));
+          hide(uri, false);
+          Remote.load();
+          for (const pane of Panes.all()) if (schemeOf(pane.tab.uri) === "rclone" && authorityOf(pane.tab.uri) === authorityOf(uri)) pane.navigate(S.places.home);
+        })
+        .catch(say);
+    }
   });
 
   // Pins a folder to the sidebar, or takes it out.
@@ -198,7 +253,10 @@ const Sidebar = (() => {
     addEventListener("mousemove", move);
     addEventListener("mouseup", up);
   });
-  on("settings.changed", () => render());
+  on("settings.changed", () => {
+    render();
+    applyHidden();
+  });
 
   // The sidebar's width follows a drag of its right edge, at once rather than with the motion of showing and hiding.
   $("sideResizer").addEventListener("mousedown", (e) => {
@@ -235,5 +293,5 @@ const Sidebar = (() => {
     Panes.saveSoon();
   }
 
-  return { start, render, mark, toggle, loadVolumes, volumes: () => volumes, pin, pinned, pinHere, pinDropped, width: () => $("app").style.getPropertyValue("--side-w") };
+  return { start, render, mark, toggle, loadVolumes, volumes: () => volumes, pin, pinned, pinHere, pinDropped, applyHidden, width: () => $("app").style.getPropertyValue("--side-w") };
 })();

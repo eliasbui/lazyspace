@@ -102,6 +102,16 @@ cat >"$APP/Contents/Resources/vi.lproj/InfoPlist.strings" <<'EOT'
 "NSNetworkVolumesUsageDescription" = "LazySpace hiển thị các tệp trên ổ đĩa mạng của bạn.";
 EOT
 
-# An ad-hoc signature with a stable identifier, so the folder permissions and the update check hold across launches.
-codesign --force --deep --sign - --identifier com.eliasbui.lazyspace "$APP"
+# Signed with this Mac's "LazySpace Code Signing" certificate (scripts/make-signing-identity.sh) when it has one: the
+# app's designated requirement is then its bundle id and that certificate, the same for every build, so what the user
+# allowed (folders, drives, Keychain items) holds across updates. Without it, an ad-hoc signature, whose requirement is
+# the hash of this one build: every update asks again. A release requires the certificate (scripts/release.sh).
+IDENTITY="LazySpace Code Signing"
+if security find-certificate -c "$IDENTITY" >/dev/null 2>&1; then
+    codesign --force --deep --sign "$IDENTITY" --identifier com.eliasbui.lazyspace "$APP"
+else
+    [ "${REQUIRE_IDENTITY:-}" = 1 ] && { echo "\"$IDENTITY\" is not in the keychain: run scripts/make-signing-identity.sh" >&2; exit 1; }
+    echo "signing ad hoc: macOS will ask for its permissions again after an update (scripts/make-signing-identity.sh)" >&2
+    codesign --force --deep --sign - --identifier com.eliasbui.lazyspace "$APP"
+fi
 echo "$APP ($VERSION)"

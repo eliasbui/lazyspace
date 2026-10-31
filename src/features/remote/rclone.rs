@@ -273,12 +273,30 @@ pub fn accounts() -> BTreeMap<String, Account> {
 pub fn remember(name: &str, account: Account) {
     let mut all = accounts();
     all.insert(name.to_owned(), account);
+    keep(&all);
+}
+
+/// Signs out of the remote `name`: rclone forgets it with its token, and LazySpace its account. The files in the cloud
+/// are not touched.
+pub fn remove(name: &str) -> Result<(), String> {
+    if !valid_remote(name) || !remotes()?.iter().any(|r| r == name) {
+        return Err(format!("\"{name}\": {}", tr("không có đám mây này", "there is no such cloud")));
+    }
+    run(&["config", "delete", name])?;
+    let mut all = accounts();
+    if all.remove(name).is_some() {
+        keep(&all);
+    }
+    Ok(())
+}
+
+fn keep(all: &BTreeMap<String, Account>) {
     let path = accounts_path();
     let partial = path.with_extension("json.partial");
     if let Some(dir) = path.parent() {
         let _ = std::fs::create_dir_all(dir);
     }
-    if let Ok(text) = serde_json::to_string_pretty(&all) {
+    if let Ok(text) = serde_json::to_string_pretty(all) {
         if std::fs::write(&partial, text).is_ok() {
             let _ = std::fs::rename(&partial, &path);
         }

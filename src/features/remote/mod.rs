@@ -489,7 +489,14 @@ pub fn register(d: &mut Dispatcher) {
         let job = app.jobs.spawn(&app.proxy, Some(window), "cloud", title, move |ctx| rclone::sign_in(ctx, &a.kind, &a.name, &a.advanced), None);
         Ok(json!({ "job": job }))
     });
-    d.on("remote.rclone_install", |app, window, _| {
+    d.on("remote.rclone_remove", |_, _, a| {
+        #[derive(Deserialize)]
+        struct Remove {
+            name: String,
+        }
+        rclone::remove(&args::<Remove>(a)?.name).map(|()| Value::Null)
+    });
+        d.on("remote.rclone_install", |app, window, _| {
         let job = app.jobs.spawn(&app.proxy, Some(window), "cloud", tr("Đang cài rclone", "Installing rclone").into(), rclone::install, None);
         Ok(json!({ "job": job }))
     });

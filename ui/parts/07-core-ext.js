@@ -129,7 +129,11 @@ const LZ = (() => {
       const el = document.createElement("div");
       el.dataset.section = id;
       document.querySelector('[data-slot="sidebar.sections"]').appendChild(el);
-      const refresh = () => render(el);
+      // What a section draws follows the places hidden from the sidebar.
+      const refresh = () => {
+        render(el);
+        Sidebar.applyHidden(el);
+      };
       refresh();
       return { el, refresh };
     },

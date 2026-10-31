@@ -19,7 +19,7 @@ cargo update --workspace --offline -q 2>/dev/null || true
 # Built and tested before anything is pushed, so a broken build never leaves a tag behind.
 cargo test --quiet
 scripts/check-ui.sh
-UNIVERSAL=1 scripts/bundle-macos.sh
+UNIVERSAL=1 REQUIRE_IDENTITY=1 scripts/bundle-macos.sh
 ZIP="dist/LazySpace-$VERSION-macos.zip"
 rm -f "$ZIP"
 ditto -c -k --keepParent "dist/LazySpace.app" "$ZIP"
