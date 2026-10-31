@@ -69,7 +69,9 @@ thao tác tệp chạy thành một tác vụ có tiến độ, có thể hủy 
 - **Ổ đĩa, điện thoại và ảnh đĩa khi vừa cắm.** Thanh bên đổi ngay khi ổ được cắm hay rút, và một thông báo ở góc cửa
   sổ cho biết thứ vừa cắm: ổ USB hay thẻ nhớ kèm dung lượng trống, có nút Mở và Đẩy ra; tệp DMG có ứng dụng bên trong
   thì cài vào Ứng dụng bằng một nút (bản cũ vào Thùng rác, ảnh đĩa tự đẩy ra, tệp DMG bỏ vào Thùng rác được ngay); iPhone,
-  máy ảnh hay điện thoại Android, những thứ macOS không gắn thành ổ đĩa, kèm các ứng dụng đọc được chúng. Đẩy ra
+  máy ảnh hay điện thoại Android, những thứ macOS không gắn thành ổ đĩa, kèm các ứng dụng đọc được chúng. Điện thoại và
+  máy ảnh nằm trong mục Thiết bị của thanh bên suốt lúc còn cắm, mở được trong khung như Image Capture đọc chúng, ảnh và
+  video chép hay kéo ra như mọi tệp; điện thoại Android chia sẻ qua MTP sẽ được nhắc chuyển sang PTP. Đẩy ra
   (Command-E, hoặc menu của ổ) không làm đứng cửa sổ, nói rõ ứng dụng nào đang giữ ổ khi không đẩy ra được, và đẩy ra
   bắt buộc được. Tab đang mở ổ vừa rút tự về thư mục nhà. Tắt thông báo được trong Cài đặt.
 - **Truy cập nhanh.** Các thư mục được ghim ở đầu thanh bên, như File Explorer: ghim từ menu của thư mục, từ nút cạnh

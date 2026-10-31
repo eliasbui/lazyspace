@@ -1,0 +1,3 @@
+/* A phone or camera in the sidebar that cannot be read yet (MTP, or not recognised) is drawn fainter; a click still
+   opens it, to say why. */
+.side-item.dim .label, .side-item.dim .ico { opacity: 0.55; }
