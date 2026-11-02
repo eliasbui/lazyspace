@@ -37,6 +37,8 @@ const Sidebar = (() => {
     ["trash", "trash", "trashName"],
   ];
   let volumes = [];
+  // The folders just pinned, which come into Quick Access with a motion when it is drawn again.
+  let fresh = [];
 
   function item(uri, iconName, label, end = "", pinned = false) {
     return `<button class="side-item" data-uri="${esc(uri)}"${pinned ? " data-pinned" : ""}><span class="ico" data-ico="${iconName}">${icon(iconName)}</span><span class="label">${esc(label)}</span>${end}</button>`;
@@ -62,6 +64,8 @@ const Sidebar = (() => {
       disks += item(`file://${v.path.split("/").map(encodeURIComponent).join("/")}`, v.internal ? "drive" : "drive.external", v.name, eject);
     }
     $("sideLocations").innerHTML = disks;
+    for (const el of $("sideQuick").querySelectorAll(".side-item[data-quick]")) if (fresh.some((u) => samePlace(u, el.dataset.uri))) Motion.arrive(el);
+    fresh = [];
     applyHidden();
     mark();
   }
@@ -212,15 +216,19 @@ const Sidebar = (() => {
     }
   }
 
-  // Pins what was dropped on Quick Access, each folder once; a file is not pinned.
+  // Pins what was dropped on Quick Access, each folder once; a file is not pinned. All in one change of Settings: one
+  // per folder would each start from the list before the others were added, and keep only the last.
   async function pinDropped(uris) {
-    let files = 0;
-    for (const uri of uris) {
-      const entry = await call("fs.stat", { uri }).catch(() => null);
-      if (!entry?.isDir) files++;
-      else if (!pinned(uri)) pin(uri, true);
+    const entries = await Promise.all(uris.map((uri) => call("fs.stat", { uri }).catch(() => null)));
+    const now = [...(S.settings.favourites || [])];
+    entries.forEach((entry, k) => {
+      if (entry?.isDir && !now.some((u) => samePlace(u, uris[k]))) now.push(uris[k]);
+    });
+    if (now.length > (S.settings.favourites || []).length) {
+      fresh = now.slice((S.settings.favourites || []).length);
+      setSetting({ favourites: now });
     }
-    if (files) LZ.toast(t("notFolder"));
+    if (entries.some((entry) => !entry?.isDir)) LZ.toast(t("notFolder"));
   }
 
   // A pinned folder dragged up or down the list takes the place it is let go at.

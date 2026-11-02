@@ -11,7 +11,7 @@ use std::{cell::{Cell, RefCell}, path::PathBuf, ptr::NonNull};
 
 /// How far the pointer moves, in points, before a press becomes a drag.
 const THRESHOLD: f64 = 4.0;
-/// The most icons drawn under the pointer; the rest are carried without one.
+/// The most icons fanned out under the pointer; the rest lie under the last of them, with its image.
 const MAX_ICONS: usize = 8;
 
 define_class!(
@@ -113,6 +113,7 @@ fn later_disarm() {
 fn begin(mtm: MainThreadMarker, view: &NSView, paths: &[PathBuf], event: &NSEvent) {
     let at = view.convertPoint_fromView(event.locationInWindow(), None);
     let workspace = NSWorkspace::sharedWorkspace();
+    let mut icon = None;
     let items: Vec<Retained<NSDraggingItem>> = paths
         .iter()
         .enumerate()
@@ -120,14 +121,16 @@ fn begin(mtm: MainThreadMarker, view: &NSView, paths: &[PathBuf], event: &NSEven
             let text = NSString::from_str(&path.to_string_lossy());
             let writer: Retained<ProtocolObject<dyn NSPasteboardWriting>> = ProtocolObject::from_retained(NSURL::fileURLWithPath(&text));
             let item = NSDraggingItem::initWithPasteboardWriter(mtm.alloc(), &writer);
+            // Every item needs a frame and an image: a destination that moves the items about (AppKit enumerating
+            // them on several threads) raises NSRangeException on one without, and the app aborts.
             if i < MAX_ICONS {
-                let icon = workspace.iconForFile(&text);
-                let offset = i as f64 * 4.0;
-                let y = if view.isFlipped() { at.y - 16.0 + offset } else { at.y - 16.0 - offset };
-                let frame = NSRect::new(NSPoint::new(at.x - 16.0 + offset, y), NSSize::new(32.0, 32.0));
-                // SAFETY: the contents are an NSImage, which a dragging item accepts.
-                unsafe { item.setDraggingFrame_contents(frame, Some(&icon)) };
+                icon = Some(workspace.iconForFile(&text));
             }
+            let offset = i.min(MAX_ICONS - 1) as f64 * 4.0;
+            let y = if view.isFlipped() { at.y - 16.0 + offset } else { at.y - 16.0 - offset };
+            let frame = NSRect::new(NSPoint::new(at.x - 16.0 + offset, y), NSSize::new(32.0, 32.0));
+            // SAFETY: the contents are an NSImage, which a dragging item accepts.
+            unsafe { item.setDraggingFrame_contents(frame, icon.as_deref().map(AsRef::<AnyObject>::as_ref)) };
             item
         })
         .collect();
