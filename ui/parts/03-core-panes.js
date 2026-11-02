@@ -42,6 +42,37 @@ function setMetrics(s) {
 }
 // Before the panes start, so the first frame is drawn at the sizes of Settings.
 on("app.hello", (d) => setMetrics(d.settings));
+
+// The motion of items: they come in, slide to their new places, go out, take what is dropped on them. With the Web
+// Animations API, which the stylesheet's reduced-motion rule does not reach, so it is asked here.
+const Motion = (() => {
+  const still = matchMedia("(prefers-reduced-motion: reduce)");
+  const SPRING = "cubic-bezier(0.32, 0.72, 0, 1)";
+  const play = (el, frames, options) => (still.matches || !el?.animate ? null : el.animate(frames, { easing: SPRING, ...options }));
+  return {
+    // From where it was drawn (`dx`, `dy` away) to where it is now.
+    slide: (el, dx, dy) => play(el, [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], { duration: 320 }),
+    // In, with a ring of the accent colour that fades after it.
+    arrive: (el) => {
+      const ring = `inset 0 0 0 2px ${getComputedStyle(el).getPropertyValue("--accent").trim() || "#0a84ff"}`;
+      return play(
+        el,
+        [
+          { opacity: 0, transform: "translateY(-6px) scale(0.97)", boxShadow: ring },
+          { opacity: 1, transform: "none", boxShadow: ring, offset: 0.45 },
+          { boxShadow: "inset 0 0 0 2px transparent" },
+        ],
+        { duration: 900 },
+      );
+    },
+    // Out of sight before the item itself goes; `fill` keeps it so until the listing without it is drawn.
+    leave: (el, i) => play(el, [{ opacity: 1 }, { opacity: 0, transform: "translateX(-14px) scale(0.96)" }], { duration: 200, delay: Math.min(i, 12) * 14, fill: "forwards" }),
+    // A folder, tab or place that took a drop.
+    take: (el) => play(el, [{ transform: "none" }, { transform: "scale(1.045)", offset: 0.35 }, { transform: "none" }], { duration: 420 }),
+    // Items copied or cut, as a short flash of the selection.
+    flash: (el) => play(el, [{ filter: "brightness(1)" }, { filter: "brightness(1.6)", offset: 0.3 }, { filter: "brightness(1)" }], { duration: 380, easing: "ease-out" }),
+  };
+})();
 // The columns of the list view: the name, then those Settings lists (`columns`), in its order. Each has the width it
 // starts at; a narrow pane shows those that fit, from the first. Search results add the folder of each item.
 const COLUMNS = {
@@ -401,12 +432,55 @@ class Pane {
   // their groups when it has them.
   regenerate(generation, count, groups) {
     const tab = this.tab;
+    // Sorted or filtered again, nothing new: the items move, and none comes in as new.
+    this.snapshot(false);
     tab.generation = generation;
     if (count != null) tab.count = count;
     if (groups) tab.groups = groups;
     tab.rows = new Map();
     tab.byName = new Map();
     this.renderAll();
+  }
+
+  // Where each item of this folder is drawn, by name, before its listing is drawn again (a change in the folder, another
+  // order), so that the next drawing moves the items from there and, when `arrivals`, brings the new ones in (motion()).
+  snapshot(arrivals) {
+    const tab = this.tab;
+    const at = new Map();
+    for (const el of this.pool.values()) {
+      const e = el.dataset.index != null && tab.rows.get(Number(el.dataset.index));
+      if (e) at.set(e.name, [el.offsetLeft, el.offsetTop]);
+    }
+    // shortcut: rows loaded after the window below (a scroll within it) may come in as new, kept short for that.
+    this.was = at.size ? { uri: tab.uri, at, known: arrivals ? new Set(tab.byName.keys()) : null, until: performance.now() + 1200 } : null;
+  }
+
+  // The item drawn in `el` moves from where the last listing drew it, or comes in if that listing did not have it.
+  motion(el, e) {
+    const was = this.was;
+    if (!was || performance.now() > was.until || !samePlace(was.uri, this.tab.uri)) return (this.was = null);
+    const from = was.at.get(e.name);
+    if (from) {
+      was.at.delete(e.name);
+      const dx = from[0] - el.offsetLeft;
+      const dy = from[1] - el.offsetTop;
+      if (dx || dy) Motion.slide(el, dx, dy);
+    } else if (was.known && !was.known.has(e.name)) {
+      was.known.add(e.name);
+      Motion.arrive(el);
+    }
+  }
+
+  // Plays the items in `names` out, those in sight; resolves when they are gone, and `back()` shows them again.
+  leave(names) {
+    const going = new Set(names);
+    const played = [];
+    for (const el of this.pool.values()) {
+      const e = el.dataset.index != null && this.tab.rows.get(Number(el.dataset.index));
+      if (e && going.has(e.name)) played.push(Motion.leave(el, played.length));
+    }
+    const shown = played.filter(Boolean);
+    return { done: Promise.all(shown.map((a) => a.finished.catch(() => {}))), back: () => shown.forEach((a) => a.cancel()) };
   }
 
   // The columns this tab shows: those of Settings, the folder of each item first in search results.
@@ -721,6 +795,7 @@ class Pane {
       const fallback = iconUrl(e, ICON);
       const img = thumb ? thumbImg(thumb, fallback, "thumb") : `<img src="${esc(fallback)}" draggable="false" alt="">`;
       el.innerHTML = `<div class="pic">${img}</div><div class="label">${tagDots(e)}${esc(e.name)}</div>`;
+      this.motion(el, e);
       return;
     }
     el.className = `row${i % 2 ? " odd" : ""}${sel ? " sel" : ""}${cut ? " cut" : ""}${e?.hidden ? " hidden-item" : ""}`;
@@ -750,6 +825,7 @@ class Pane {
     // As the editors write them: a new file U, a conflict C.
     const badge = mark ? `<em class="mark mark-${mark === "?" ? "new" : mark}">${esc({ "?": "U", U: "C" }[mark] || mark)}</em>` : "";
     el.innerHTML = `<div class="cell name">${img}<span>${esc(e.name)}</span>${tagDots(e)}${badge}${opens}</div>${(this.columns || []).slice(1).map((c) => cells[c]()).join("")}`;
+    this.motion(el, e);
   }
 
   // Asks for the rows between `first` and `last` that are not loaded, a little beyond them, one request at a time.
@@ -2114,14 +2190,14 @@ const Panes = (() => {
       const tab = pane.tab;
       if (!tab.selCount()) return;
       if (!tab.capabilities.trash) return actions.delete(pane);
-      call("fs.trash", tab.selection()).catch(say);
+      goOut(pane, "fs.trash");
     },
     async delete(pane) {
       const tab = pane.tab;
       const n = tab.selCount();
       if (!n) return;
       const ok = await confirmSheet(t("deleteTitle", n), t("deleteText"), t("deleteNow"));
-      if (ok) call("fs.delete", tab.selection()).catch(say);
+      if (ok) goOut(pane, "fs.delete");
     },
     newFolder(pane) {
       const tab = pane.tab;
@@ -2164,10 +2240,14 @@ const Panes = (() => {
       for (const uri of (folders.length ? folders.map((e) => e.uri) : [pane.tab.uri]).slice(0, 8)) call("app.new_window", { uri }).catch(say);
     },
     copy(pane) {
-      if (pane.tab.selCount()) call("clipboard.copy", pane.tab.selection()).then(updateCut, say);
+      if (!pane.tab.selCount()) return;
+      flashSelected(pane);
+      call("clipboard.copy", pane.tab.selection()).then(updateCut, say);
     },
     cut(pane) {
-      if (pane.tab.selCount()) call("clipboard.cut", pane.tab.selection()).then(updateCut, say);
+      if (!pane.tab.selCount()) return;
+      flashSelected(pane);
+      call("clipboard.cut", pane.tab.selection()).then(updateCut, say);
     },
     paste(pane) {
       call("clipboard.paste", { to: pane.tab.uri }).catch(say);
@@ -2239,6 +2319,22 @@ const Panes = (() => {
     setSetting({ view_mode: mode });
   }
 
+  // The selection plays out, then goes (`method`: fs.trash or fs.delete); it comes back into sight if that fails. The
+  // selection is taken before the motion, which a click during it must not change.
+  async function goOut(pane, method) {
+    const selection = pane.tab.selection();
+    const out = pane.leave(pane.tab.selectedEntries().map((e) => e.name));
+    await out.done;
+    call(method, selection).catch((error) => {
+      out.back();
+      say(error);
+    });
+  }
+
+  function flashSelected(pane) {
+    for (const el of pane.pool.values()) if (el.classList.contains("sel")) Motion.flash(el);
+  }
+
   // The items that were cut are drawn faded until they are pasted or the clipboard changes.
   function updateCut() {
     call("clipboard.state")
@@ -2260,6 +2356,8 @@ const Panes = (() => {
       call("history.add", { uri: d.uri, typed: samePlace(tab.typed, d.uri) }).catch(() => {});
       tab.typed = null;
     }
+    // The same folder listed again (it changed): its items move rather than jump.
+    if (pane.tab === tab && tab.generation && samePlace(tab.uri, d.uri)) pane.snapshot(true);
     tab.uri = d.uri;
     tab.generation = d.generation;
     tab.count = d.count;

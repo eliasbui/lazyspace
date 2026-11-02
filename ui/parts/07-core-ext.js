@@ -298,6 +298,7 @@ const LZ = (() => {
     // A feature may take a drop itself: the desktop moves its own icons where they are dropped.
     if (Panes.onDrop?.(d, target)) return;
     if (target.quick) return Sidebar.pinDropped(d.uris);
+    if (!target.el.classList.contains("list")) Motion.take(target.el);
     call("fs.copy", { from: d.uris, to: target.uri, mode: d.mode }).catch(say);
   });
 
@@ -322,6 +323,7 @@ const LZ = (() => {
         ghost.style.cssText =
           "position:fixed;z-index:1000;pointer-events:none;max-width:240px;padding:3px 8px;border-radius:6px;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--accent);color:#fff;opacity:0.9";
         document.body.appendChild(ghost);
+        ghost.animate?.([{ transform: "scale(0.8)", opacity: 0 }, { transform: "none", opacity: 0.9 }], { duration: 160, easing: "ease-out" });
       }
       ghost.style.left = `${m.clientX + 12}px`;
       ghost.style.top = `${m.clientY + 8}px`;
@@ -339,6 +341,7 @@ const LZ = (() => {
       const target = targetAt(u.clientX, u.clientY);
       if (!fits(target)) return;
       const mode = u.altKey ? "copy" : u.metaKey ? "move" : "auto";
+      if (!target.el.classList.contains("list")) Motion.take(target.el);
       call("fs.copy", { from, to: target.uri, mode }).catch(say);
     };
     const escape = (k) => {
