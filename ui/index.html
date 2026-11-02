@@ -638,6 +638,10 @@
               <div class="label"><span data-t="notifyDevices"></span><small data-t="notifyDevicesHint"></small></div>
               <div class="control"><label class="switch"><input type="checkbox" id="notifyDevices" /><span class="knob"></span></label></div>
             </div>
+            <div class="item">
+              <div class="label"><span data-t="background"></span><small data-t="backgroundHint"></small></div>
+              <div class="control"><label class="switch"><input type="checkbox" id="background" /><span class="knob"></span></label></div>
+            </div>
           </div>
 
           <div class="group-title" data-t="appearance"></div>
@@ -772,6 +776,7 @@
           copyQueue: "Chép lần lượt", copyQueueHint: "Các lần chép và chuyển chờ nhau, chạy từng cái một thay vì cùng lúc; đỡ tranh ổ đĩa khi chép nhiều.",
           verifyCopies: "Kiểm tra lại sau khi chép", verifyCopiesHint: "Đọc lại từng tệp ở cả hai bên và so SHA-256; chậm hơn nhưng chắc bản sao đúng từng byte.",
           notifyDevices: "Báo khi cắm ổ đĩa và thiết bị", notifyDevicesHint: "Ổ USB, thẻ nhớ, ảnh đĩa DMG, điện thoại hay máy ảnh vừa cắm hiện thành thông báo ở góc cửa sổ, kèm việc làm được với nó.",
+          background: "Chạy nền trên thanh menu", backgroundHint: "Đóng cửa sổ hay Thoát chỉ ẩn LazySpace, biểu tượng ở thanh menu mở lại ngay. Thoát hẳn từ menu của biểu tượng.",
           autoUpdate: "Tự kiểm tra bản mới", autoUpdateHint: "Hỏi GitHub một lần mỗi lần mở ứng dụng.",
           checkUpdate: "Kiểm tra cập nhật", checking: "Đang kiểm tra bản mới...", upToDate: "Bạn đang dùng bản mới nhất.",
           updateOut: "Có bản LazySpace {0}. Bạn đang dùng {1}.", update: "Cập nhật", updating: "Đang tải...", updatingPct: "Đang tải {0}%",
@@ -790,6 +795,7 @@
           copyQueue: "Copy one at a time", copyQueueHint: "Copies and moves wait for each other and run one by one rather than all at once, so disks are not fought over.",
           verifyCopies: "Check copies afterwards", verifyCopiesHint: "Reads every file again on both sides and compares their SHA-256: slower, but sure the copy is the same to the byte.",
           notifyDevices: "Tell when disks and devices are plugged in", notifyDevicesHint: "A USB drive, a memory card, a DMG disk image, a phone or a camera just plugged in shows as a note in the corner of the window, with what can be done with it.",
+          background: "Keep running in the menu bar", backgroundHint: "Closing the window or Quit only hides LazySpace, and its icon in the menu bar brings it back at once. Quit for good from the icon's menu.",
           autoUpdate: "Check for new versions", autoUpdateHint: "Asks GitHub once each time the app opens.",
           checkUpdate: "Check for Updates", checking: "Checking for a new version...", upToDate: "You have the latest version.",
           updateOut: "LazySpace {0} is out. You have {1}.", update: "Update", updating: "Downloading...", updatingPct: "Downloading {0}%",
@@ -856,6 +862,7 @@
       $("verifyCopies").addEventListener("change", () => setSetting({ verify_copies: $("verifyCopies").checked }));
       $("notifyDevices").addEventListener("change", () => setSetting({ notify_devices: $("notifyDevices").checked }));
       $("autoUpdate").addEventListener("change", () => setSetting({ check_updates: $("autoUpdate").checked }));
+      $("background").addEventListener("change", () => setSetting({ background: $("background").checked }));
 
       // Sheets: one open at a time, closed by Escape or a click beside it (unless it waits for an answer).
       function openSheet(id) {
@@ -983,6 +990,7 @@
         $("verifyCopies").checked = !!s.verify_copies;
         $("notifyDevices").checked = s.notify_devices !== false;
         $("autoUpdate").checked = s.check_updates !== false;
+        $("background").checked = !!s.background;
         Update.paint();
         paintLook();
       }

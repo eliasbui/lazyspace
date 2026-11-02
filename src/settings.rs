@@ -111,6 +111,8 @@ pub struct Settings {
     pub verify_copies: bool,
     /// A note in the window when a disk, a disk image, a phone or a camera is plugged in (src/features/devices.rs).
     pub notify_devices: bool,
+    /// Kept running in the menu bar: closing the last window and Quit hide the windows, so the app comes back at once.
+    pub background: bool,
     /// The folders the user pinned to the sidebar, as URIs, in the order they show.
     pub favourites: Vec<String>,
     pub sidebar_sections: Value,
@@ -144,6 +146,7 @@ impl Default for Settings {
             copy_queue: false,
             verify_copies: false,
             notify_devices: true,
+            background: false,
             favourites: Vec::new(),
             sidebar_sections: Value::Null,
             extra: Map::new(),

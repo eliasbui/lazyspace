@@ -115,6 +115,10 @@ pub fn register_core(d: &mut Dispatcher) {
         app.page_ready(window);
         Ok(Value::Null)
     });
+    d.on("app.drawn", |app, window, _| {
+        app.page_drawn(window);
+        Ok(Value::Null)
+    });
     // A script error of the page, written where the app's own errors go, since the page has no console in a release.
     d.on("app.log", |_, _, a| {
         #[derive(Deserialize)]

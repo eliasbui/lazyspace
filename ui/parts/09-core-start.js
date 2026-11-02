@@ -7,4 +7,7 @@ on("app.hello", async (d) => {
   Toolbar.update();
   // The window comes back as it was without moving; from the next frame on, showing the sidebar and the like move.
   requestAnimationFrame(() => requestAnimationFrame(() => $("app").classList.remove("still")));
+  // The window, made hidden, shows now that the sidebar and the panes are in (src/main.rs, page_drawn). Not from a
+  // frame: a hidden window may draw none.
+  setTimeout(() => call("app.drawn").catch(() => {}), 0);
 });

@@ -130,6 +130,9 @@ pub struct Surface {
     /// Whether the page has said `app.ready`; what is posted before waits in `queued`.
     ready: bool,
     queued: Vec<Value>,
+    /// A main window is made hidden and shows once its page has drawn its first frame (`app.drawn`), so it never
+    /// shows half drawn.
+    hidden_until_drawn: bool,
 }
 
 impl Surface {
@@ -160,6 +163,8 @@ pub struct App {
     update_checked: bool,
     /// The window and id of the request being handled, for `ipc::defer` to answer it later.
     request: Option<(WindowId, u64)>,
+    /// The icon in the menu bar while the app keeps running there (Settings `background`).
+    tray: Option<tray_icon::TrayIcon>,
 }
 
 impl App {
@@ -180,6 +185,7 @@ impl App {
             menu_bar: None,
             update_checked: false,
             request: None,
+            tray: None,
         }
     }
 
@@ -237,6 +243,7 @@ impl App {
             .with_transparent(transparent)
             .with_always_on_top(options.always_on_top)
             .with_visible_on_all_workspaces(role != Role::Main)
+            .with_visible(role != Role::Main)
             .with_decorations(options.decorations);
         if let Some([x, y, ..]) = options.frame {
             builder = builder.with_position(LogicalPosition::new(x, y));
@@ -272,9 +279,57 @@ impl App {
         if role == Role::Desktop {
             native::panel::pin_to_desktop(&window);
         }
-        self.surfaces.insert(window_id, Surface { webview, window, id, role, options, ready: false, queued: Vec::new() });
+        self.surfaces.insert(window_id, Surface { webview, window, id, role, options, ready: false, queued: Vec::new(), hidden_until_drawn: role == Role::Main });
         self.focused = Some(window_id);
+        if role == Role::Main {
+            // A page that never says it has drawn (a script error) must not leave its window hidden for good.
+            let proxy = self.proxy.clone();
+            thread::spawn(move || {
+                thread::sleep(std::time::Duration::from_secs(3));
+                proxy.send(UserEvent::Main(Box::new(move |app| app.page_drawn(window_id))));
+            });
+        }
         Ok(())
+    }
+
+    /// The page of a main window has drawn its first frame: the window shows, in front.
+    pub fn page_drawn(&mut self, window: WindowId) {
+        let Some(surface) = self.surfaces.get_mut(&window).filter(|s| s.hidden_until_drawn) else { return };
+        surface.hidden_until_drawn = false;
+        surface.window.set_visible(true);
+        surface.window.set_focus();
+        set_in_dock(true);
+    }
+
+    /// The icon in the menu bar is there while the app keeps running in the background, made again in a new language.
+    fn sync_tray(&mut self, remake: bool) {
+        if remake || !self.settings.background {
+            self.tray = None;
+        }
+        if self.settings.background && self.tray.is_none() {
+            self.tray = decode_png(WINDOW_ICON).and_then(menus::tray);
+        }
+    }
+
+    /// Quit or the last window closed while the app runs in the background: the windows hide, their pages and tabs
+    /// kept, and the app leaves the Dock for its icon in the menu bar.
+    fn hide_all(&mut self) {
+        for surface in self.surfaces.values().filter(|s| s.role != Role::Desktop) {
+            surface.window.set_visible(false);
+        }
+        set_in_dock(false);
+    }
+
+    /// Closes the window `id`, or hides every window when it is the last main one shown and the app runs in the
+    /// background.
+    fn close_or_hide(&mut self, id: SurfaceId) {
+        let shown_main = self.surfaces.values().filter(|s| s.role == Role::Main && s.window.is_visible()).count();
+        let is_main = self.surfaces.values().any(|s| s.id == id && s.role == Role::Main);
+        if self.settings.background && is_main && shown_main <= 1 {
+            self.hide_all();
+        } else {
+            self.close_surface(id);
+        }
     }
 
     fn remove_surface(&mut self, id: SurfaceId) {
@@ -293,17 +348,25 @@ impl App {
 
     /// A window the user closed: the same as `close_surface`, from the window's id.
     fn close_requested(&mut self, window: WindowId) {
-        if let Some(surface) = self.surfaces.get(&window) {
-            self.closing.push(surface.id);
+        if let Some(id) = self.surfaces.get(&window).map(|s| s.id) {
+            self.close_or_hide(id);
         }
     }
 
     /// The Dock icon was clicked while no window showed: brings a main window back, or makes one.
     fn reopen(&mut self) {
-        if let Some(surface) = self.surfaces.values().find(|s| s.role == Role::Main) {
-            surface.window.set_visible(true);
-            surface.window.set_minimized(false);
-            surface.window.set_focus();
+        let mains: Vec<&Surface> = self.surfaces.values().filter(|s| s.role == Role::Main && !s.hidden_until_drawn).collect();
+        if !mains.is_empty() {
+            set_in_dock(true);
+            // The shelf hidden with the main windows comes back with them.
+            for surface in self.surfaces.values().filter(|s| s.role == Role::Shelf) {
+                surface.window.set_visible(true);
+            }
+            for surface in mains {
+                surface.window.set_visible(true);
+                surface.window.set_minimized(false);
+                surface.window.set_focus();
+            }
         } else if !self.opening.iter().any(|(_, role, _)| *role == Role::Main) {
             self.open_surface(Role::Main, SurfaceOptions::default());
         }
@@ -379,6 +442,9 @@ impl App {
                 bar.install();
             }
         }
+        if old.background != self.settings.background || old.language != self.settings.language {
+            self.sync_tray(old.language != self.settings.language);
+        }
         if old.theme != self.settings.theme {
             for surface in self.surfaces.values() {
                 surface.window.set_theme(self.window_theme());
@@ -433,9 +499,10 @@ impl App {
             menus::CLOSE_WINDOW => {
                 // The desktop goes away only when it is turned off in Settings.
                 if let Some(id) = self.focused.and_then(|w| self.surfaces.get(&w)).filter(|s| s.role != Role::Desktop).map(|s| s.id) {
-                    self.close_surface(id);
+                    self.close_or_hide(id);
                 }
             }
+            menus::TRAY_SHOW => self.reopen(),
             menus::HOME_PAGE => drop(native::open_url(&format!("https://github.com/{}", update::REPO))),
             menus::REPORT => drop(native::open_url(&format!("https://github.com/{}/issues", update::REPO))),
             other => {
@@ -522,6 +589,7 @@ fn main() {
                     bar.install();
                 }
                 dispatcher.start(&mut app);
+                app.sync_tray(false);
                 app.open_surface(Role::Main, SurfaceOptions::default());
                 if let Some(paths) = opened_early.take().filter(|p| !p.is_empty()) {
                     features::viewer::opened(&mut app, paths);
@@ -542,7 +610,9 @@ fn main() {
             Event::UserEvent(UserEvent::Ipc { window, body }) => dispatcher.handle(&mut app, window, &body),
             Event::UserEvent(UserEvent::Post { window: Some(window), message }) => app.post(window, message),
             Event::UserEvent(UserEvent::Post { window: None, message }) => app.post_all(message),
-            Event::UserEvent(UserEvent::Menu(id)) if id.as_ref() == menus::QUIT => *flow = ControlFlow::Exit,
+            // Quit hides the app when it keeps running in the background; the icon's own Quit ends it.
+            Event::UserEvent(UserEvent::Menu(id)) if id.as_ref() == menus::QUIT && app.settings.background => app.hide_all(),
+            Event::UserEvent(UserEvent::Menu(id)) if id.as_ref() == menus::QUIT || id.as_ref() == menus::TRAY_QUIT => *flow = ControlFlow::Exit,
             Event::UserEvent(UserEvent::Menu(id)) => app.menu(id.as_ref()),
             Event::UserEvent(UserEvent::Main(work)) => work(&mut app),
             _ => {}
@@ -559,6 +629,19 @@ fn page(settings: &Settings) -> String {
     let look = format!(" data-accent=\"{}\" data-sidebar-icons=\"{}\" data-icon-size=\"{}\" data-text-size=\"{}\"", settings.accent, settings.sidebar_icons, settings.icon_size, settings.text_size);
     let root = format!("<html lang=\"{}\" data-theme=\"{}\"{glass}{look}>", settings.language, settings.theme);
     INDEX_HTML.replacen("<html lang=\"vi\">", &root, 1).replacen("<!--parts-->", PARTS_HTML, 1)
+}
+
+/// The app in the Dock and the app switcher with its menu bar, or only as its icon in the menu bar while its windows
+/// are hidden.
+fn set_in_dock(shown: bool) {
+    use objc2_app_kit::{NSApplication, NSApplicationActivationPolicy};
+    let Some(mtm) = objc2::MainThreadMarker::new() else { return };
+    let app = NSApplication::sharedApplication(mtm);
+    app.setActivationPolicy(if shown { NSApplicationActivationPolicy::Regular } else { NSApplicationActivationPolicy::Accessory });
+    if shown {
+        #[allow(deprecated)]
+        app.activateIgnoringOtherApps(true);
+    }
 }
 
 /// The page is the only place a window goes: a link to the web opens in the browser, anything else is refused.

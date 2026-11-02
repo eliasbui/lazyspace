@@ -18,6 +18,9 @@ pub const CLOSE_TAB: &str = "file.close_tab";
 pub const CLOSE_WINDOW: &str = "window.close";
 pub const HOME_PAGE: &str = "help.home";
 pub const REPORT: &str = "help.report";
+/// The entries of the menu of the icon in the menu bar, when the app keeps running there (Settings `background`).
+pub const TRAY_SHOW: &str = "tray.show";
+pub const TRAY_QUIT: &str = "tray.quit";
 
 /// The menu bar, made again when the language changes.
 pub struct MenuBar {
@@ -135,4 +138,23 @@ pub fn menu_bar() -> Option<MenuBar> {
     let (app, file, edit, view, go, window, help) = (app.ok()?, file.ok()?, edit.ok()?, view.ok()?, go.ok()?, window.ok()?, help.ok()?);
     bar.append_items(&[&app, &file, &edit, &view, &go, &window, &help]).ok()?;
     Some(MenuBar { bar, window, help })
+}
+
+/// The icon in the menu bar, with its menu: bring the windows back, a new window, or quit for good.
+pub fn tray(icon: (Vec<u8>, u32, u32)) -> Option<tray_icon::TrayIcon> {
+    let menu = Menu::with_items(&[
+        &MenuItem::with_id(TRAY_SHOW, tr("Mở LazySpace", "Open LazySpace"), true, None),
+        &MenuItem::with_id(NEW_WINDOW, tr("Cửa sổ mới", "New Window"), true, None),
+        &PredefinedMenuItem::separator(),
+        &MenuItem::with_id(TRAY_QUIT, tr("Thoát hẳn LazySpace", "Quit LazySpace for Good"), true, None),
+    ])
+    .ok()?;
+    let (rgba, w, h) = icon;
+    tray_icon::TrayIconBuilder::new()
+        .with_icon(tray_icon::Icon::from_rgba(rgba, w, h).ok()?)
+        .with_tooltip("LazySpace")
+        .with_menu(Box::new(menu))
+        .build()
+        .map_err(|e| eprintln!("tray: {e}"))
+        .ok()
 }
