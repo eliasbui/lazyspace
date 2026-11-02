@@ -756,11 +756,11 @@ pub fn register(d: &mut Dispatcher) {
         Ok(Value::Null)
     });
     // Full Disk Access: with it macOS asks nothing more for the Desktop, Documents and Downloads folders, the drives
-    // and the network, one by one. Only an app that has it can open the privacy database, which tells without a
+    // and the network, one by one. Only an app that has it can open the privacy databases, which tells without a
     // question to the user; macOS never asks for it itself, so the page sends the user to its pane in System Settings.
     d.on("native.full_disk", |_, _, _| {
-        let db = dirs::home_dir().unwrap_or_default().join("Library/Application Support/com.apple.TCC/TCC.db");
-        Ok(json!({ "granted": std::fs::File::open(db).is_ok() }))
+        let user = dirs::home_dir().unwrap_or_default().join("Library/Application Support/com.apple.TCC/TCC.db");
+        Ok(json!({ "granted": full_disk_granted(&[user.as_path(), Path::new("/Library/Application Support/com.apple.TCC/TCC.db")]) }))
     });
     d.on("native.open_full_disk", |_, _, _| {
         // A fixed address, given to `open` as one argument, never through a shell.
@@ -878,10 +878,38 @@ fn run_undo(undo: &Undo, ctx: &crate::jobs::Ctx) -> Result<Value, String> {
     if skipped.is_empty() { Ok(Value::Null) } else { Err(format!("{}: {}", tr("Đã có mục khác ở chỗ cũ", "Something else is already where these were"), skipped.join(", "))) }
 }
 
+/// Whether the app has Full Disk Access: one of the privacy databases opens. One that is not there tells nothing (the
+/// user's own is gone in recent macOS), and when none is there the user is not asked again for nothing.
+fn full_disk_granted(dbs: &[&Path]) -> bool {
+    let mut present = false;
+    for db in dbs {
+        match std::fs::File::open(db) {
+            Ok(_) => return true,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+            Err(_) => present = true,
+        }
+    }
+    !present
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::{jobs::test_ctx, vfs::local::tests::Temp};
+
+    #[test]
+    fn full_disk_access_is_told_by_a_database_that_opens_not_one_that_is_missing() {
+        use std::os::unix::fs::PermissionsExt;
+        let t = Temp::new("fulldisk");
+        let open = t.file("open.db", "x");
+        let shut = t.file("shut.db", "x");
+        std::fs::set_permissions(&shut, std::fs::Permissions::from_mode(0o000)).unwrap();
+        let missing = t.0.join("missing.db");
+        assert!(full_disk_granted(&[&missing, &open]));
+        assert!(full_disk_granted(&[&shut, &open]));
+        assert!(full_disk_granted(&[&missing]));
+        assert!(!full_disk_granted(&[&missing, &shut]));
+    }
 
     #[test]
     fn a_drop_moves_within_one_disk_or_account_and_copies_across() {
