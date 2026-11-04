@@ -95,10 +95,15 @@ fn state() -> Value {
 }
 
 /// Gives both roles to LazySpace at `app`, or back to Finder. Each is tried even when the other fails, so turning it
-/// off gives back all it can.
+/// off gives back all it can. Turning it on asks only the file viewer to work: since macOS 26.4 LaunchServices refuses
+/// every app but Finder for folders (paramErr), which the switch's note explains from the state.
 fn set(on: bool, app: Option<&Path>) -> Result<(), String> {
     let viewer = workspace::set_file_viewer(on.then_some(BUNDLE_ID));
     let folders = workspace::set_folder_app(if on { app } else { None });
+    if on && let Err(e) = &folders {
+        eprintln!("viewer: macOS kept its app for folders: {e}");
+        return viewer;
+    }
     viewer.and(folders)
 }
 
