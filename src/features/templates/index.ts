@@ -5,7 +5,7 @@ import { FilePlusIcon } from '@phosphor-icons/react';
 import { createElement } from 'react';
 import { t } from '@/i18n';
 import { useApp } from '@/lib/app-state';
-import { choose } from '@/lib/menu';
+import { choose } from '@/lib/native-choice';
 import { panes } from '@/lib/panes-api';
 import { openSheet, registry, type MenuItemDef } from '@/lib/registry';
 import { on } from '@/services';

@@ -3,7 +3,7 @@ import { CaretDownIcon } from '@phosphor-icons/react';
 import type { PressEvent } from 'react-aria-components';
 import { Button } from '@/components/ui/button';
 import { isWordKey, t as word, useT, type WordKey } from '@/i18n';
-import { choose } from '@/lib/menu';
+import { choose } from '@/lib/native-choice';
 import { usePanesRevision, type PaneHandle } from '@/lib/panes-api';
 import { isSearch, searchFolder, searchQuery, searchUri, type SearchQuery } from '@/lib/search-uri';
 import type { MenuNode } from '@/services';

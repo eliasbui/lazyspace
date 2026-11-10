@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { PlusIcon, XIcon } from '@phosphor-icons/react';
-import { Group } from '@/components/macos/Settings';
-import { IconButton, InfoTip } from '@/components/macos/Tip';
+import { Group, Row } from '@/components/macos/Settings';
+import { IconButton } from '@/components/macos/Tip';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
@@ -65,13 +65,18 @@ export function ActionsSettings() {
             <IconButton label={t('removeAction')} icon={<XIcon />} size="icon" className="text-fg-2 hover:text-bad" onPress={() => remove(i)} />
           </div>
         ))}
-        <div className="flex items-center gap-1 px-3 py-2">
-          <Button onPress={add}>
-            <PlusIcon />
-            {t('addAction')}
-          </Button>
-          <InfoTip text={t('actionsHint')} label={t('actionsTitle')} />
-        </div>
+        <Row
+          className="px-3"
+          label={
+            <Button onPress={add}>
+              <PlusIcon />
+              {t('addAction')}
+            </Button>
+          }
+          keywords={`${t('actionsTitle')} ${t('addAction')}`}
+          hint={t('actionsHint')}
+          infoLabel={t('actionsTitle')}
+        />
       </Group>
     </div>
   );

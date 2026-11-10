@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { choose } from '@/lib/menu';
+import { choose } from '@/lib/native-choice';
 import type { PaneHandle } from '@/lib/panes-api';
 import { say } from '@/lib/ui';
 import { isLocal } from '@/lib/uri';
