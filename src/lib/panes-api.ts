@@ -30,9 +30,9 @@ export interface TabView {
   /** Letters beside the names, set by the git feature (`M`, `A`, `D`, `R`, `?`, `U`); null for none. */
   readonly marks: Readonly<Record<string, string>> | null;
   readonly branch: string | null;
-  /** The places Back and Forward go to, the nearest last. */
-  readonly back: readonly Uri[];
-  readonly forward: readonly Uri[];
+  /** The places Back and Forward go to, the nearest last. Optional: a pane of a feature's own (the desktop) has none. */
+  readonly back?: readonly Uri[];
+  readonly forward?: readonly Uri[];
   /** How many items are selected (everything but the exceptions when everything is). */
   selCount(): number;
   isSel(name: string): boolean;
@@ -80,22 +80,23 @@ export interface PaneHandle {
   startRename(name: string): void;
   /** Gives the keyboard back to the list of the pane. */
   focusList(): void;
+  // The members below are those of the panes feature; a pane of a feature's own (the desktop) may leave them out.
   /** Asks for the rows between `first` and `last` (not included) that are not loaded yet; a view of a feature calls it for what it shows. */
-  ensure(first: number, last: number): void;
+  ensure?(first: number, last: number): void;
   /** Moves the cursor by `delta` rows (Infinity and -Infinity go to the ends), extending the selection when `extend`. */
-  move(delta: number, extend?: boolean): void;
+  move?(delta: number, extend?: boolean): void;
   /** Finds the item whose name starts with what was typed within the last second plus `text`, as typing in Finder does. */
-  find(text: string): void;
+  find?(text: string): void;
   /** Selects row `index`: only it, turned over (Command), or from the anchor (Shift). */
-  select(index: number, how?: 'only' | 'toggle' | 'range'): void;
+  select?(index: number, how?: 'only' | 'toggle' | 'range'): void;
   /** Narrows the tab to the items whose name holds `text`; "" shows them all again. */
-  setFilter(text: string): void;
+  setFilter?(text: string): void;
   /** Sets the letters beside the names and the branch of a git work tree (the git feature). */
-  setMarks(marks: Record<string, string> | null, branch: string | null): void;
+  setMarks?(marks: Record<string, string> | null, branch: string | null): void;
   /** The context menu at (x, y) for row `index`, or for the folder itself when null. */
-  contextMenu(x: number, y: number, index: number | null): void;
+  contextMenu?(x: number, y: number, index: number | null): void;
   /** The places Back (or Forward) goes to as a menu at (x, y), as a right click on the button lists them. */
-  stackMenu(way: 'back' | 'forward', x: number, y: number): void;
+  stackMenu?(way: 'back' | 'forward', x: number, y: number): void;
 }
 
 /** What the panes tell. */
