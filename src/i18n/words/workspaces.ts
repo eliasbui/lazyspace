@@ -8,6 +8,9 @@ export const vi = {
   overwriteWorkspace: "Lưu đè bằng cửa sổ hiện tại",
   deleteWorkspace: "Xóa workspace",
   workspaceSaved: "Đã lưu workspace \"{0}\"",
+  openWorkspace: "Mở workspace",
+  noWorkspaces: "Chưa có workspace nào",
+  savedWorkspaces: "Đã lưu",
 } as const;
 
 export const en = {
@@ -19,4 +22,7 @@ export const en = {
   overwriteWorkspace: "Save This Window Over It",
   deleteWorkspace: "Delete Workspace",
   workspaceSaved: "Workspace \"{0}\" saved",
+  openWorkspace: "Open Workspace",
+  noWorkspaces: "No workspaces yet",
+  savedWorkspaces: "Saved",
 } as const;

@@ -97,15 +97,16 @@
   }
 }
 
-/* The accent chosen in Settings (data-accent on the root); "system" leaves the system's own. */
-:root[data-accent="blue"] { --tint: #0a84ff; }
-:root[data-accent="purple"] { --tint: #bf5af2; }
-:root[data-accent="pink"] { --tint: #ff375f; }
-:root[data-accent="red"] { --tint: #ff453a; }
-:root[data-accent="orange"] { --tint: #ff9f0a; }
-:root[data-accent="yellow"] { --tint: #ffd60a; }
-:root[data-accent="green"] { --tint: #30d158; }
-:root[data-accent="graphite"] { --tint: #8e8e93; }
+/* The accent chosen in Settings (data-accent on the root); "system" leaves the system's own. Any element may carry one
+   too (a swatch of Settings, the tile of a page of Settings): its `bg-tint` is then that colour. */
+[data-accent="blue"] { --tint: #0a84ff; }
+[data-accent="purple"] { --tint: #bf5af2; }
+[data-accent="pink"] { --tint: #ff375f; }
+[data-accent="red"] { --tint: #ff453a; }
+[data-accent="orange"] { --tint: #ff9f0a; }
+[data-accent="yellow"] { --tint: #ffd60a; }
+[data-accent="green"] { --tint: #30d158; }
+[data-accent="graphite"] { --tint: #8e8e93; }
 
 :root {
   --tint-hi: color-mix(in oklab, var(--tint) 80%, white);
@@ -479,8 +480,26 @@ html.preview {
     background: linear-gradient(180deg, color-mix(in oklab, var(--tint-hi) 82%, white), var(--tint-hi) 48%, var(--tint));
   }
 }
+/* The swatch of the system's accent in Settings: every accent around a circle. */
+@utility swatch-system {
+  background: conic-gradient(#ff453a, #ff9f0a, #ffd60a, #30d158, #0a84ff, #bf5af2, #ff375f, #ff453a);
+}
 /* Content: a pane a little lighter than the window, with a hairline. */
 @utility pane {
   background: var(--pane);
   box-shadow: inset 0 0 0 0.5px var(--pane-edge);
+}
+
+/* The desktop's window (html.desktop): its icons lie on the wallpaper, so the window paints nothing of its own; their
+   names are white with a shadow that keeps them legible on any picture, and a selected icon sits on a dark veil. */
+html.desktop:not(.preview),
+html.desktop body {
+  background: transparent;
+}
+@utility desk-label {
+  color: #fff;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.85), 0 0 1px rgb(0 0 0 / 0.6);
+}
+@utility desk-pick {
+  background: rgb(0 0 0 / 0.28);
 }
