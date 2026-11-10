@@ -9,6 +9,8 @@ export const vi = {
   "tag.5": "Vàng",
   "tag.6": "Đỏ",
   "tag.7": "Cam",
+  editTags: "Sửa thẻ...",
+  tagsNone: "Hãy chọn các mục trên máy này để gắn thẻ",
 } as const;
 
 export const en = {
@@ -21,4 +23,6 @@ export const en = {
   "tag.5": "Yellow",
   "tag.6": "Red",
   "tag.7": "Orange",
+  editTags: "Edit Tags...",
+  tagsNone: "Select items on this Mac to tag them",
 } as const;

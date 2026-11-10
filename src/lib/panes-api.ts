@@ -77,6 +77,11 @@ export interface PaneHandle {
   startRename(name: string): void;
   /** Gives the keyboard back to the list of the pane. */
   focusList(): void;
+  /**
+   * Shows the context menu at a point of the window: of the selection after a right click on the row at `index`, or of
+   * the folder for null. For the views a feature draws in place of the list (columns, gallery).
+   */
+  contextMenu(x: number, y: number, index: number | null): void;
 }
 
 /** What the panes tell. */
