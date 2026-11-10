@@ -54,14 +54,19 @@ interface Shown {
 const notes = new Map<string, Shown>();
 const MAX = 4;
 
+// Sonner tells of a toast gone after it went, maybe once a newer note of the same thing has taken its key.
+const forget = (key: string, shown: Shown): void => {
+  if (notes.get(key) === shown) notes.delete(key);
+};
+
 function paint(key: string, shown: Shown, view: { text?: string; bad?: boolean } = {}): void {
   const note = { ...shown.base, ...view };
   // shortcut: sonner restarts the timer only when the duration changes, so a newer note of the same thing with the same life keeps the time left.
   toast.custom(() => <Note note={note} busy={shown.busy} onClose={() => close(key)} />, {
     id: key,
     duration: shown.busy || !note.life ? Infinity : note.life,
-    onDismiss: () => notes.delete(key),
-    onAutoClose: () => notes.delete(key),
+    onDismiss: () => forget(key, shown),
+    onAutoClose: () => forget(key, shown),
   });
 }
 
