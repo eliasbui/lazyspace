@@ -132,7 +132,7 @@ export class MockState {
         uri: makeUri({ ...uri, path: joinPath(uri.path, name) }),
         kind: isDir ? 'dir' : 'file',
         isDir,
-        size: isDir ? 0 : ((seed >> i) % 9000) * 1024 + 2048,
+        size: isDir ? 0 : (((seed >>> i) % 9000)) * 1024 + 2048,
         mtime,
         ctime: mtime,
         hidden: false,
