@@ -21,7 +21,7 @@ export function UpdateBanner() {
       data-chrome=""
       inert={!show}
       className={cn(
-        'fixed bottom-4 left-1/2 z-60 flex max-w-[calc(100vw-32px)] -translate-x-1/2 items-center gap-2 rounded-full py-2 pr-2 pl-4 text-[13px] glass-pop transition-[translate,opacity] duration-(--motion-slow) ease-spring',
+        'fixed bottom-10 left-1/2 z-60 flex max-w-[calc(100vw-32px)] -translate-x-1/2 items-center gap-2 rounded-full py-2 pr-2 pl-4 text-[13px] glass-pop transition-[translate,opacity] duration-(--motion-slow) ease-spring',
         show ? 'translate-y-0' : 'translate-y-[160%] opacity-0',
       )}
     >

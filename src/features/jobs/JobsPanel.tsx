@@ -179,7 +179,7 @@ export function JobsPanel() {
   return (
     <>
       {rows.length ? (
-        <section aria-label={t('jobsLabel')} data-chrome="" className="fixed right-3.5 bottom-8.5 z-40 flex w-75 flex-col gap-2.5 rounded-card px-3.5 py-3 glass-pop">
+        <section aria-label={t('jobsLabel')} data-chrome="" className="fixed right-3.5 bottom-10 z-40 flex w-75 flex-col gap-2.5 rounded-card px-3.5 py-3 glass-pop">
           {rows.map((row) => (
             <Job key={row.id} row={row} />
           ))}
