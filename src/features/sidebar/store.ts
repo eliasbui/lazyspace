@@ -2,6 +2,7 @@
 // Access (Settings `favourites`), and its width and whether it is shown (Settings `sidebar_sections`, read once when the
 // window opens so that each window keeps its own while it lives).
 import { create } from 'zustand';
+import { setSidebarPrefs } from '@/components/macos/SideItem';
 import { t } from '@/i18n';
 import { setSetting, useApp } from '@/lib/app-state';
 import { panes } from '@/lib/panes-api';
@@ -104,7 +105,7 @@ export async function loadVolumes(): Promise<void> {
 export function toggle(): void {
   const collapsed = !useSidebar.getState().collapsed;
   useSidebar.setState({ collapsed });
-  void setSetting({ sidebar_sections: { collapsed } });
+  void setSidebarPrefs({ collapsed });
   saveLayout();
 }
 
@@ -112,7 +113,7 @@ export function toggle(): void {
 export function setWidth(width: number, done: boolean): void {
   useSidebar.setState({ width: clampWidth(width), still: !done });
   if (!done) return;
-  void setSetting({ sidebar_sections: { width: useSidebar.getState().width } });
+  void setSidebarPrefs({ width: useSidebar.getState().width });
   saveLayout();
 }
 

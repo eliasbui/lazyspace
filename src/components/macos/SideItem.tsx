@@ -24,10 +24,16 @@ export function hiddenPlaces(settings: Settings | null): Uri[] {
   return raw.hidden.filter((uri): uri is string => typeof uri === 'string');
 }
 
+/** Writes `patch` into Settings `sidebar_sections` whole, so that a host that replaces the value keeps the rest of it. */
+export function setSidebarPrefs(patch: Record<string, unknown>): Promise<void> {
+  const raw = useApp.getState().settings?.sidebar_sections;
+  return setSetting({ sidebar_sections: { ...(typeof raw === 'object' && raw !== null ? raw : {}), ...patch } });
+}
+
 export function setHidden(uri: Uri, on: boolean): void {
   const now = hiddenPlaces(useApp.getState().settings).filter((u) => !samePlace(u, uri));
   if (on) now.push(uri);
-  void setSetting({ sidebar_sections: { hidden: now } });
+  void setSidebarPrefs({ hidden: now });
 }
 
 // Clouds, devices and disks can be hidden; the pinned folders, the bookmarks and the startup disk stay.
@@ -180,7 +186,7 @@ export function SideHead({ title, add }: { title: string; add?: { label: string;
     if (!gone.length) return;
     e.preventDefault();
     const id = await choose([{ id: 'show', label: t('showHidden', gone.length), icon: 'eye' }], e.clientX, e.clientY);
-    if (id === 'show') void setSetting({ sidebar_sections: { hidden: hiddenPlaces(useApp.getState().settings).filter((u) => !gone.some((g) => samePlace(g, u))) } });
+    if (id === 'show') void setSidebarPrefs({ hidden: hiddenPlaces(useApp.getState().settings).filter((u) => !gone.some((g) => samePlace(g, u))) });
   };
   return (
     <div onContextMenu={(e) => void showHidden(e)} className="group/head flex h-6.5 items-center justify-between gap-2 px-2 text-[11px] font-semibold text-fg-2">
