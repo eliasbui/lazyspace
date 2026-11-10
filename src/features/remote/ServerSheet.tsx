@@ -23,7 +23,7 @@ export interface ServerSheetProps {
 
 function Row({ id, label, error, children }: { id: string; label: string; error?: string; children: ReactNode }) {
   return (
-    <Field className="grid grid-cols-[8.5rem_minmax(0,1fr)] items-center gap-x-3 gap-y-1">
+    <Field className="grid grid-cols-[11rem_minmax(0,1fr)] items-center gap-x-3 gap-y-1">
       <FieldLabel htmlFor={id} className="justify-end text-right text-[13px] leading-tight font-normal text-fg-2">
         {label}
       </FieldLabel>
@@ -185,7 +185,7 @@ export function ServerSheet({ props, close }: SheetProps<ServerSheetProps | unde
             <SelectTrigger size="sm">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="p-1">
               {KINDS.map(([k, label]) => (
                 <SelectItem key={k} id={k}>
                   {t(label)}
@@ -208,7 +208,7 @@ export function ServerSheet({ props, close }: SheetProps<ServerSheetProps | unde
               <SelectTrigger size="sm">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="p-1">
                 {(Object.keys(CLOUDS) as CloudKind[]).map((k) => (
                   <SelectItem key={k} id={k}>
                     {t(CLOUDS[k])}
@@ -242,7 +242,7 @@ export function ServerSheet({ props, close }: SheetProps<ServerSheetProps | unde
             ))}
           </div>
         ) : null}
-        <p role="status" aria-live="polite" className={cn('flex min-h-4 items-center gap-1.5 text-[12px] leading-snug break-words whitespace-pre-wrap', note?.good ? 'text-good' : 'text-bad')}>
+        <p role="status" aria-live="polite" className={cn('flex items-center gap-1.5 text-[12px] empty:hidden leading-snug break-words whitespace-pre-wrap', note?.good ? 'text-good' : 'text-bad')}>
           {trying ? (
             <>
               <Spinner aria-hidden="true" className="size-3.5 text-fg-2" />

@@ -81,6 +81,7 @@ export function DesktopPage() {
     startDesktop();
     const el = box.current;
     if (!el) return;
+    el.focus();
     const measure = () => {
       const r = el.getBoundingClientRect();
       useDesk.setState({ width: r.width, height: r.height, box: { left: r.left, top: r.top, width: r.width } });

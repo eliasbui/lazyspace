@@ -213,6 +213,8 @@ const actions: Partial<Record<string, () => void | Promise<void>>> = {
       pendingSelect = [entry.name];
       pendingRename = entry.name;
       select([]);
+      // The listing may have come before the answer; a new one has the folder for sure.
+      list();
     }, say);
   },
   selectAll: () => select(get().rows.map((r) => r.name), get().lead),
@@ -259,6 +261,7 @@ export function commitRename(name: string, typed: string): void {
   api.fs.rename({ uri: row.uri, name: next }).then((entry) => {
     pendingSelect = [entry.name];
     if (cell) pendingCell = { name: entry.name, cell };
+    list();
   }, say);
 }
 
@@ -372,7 +375,7 @@ let dropped: { col: number; row: number } | null = null;
 export function folderAt(x: number, y: number, uris: readonly Uri[] = []): Row | null {
   const el = document.elementFromPoint(x, y)?.closest('[data-desk-name]');
   const row = el instanceof HTMLElement ? rowOf(el.dataset.deskName ?? null) : null;
-  return row && registry.vfs.browse(row) && !uris.some((u) => samePlace(u, row.uri)) ? row : null;
+  return row?.isDir && !uris.some((u) => samePlace(u, row.uri)) ? row : null;
 }
 
 export function dropAt(drop: { x: number; y: number; uris: Uri[]; mode: 'copy' | 'move' | 'auto' }): void {
