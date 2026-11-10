@@ -390,3 +390,31 @@ Order of work: Stage 1 host (done, see report); Stage 2 per the brief: services 
 - `src/` is the React page (see `docs/frontend.md` for the layout and the rules). `index.html` holds the root div and one module script. `LAZYSPACE_CLASSIC=1` makes the app serve `dist-web/classic.html` (the old page, written by `build.rs`) instead of the new one.
 - Outside the app the page talks to a mock host (`src/services/mock`) so that it can be photographed.
 - `src/architecture.test.ts` and `scripts/migration/check-protocol.mjs` (also `pnpm check:protocol`) are written and not run; master runs them at Gate 2.
+
+### What was built in Stage 2
+
+- Foundation: services layer (`src/services`: typed protocol of 132 methods and 37 events, host, Tauri bridge, mock host), typed vi and en dictionaries (621 keys of the old page plus the new ones), registry and facades (`src/lib/registry.ts`, `panes-api.ts`, `sidebar-api.ts`, `keymap.ts`), app state, dialogs and sheets host, the shell `src/App.tsx`, tokens and three levels of glass in `src/styles/index.css`.
+- Core features: `panes`, `sidebar`, `toolbar`, `keys`, `jobs`, `update`, `preview` (the slot).
+- Optional features, each with `register()` listed in `src/features/index.ts`: workspaces, keyboard, menuedit, appearance, commands, finder, settings, explorer, access, search, templates, openin, hash, columns (columns and gallery views), tags, share, actions, disk, sync, git, devices, phones, preview, rename, archive, stash (and the shelf window page), remote, office, desktop (and the desktop window page).
+- The window roles `desktop` and `shelf` are whole pages registered with `registry.role(...)`.
+
+### Findings about the protocol (found while typing it against the Rust source)
+
+- The old page sent `sidebar_hidden` and `full_disk_later` in `settings.set`; Rust's `Settings` has no such keys, so `patched()` refused them. Hidden places are now kept in `sidebar_sections` (which Rust stores as opaque JSON) and "later" for Full Disk Access in `localStorage`. This is a behaviour difference from the old page, which failed silently.
+- Some argument names in section 2 of this file are wrong: `fs.copy` and `clipboard.paste` take `move` (not `mv`), `archive.create` takes `splitMb`, `fs.list` takes `showHidden`. The types in `src/services/protocol.ts` follow the Rust source and are the reference.
+- `jobs.finished` carries no job kind; the page tracks kinds from `jobs.started`.
+
+### Differences from the old page, on purpose
+
+- Toasts are at the bottom center, as before; notes about disks and devices are sonner toasts of the same card.
+- The preview toolbar button now shows when the preview is on (`ToolbarItemDef.active`).
+- Spring-loaded folders while dragging (800 ms) are new; so are the legend and keys of the disk map, the contents listing of an archive in the preview, the settings search, and the workspaces sheet.
+- Tailwind spacing is set to 4 px per unit (`--spacing: 4px`) because the root type is 13 px.
+
+### Not verified in Stage 2 (master runs these at Gate 2)
+
+- `pnpm test` (the architecture test, `services.test.ts` and the other vitest files), `node scripts/migration/check-protocol.mjs`: written, never run.
+- Every picture was taken from the mock host through `webshot` (offscreen, no backdrop blur is rendered there), so the real glass, the native menu bar, native context menus, drag in and out, Quick Look, the tray, notifications and the real window chrome have not been seen.
+- `tauri build`, the bundle and the release scripts: not run (owner rule); `pnpm build` and `cargo check --all-targets` pass.
+- Dev-only warning: React Aria prints "Focusable child must be focusable" while a sheet is open (the content behind it is inert); it does not appear in production behaviour.
+
