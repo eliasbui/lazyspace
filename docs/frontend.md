@@ -54,5 +54,5 @@ classes `reduce-transparency`, `increase-contrast`, `reduce-motion`; the media q
 ## Running the page without the app
 
 `pnpm dev --port <port>` serves the page; outside Tauri it talks to the mock host (`src/services/mock`), a believable fake file
-system with a folder of 100000 items. Query parameters: `?lang=vi|en&theme=light|dark&role=main|desktop|shelf&glass=1&update=1
+system with a folder of 100000 items. Query parameters: `?lang=vi|en&theme=light|dark&role=main|desktop|shelf&glass=1&update=1&sheet=<id>
 &folder=<path>`. Photograph with `tools/webshot` (see the run folder): `webshot --w 1100 --h 720 --dark --strict URL out.png`.

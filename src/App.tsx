@@ -9,8 +9,8 @@ import { Sidebar } from '@/features/sidebar';
 import { Toolbar } from '@/features/toolbar';
 import { UpdateBanner } from '@/features/update';
 import { useApp, connectApp } from '@/lib/app-state';
-import { useRegistry } from '@/lib/registry';
-import { api } from '@/services';
+import { openSheet, useRegistry } from '@/lib/registry';
+import { api, getHost } from '@/services';
 
 /** A press on the toolbar or the top of the sidebar moves the window, and a double click zooms it, as its title bar would. */
 function useWindowDrag(): void {
@@ -25,6 +25,15 @@ function useWindowDrag(): void {
   }, []);
 }
 
+/** Outside the app only, `?sheet=<id>` opens that sheet once the window is ready, so a sheet can be photographed. */
+function useOpenSheetFromUrl(ready: boolean): void {
+  useEffect(() => {
+    if (!ready || getHost().native) return;
+    const id = new URLSearchParams(window.location.search).get('sheet');
+    if (id) openSheet(id);
+  }, [ready]);
+}
+
 export function App() {
   const ready = useApp((s) => !!s.settings && !!s.places);
   const role = useApp((s) => s.role);
@@ -34,6 +43,7 @@ export function App() {
   useEffect(() => {
     connectApp();
   }, []);
+  useOpenSheetFromUrl(ready);
 
   return (
     <>
