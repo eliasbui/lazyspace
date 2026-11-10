@@ -37,6 +37,7 @@ export const vi = {
   indexBuilding: "Đang lập chỉ mục...",
   indexNotReady: "Chưa có chỉ mục",
   reindex: "Lập lại chỉ mục",
+  searchPanelHint: "Tìm tệp và thư mục",
 } as const;
 
 export const en = {
@@ -77,4 +78,5 @@ export const en = {
   indexBuilding: "Indexing...",
   indexNotReady: "No index yet",
   reindex: "Index Again",
+  searchPanelHint: "Search files and folders",
 } as const;

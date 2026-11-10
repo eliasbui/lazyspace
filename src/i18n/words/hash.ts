@@ -8,6 +8,7 @@ export const vi = {
   hashWorking: "Đang tính...",
   copied: "Đã sao chép",
   copy: "Sao chép",
+  hashNothing: "Hãy chọn các tệp để tính mã băm",
 } as const;
 
 export const en = {
@@ -19,4 +20,5 @@ export const en = {
   hashWorking: "Working...",
   copied: "Copied",
   copy: "Copy",
+  hashNothing: "Select files to calculate their hashes",
 } as const;

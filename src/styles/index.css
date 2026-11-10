@@ -519,3 +519,14 @@ html.desktop body {
 @utility desk-pick {
   background: rgb(0 0 0 / 0.28);
 }
+
+/* Finder's seven tag colours by Finder's number (bg-tag-1 to bg-tag-7). They name a tag; they are not the accent. */
+@theme {
+  --color-tag-1: #8e8e93;
+  --color-tag-2: #34c759;
+  --color-tag-3: #af52de;
+  --color-tag-4: #007aff;
+  --color-tag-5: #ffcc00;
+  --color-tag-6: #ff3b30;
+  --color-tag-7: #ff9500;
+}
