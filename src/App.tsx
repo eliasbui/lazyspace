@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Toaster } from '@/components/ui/sonner';
 import { DialogHost, SheetHost } from '@/features/dialogs';
 import { JobsPanel } from '@/features/jobs';
+import { useKeys } from '@/features/keys';
 import { PaneGrid } from '@/features/panes';
 import { PreviewSlot } from '@/features/preview';
 import { Sidebar } from '@/features/sidebar';
@@ -38,6 +39,7 @@ export function App() {
   const role = useApp((s) => s.role);
   const RoleView = useRegistry((s) => s.roles[role]);
   useWindowDrag();
+  useKeys();
   useEffect(() => {
     connectApp();
   }, []);

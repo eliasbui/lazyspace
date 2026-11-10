@@ -50,6 +50,8 @@ export const vi = {
   moveToTrash: "Chuyển vào Thùng rác",
   searchHere: "Lọc thư mục này",
   moreTools: "Các nút khác",
+  appName: "LazySpace",
+  toolbarLabel: "Thanh công cụ",
 } as const;
 
 export const en = {
@@ -103,4 +105,6 @@ export const en = {
   moveToTrash: "Move to Trash",
   searchHere: "Filter this folder",
   moreTools: "More Tools",
+  appName: "LazySpace",
+  toolbarLabel: "Toolbar",
 } as const;

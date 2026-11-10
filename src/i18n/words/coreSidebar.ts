@@ -28,6 +28,8 @@ export const vi = {
   signOutText: "LazySpace và rclone sẽ quên tài khoản này. Các tệp trên đám mây vẫn còn nguyên; muốn dùng lại thì thêm lại tài khoản.",
   signOutDone: "Đã gỡ {0}",
   appCloudNote: "{0} do app của nó quản lý: muốn đăng xuất, mở app đó. Ở đây có thể ẩn nó khỏi thanh bên.",
+  sidebarLabel: "Thanh bên",
+  resizeSidebar: "Đổi độ rộng thanh bên",
 } as const;
 
 export const en = {
@@ -59,4 +61,6 @@ export const en = {
   signOutText: "LazySpace and rclone forget this account. The files in the cloud stay as they are; add the account again to use it.",
   signOutDone: "{0} removed",
   appCloudNote: "{0} is run by its own app: open that app to sign out. Here it can be hidden from the sidebar.",
+  sidebarLabel: "Sidebar",
+  resizeSidebar: "Resize the Sidebar",
 } as const;

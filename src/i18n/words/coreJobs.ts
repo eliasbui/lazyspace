@@ -18,6 +18,7 @@ export const vi = {
   password: "Nhập mật khẩu cho {0}",
   ok: "OK",
   yes: "Có",
+  jobsLabel: "Việc đang chạy",
 } as const;
 
 export const en = {
@@ -39,4 +40,5 @@ export const en = {
   password: "Enter the password for {0}",
   ok: "OK",
   yes: "Yes",
+  jobsLabel: "Jobs in progress",
 } as const;
