@@ -133,7 +133,7 @@ function TabColumn({ pane, columnRef }: { pane: PaneHandle; columnRef: RefObject
             >
               {row ? (
                 <>
-                  <img src={iconOf(row, 16)} alt="" draggable={false} className="size-4 shrink-0" />
+                  <Picture row={row} points={16} iconPoints={16} className="size-4 shrink-0 object-cover" iconClassName="size-4 shrink-0" />
                   <span className="min-w-0 truncate">{row.name}</span>
                   <TagDots row={row} />
                   <span className="flex-1" />
