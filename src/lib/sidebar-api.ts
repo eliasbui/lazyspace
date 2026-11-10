@@ -4,6 +4,8 @@ import type { Uri, Volume } from '@/services';
 export interface SidebarApi {
   /** Pins a folder to Quick Access. */
   pin(uri: Uri): void;
+  /** Takes a folder out of Quick Access. */
+  unpin(uri: Uri): void;
   /** The folders pinned to Quick Access, in order. */
   pinned(): Uri[];
   /** Pins the folder the focused pane shows. */
@@ -28,6 +30,7 @@ export function installSidebar(api: SidebarApi): void {
 /** The sidebar. Before the sidebar feature starts, every call does nothing. */
 export const sidebar: SidebarApi = {
   pin: (uri) => implementation?.pin(uri),
+  unpin: (uri) => implementation?.unpin(uri),
   pinned: () => implementation?.pinned() ?? [],
   pinHere: () => implementation?.pinHere(),
   pinDropped: (uris) => implementation?.pinDropped(uris),
@@ -37,3 +40,16 @@ export const sidebar: SidebarApi = {
   toggle: () => implementation?.toggle(),
   width: () => implementation?.width() ?? 240,
 };
+
+type Ejector = (path: string, name: string) => Promise<void>;
+let ejector: Ejector | null = null;
+
+/**
+ * How the sidebar ejects a disk. The devices feature puts its own here (a note while it runs, a forced eject when the disk
+ * is held), which settles once it is over; without one the sidebar asks the host and says the error.
+ */
+export function setEjector(eject: Ejector | null): void {
+  ejector = eject;
+}
+
+export const ejectorOf = (): Ejector | null => ejector;

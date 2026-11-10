@@ -193,6 +193,8 @@
 }
 
 @theme inline {
+  /* The 4 point grid in points: the root's 13 px type would make a rem-based unit 3.25 px. */
+  --spacing: 4px;
   --font-sans: var(--font);
   --font-heading: var(--font);
   --font-mono: var(--mono);
@@ -333,6 +335,10 @@
   }
   html.glass body {
     background: var(--veil);
+  }
+  /* The shelf's window is clear around its basket. */
+  html.shelf-mode body {
+    background: transparent;
   }
 
   button,
