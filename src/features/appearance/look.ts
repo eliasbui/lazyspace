@@ -26,8 +26,8 @@ export function fontValue(font: string): string {
 }
 
 /** The next icon size up (`by` 1) or down (-1) from `size`, kept within the sizes there are. */
-export function stepIconSize(size: number, by: 1 | -1): Settings['icon_size'] {
+export function stepIconSize(size: Settings['icon_size'], by: 1 | -1): Settings['icon_size'] {
   const sizes = ICON_SIZES.map(([s]) => s);
-  const at = Math.max(0, sizes.indexOf(size as Settings['icon_size']));
+  const at = Math.max(0, sizes.indexOf(size));
   return sizes[Math.min(sizes.length - 1, Math.max(0, at + by))] ?? 64;
 }

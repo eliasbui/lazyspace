@@ -7,7 +7,7 @@ import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from '@/compon
 import { useT, type WordKey } from '@/i18n';
 import { setSetting, useSettings } from '@/lib/app-state';
 import { cn } from '@/lib/utils';
-import { api, type AccentName, type Settings } from '@/services';
+import { api, type Settings } from '@/services';
 import { ACCENTS, DESIGNS, ICON_SIZES } from './look';
 
 // The families installed on the Mac, asked for once, the first time Settings shows them.
@@ -46,8 +46,8 @@ export function AppearanceSection() {
           disallowEmptySelection
           selectedKeys={[settings.accent]}
           onSelectionChange={(keys) => {
-            const next = [...keys][0];
-            if (typeof next === 'string') void setSetting({ accent: next as AccentName });
+            const next = ACCENTS.find((name) => keys.has(name));
+            if (next) void setSetting({ accent: next });
           }}
           className="flex items-center gap-2"
         >
