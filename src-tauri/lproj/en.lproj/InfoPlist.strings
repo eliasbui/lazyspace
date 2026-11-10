@@ -1,0 +1,5 @@
+"NSDesktopFolderUsageDescription" = "LazySpace shows the files in your Desktop folder.";
+"NSDocumentsFolderUsageDescription" = "LazySpace shows the files in your Documents folder.";
+"NSDownloadsFolderUsageDescription" = "LazySpace shows the files in your Downloads folder.";
+"NSRemovableVolumesUsageDescription" = "LazySpace shows the files on your external drives.";
+"NSNetworkVolumesUsageDescription" = "LazySpace shows the files on your network volumes.";

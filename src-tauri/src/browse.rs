@@ -3,7 +3,7 @@
 //! they share beyond the App's views and jobs lives in `State`.
 
 use crate::{
-    App, Proxy, UserEvent, clipboard,
+    App, Proxy, UserEvent, WindowId, clipboard,
     fswatch::FsWatch,
     ipc::{Dispatcher, args, defer, event},
     jobs::{Answer, Then},
@@ -25,7 +25,6 @@ use std::{
     },
     thread,
 };
-use tao::window::WindowId;
 
 /// The most steps the undo list keeps.
 const UNDO_MAX: usize = 50;

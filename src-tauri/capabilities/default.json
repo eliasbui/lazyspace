@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "What the pages may do: call the commands of the app. Every window is made by the app and takes this one.",
+  "windows": ["*"],
+  "permissions": ["core:default"]
+}

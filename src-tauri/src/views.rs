@@ -3,6 +3,7 @@
 //! rows of an older one.
 
 use crate::{
+    WindowId,
     settings::Sort,
     tr,
     vfs::{Capabilities, Entry, Uri},
@@ -10,7 +11,6 @@ use crate::{
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::{cmp::Ordering, collections::HashMap};
-use tao::window::WindowId;
 
 /// The most rows one `view.rows` gives.
 pub const MAX_ROWS: usize = 500;
@@ -403,8 +403,7 @@ mod tests {
     use super::*;
 
     fn window() -> WindowId {
-        // SAFETY: the id is only compared, never used to reach a window.
-        unsafe { WindowId::dummy() }
+        WindowId::dummy()
     }
 
     fn entry(name: &str, is_dir: bool, size: u64, mtime: i64) -> Entry {

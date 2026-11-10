@@ -1,0 +1,5 @@
+"NSDesktopFolderUsageDescription" = "LazySpace hiển thị các tệp trong thư mục Màn hình nền của bạn.";
+"NSDocumentsFolderUsageDescription" = "LazySpace hiển thị các tệp trong thư mục Tài liệu của bạn.";
+"NSDownloadsFolderUsageDescription" = "LazySpace hiển thị các tệp trong thư mục Tải xuống của bạn.";
+"NSRemovableVolumesUsageDescription" = "LazySpace hiển thị các tệp trên ổ đĩa ngoài của bạn.";
+"NSNetworkVolumesUsageDescription" = "LazySpace hiển thị các tệp trên ổ đĩa mạng của bạn.";

@@ -1,4 +1,4 @@
-//! Helpers the native modules share: the NSWindow behind a tao window, links opened by the system, the folder picker,
+//! Helpers the native modules share: the NSWindow and the web view behind a Tauri window, links opened by the system, the folder picker,
 //! and an NSImage as PNG. Code that uses AppKit is kept thin and holds no logic of its own, so the logic can be
 //! tested without a window.
 
@@ -20,7 +20,7 @@ use objc2_app_kit::{NSBitmapImageFileType, NSBitmapImageRep, NSImage, NSWindow, 
 use objc2_foundation::{NSDictionary, NSString, NSURL};
 use serde_json::{Value, json};
 use std::process::Command;
-use tao::{platform::macos::WindowExtMacOS, window::Window};
+use tauri::WebviewWindow;
 
 /// The start of today on this Mac's clock, in seconds since 1970, as Finder and Spotlight count "today".
 pub fn start_of_today() -> i64 {
@@ -28,16 +28,25 @@ pub fn start_of_today() -> i64 {
     calendar.startOfDayForDate(&objc2_foundation::NSDate::now()).timeIntervalSince1970() as i64
 }
 
-/// The web view of a window as an NSView, for AppKit calls that need the view the page is drawn in.
-pub fn web_view(webview: &wry::WebView) -> objc2::rc::Retained<objc2_app_kit::NSView> {
-    use wry::WebViewExtMacOS;
-    objc2::rc::Retained::into_super(objc2::rc::Retained::into_super(webview.webview()))
+/// The web view of a window as an NSView, for AppKit calls that need the view the page is drawn in. Called on the main
+/// thread, where Tauri hands the web view over at once; elsewhere there is none.
+pub fn web_view(window: &WebviewWindow) -> Option<objc2::rc::Retained<objc2_app_kit::NSView>> {
+    objc2::MainThreadMarker::new()?;
+    let (sender, receiver) = std::sync::mpsc::channel();
+    window.with_webview(move |webview| {
+        let _ = sender.send(webview.inner() as usize);
+    })
+    .ok()?;
+    let pointer = receiver.try_recv().ok()?;
+    // SAFETY: the pointer is the WKWebView of the window, which is an NSView and which the window keeps alive.
+    unsafe { objc2::rc::Retained::retain(pointer as *mut objc2_app_kit::NSView) }
 }
 
-/// The NSWindow of a tao window, which lives as long as the tao window does.
-pub fn ns_window(window: &Window) -> Option<&NSWindow> {
-    // SAFETY: tao hands out the pointer to the NSWindow it made for this window, or null.
-    unsafe { (window.ns_window() as *const NSWindow).as_ref() }
+/// The NSWindow of a Tauri window, which lives as long as the window does.
+pub fn ns_window(window: &WebviewWindow) -> Option<&NSWindow> {
+    let pointer = window.ns_window().ok()?;
+    // SAFETY: Tauri hands out the pointer to the NSWindow it made for this window, or null.
+    unsafe { (pointer as *const NSWindow).as_ref() }
 }
 
 /// Whether `url` is one the system may open for the page: a web page or a mail address.

@@ -6,11 +6,11 @@ use objc2_app_kit::{NSApplicationDidChangeScreenParametersNotification, NSScreen
 use objc2_core_graphics::{CGWindowLevelForKey, CGWindowLevelKey};
 use objc2_foundation::{NSNotification, NSNotificationCenter, NSOperationQueue};
 use std::ptr::NonNull;
-use tao::window::Window;
+use tauri::WebviewWindow;
 
 /// Puts a window at the level of the desktop's icons, over the main screen but its menu bar and Dock, on every Space,
 /// and out of Mission Control and of Command-`.
-pub fn pin_to_desktop(window: &Window) {
+pub fn pin_to_desktop(window: &WebviewWindow) {
     let (Some(ns), Some(mtm)) = (super::ns_window(window), MainThreadMarker::new()) else { return };
     ns.setLevel(CGWindowLevelForKey(CGWindowLevelKey::DesktopIconWindowLevelKey) as isize);
     ns.setCollectionBehavior(NSWindowCollectionBehavior::CanJoinAllSpaces | NSWindowCollectionBehavior::Stationary | NSWindowCollectionBehavior::IgnoresCycle);

@@ -2,3 +2,7 @@
 /dist
 .DS_Store
 .pi/
+/src-tauri/target
+/src-tauri/classic
+/src-tauri/gen
+/node_modules

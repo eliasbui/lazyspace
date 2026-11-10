@@ -2,7 +2,7 @@
 //! runs on a thread of its own with a `Ctx` that reports progress, asks the page a question and waits for the answer,
 //! and sees a cancel. A job always ends with `jobs.finished`, cancelled or not, so the page can clear its row.
 
-use crate::{App, Proxy, UserEvent, ipc::event, tr};
+use crate::{App, Proxy, UserEvent, WindowId, ipc::event, tr};
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::{
@@ -16,7 +16,6 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
-use tao::window::WindowId;
 
 /// How often progress may go to the page.
 const PROGRESS_EVERY: Duration = Duration::from_millis(100);

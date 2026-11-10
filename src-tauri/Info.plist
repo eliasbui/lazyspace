@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key><string>LazySpace</string>
+    <key>CFBundleDisplayName</key><string>LazySpace</string>
+    <key>CFBundleIdentifier</key><string>com.eliasbui.lazyspace</string>
+    <key>CFBundleExecutable</key><string>lazyspace</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
+    <key>CFBundlePackageType</key><string>APPL</string>
+    <key>CFBundleDevelopmentRegion</key><string>en</string>
+    <key>CFBundleLocalizations</key><array><string>en</string><string>vi</string></array>
+    <key>LSMinimumSystemVersion</key><string>13.0</string>
+    <key>NSHighResolutionCapable</key><true/>
+    <!-- "Open in LazySpace" (NSServices) in the menu Finder shows for any item and under Services in every app; an empty
+         NSRequiredContext has it on without a visit to the Keyboard settings. Its name in Vietnamese is in
+         vi.lproj/ServicesMenu.strings. -->
+    <key>NSServices</key>
+    <array>
+        <dict>
+            <key>NSMenuItem</key><dict><key>default</key><string>Open in LazySpace</string></dict>
+            <key>NSMessage</key><string>openInLazySpace</string>
+            <key>NSPortName</key><string>LazySpace</string>
+            <key>NSRequiredContext</key><dict/>
+            <key>NSSendFileTypes</key><array><string>public.item</string></array>
+        </dict>
+    </array>
+    <!-- Folders are declared so LazySpace can be made the app for them (Settings, "Use LazySpace instead of Finder"); as
+         an alternate it never takes them unless asked. Files need no declaration: a reveal from another app reaches the
+         file viewer as an open-documents event whatever the file's type. -->
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key><string>Folder</string>
+            <key>CFBundleTypeRole</key><string>Viewer</string>
+            <key>LSHandlerRank</key><string>Alternate</string>
+            <key>LSItemContentTypes</key><array><string>public.folder</string></array>
+        </dict>
+    </array>
+    <!-- The questions macOS asks the first time the app reads a protected folder, in both languages of the app
+         (en.lproj and vi.lproj/InfoPlist.strings). -->
+    <key>NSDesktopFolderUsageDescription</key><string>LazySpace shows the files in your Desktop folder.</string>
+    <key>NSDocumentsFolderUsageDescription</key><string>LazySpace shows the files in your Documents folder.</string>
+    <key>NSDownloadsFolderUsageDescription</key><string>LazySpace shows the files in your Downloads folder.</string>
+    <key>NSRemovableVolumesUsageDescription</key><string>LazySpace shows the files on your external drives.</string>
+    <key>NSNetworkVolumesUsageDescription</key><string>LazySpace shows the files on your network volumes.</string>
+</dict>
+</plist>

@@ -2,7 +2,7 @@
 //! folder adds up the files it holds, at any depth; results go to the page in batches, and a tab that moves on or
 //! turns the column off stops the work. A size is kept for the session until something inside the folder changes.
 
-use crate::{App, Proxy, UserEvent, ipc::event};
+use crate::{App, Proxy, UserEvent, WindowId, ipc::event};
 use serde_json::{Map, Value, json};
 use std::{
     collections::HashMap,
@@ -15,7 +15,6 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
-use tao::window::WindowId;
 
 /// How often a batch of sizes goes to the page.
 const BATCH: Duration = Duration::from_millis(150);

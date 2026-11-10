@@ -1,9 +1,9 @@
 //! The methods of the hands-on parts of the window (design.md 8.2 to 8.4 and 8.12): dragging files out, Quick Look,
-//! the native context menu, and text on the clipboard. Dropping files in comes through wry's drag-and-drop handler,
-//! set up with each window in main.rs (`drop_handler`).
+//! the native context menu, and text on the clipboard. Dropping files in comes through the drag-and-drop event of each
+//! window's web view (`watch_drops`).
 
 use crate::{
-    App, UserEvent, browse, clipboard, contextmenu,
+    App, UserEvent, WindowId, browse, clipboard, contextmenu,
     contextmenu::MenuNode,
     ipc::{Dispatcher, args, event},
     native::{self, drag, menu, quicklook, workspace},
@@ -14,12 +14,14 @@ use objc2::MainThreadMarker;
 use serde::Deserialize;
 use serde_json::{Value, json};
 use std::{
-    cell::Cell,
     path::PathBuf,
+    sync::{
+        Mutex,
+        atomic::{AtomicBool, Ordering},
+    },
     time::{Duration, Instant},
 };
-use tao::window::WindowId;
-use wry::DragDropEvent;
+use tauri::DragDropEvent;
 
 /// Shows the items in Quick Look's panel over `window`, or hides the panel.
 fn look(app: &mut App, window: WindowId, paths: &[PathBuf], index: usize) -> Result<Value, String> {
@@ -37,7 +39,7 @@ pub fn register(d: &mut Dispatcher) {
     d.on("drag.arm", |app, window, a| {
         let paths = local(browse::targets(app, window, &a)?)?;
         let surface = app.surfaces.get(&window).ok_or_else(|| tr("Cửa sổ đã đóng", "The window is closed").to_owned())?;
-        drag::arm(main_thread()?, native::web_view(&surface.webview), paths);
+        drag::arm(main_thread()?, native::web_view(&surface.window).ok_or("no web view")?, paths);
         Ok(Value::Null)
     });
     d.on("drag.disarm", |_, _, _| {
@@ -79,7 +81,7 @@ pub fn register(d: &mut Dispatcher) {
             return Err(tr("Chỉ chia sẻ được tệp trên máy", "Only files on this Mac can be shared").into());
         }
         let surface = app.surfaces.get(&window).ok_or_else(|| tr("Cửa sổ đã đóng", "The window is closed").to_owned())?;
-        let view = MainThreadBound::new(native::web_view(&surface.webview), main_thread()?);
+        let view = MainThreadBound::new(native::web_view(&surface.window).ok_or("no web view")?, main_thread()?);
         // The sheet starts from the main queue, after this event, as the context menu does.
         DispatchQueue::main().exec_async(move || {
             let Some(mtm) = MainThreadMarker::new() else { return };
@@ -103,7 +105,7 @@ pub fn register(d: &mut Dispatcher) {
         let apps = has_open_with(&nodes).then(|| paths.first().map(|p| workspace::apps_for(p)).unwrap_or_default());
         let surface = app.surfaces.get(&window).ok_or_else(|| tr("Cửa sổ đã đóng", "The window is closed").to_owned())?;
         let mtm = main_thread()?;
-        let view = MainThreadBound::new(native::web_view(&surface.webview), mtm);
+        let view = MainThreadBound::new(native::web_view(&surface.window).ok_or("no web view")?, mtm);
         let proxy = app.proxy.clone();
         // The menu runs AppKit's own loop until it closes; it starts from the main queue, after this event.
         DispatchQueue::main().exec_async(move || {
@@ -142,57 +144,59 @@ fn local(uris: Vec<crate::vfs::Uri>) -> Result<Vec<PathBuf>, String> {
     uris.iter().map(|u| u.local_path().ok_or_else(|| tr("Chỉ với tệp trên máy", "Only for files on this Mac").to_owned())).collect()
 }
 
-/// The handler of files dragged onto a window: it takes the drag only when it carries files, tells the page where the
-/// pointer is (to light up the folder under it) and what was dropped where; anything else (text, a link, a picture
-/// from a browser) goes on to WebKit as an HTML5 drop.
-pub fn drop_handler(proxy: crate::Proxy, window: WindowId) -> impl Fn(DragDropEvent) -> bool + 'static {
-    let files = Cell::new(false);
-    let last = Cell::new(Instant::now());
-    move |e: DragDropEvent| {
+/// Follows the files dragged onto a window: it tells the page where the pointer is (to light up the folder under it)
+/// and what was dropped where. Tauri's web view takes every drag, so what is not a file (text, a link, a picture from a
+/// browser) does not reach the page as an HTML5 drop.
+pub fn watch_drops(window: &tauri::WebviewWindow, proxy: crate::Proxy, id: WindowId) {
+    let files = AtomicBool::new(false);
+    let last = Mutex::new(Instant::now());
+    window.on_webview_event(move |e| {
+        let tauri::WebviewEvent::DragDrop(e) = e else { return };
         let post = |message: Value| {
-            proxy.send(UserEvent::Post { window: Some(window), message });
+            proxy.send(UserEvent::Post { window: Some(id), message });
         };
         match e {
             DragDropEvent::Enter { paths, position } => {
-                files.set(!paths.is_empty());
-                if files.get() {
-                    post(event("drop.over", json!({ "x": position.0, "y": position.1 })));
+                files.store(!paths.is_empty(), Ordering::Relaxed);
+                if !paths.is_empty() {
+                    post(event("drop.over", json!({ "x": position.x, "y": position.y })));
                 }
-                files.get()
             }
             DragDropEvent::Over { position } => {
-                if files.get() && last.get().elapsed() >= Duration::from_millis(30) {
-                    last.set(Instant::now());
-                    post(event("drop.over", json!({ "x": position.0, "y": position.1 })));
+                let mut last = last.lock().unwrap_or_else(|e| e.into_inner());
+                if files.load(Ordering::Relaxed) && last.elapsed() >= Duration::from_millis(30) {
+                    *last = Instant::now();
+                    post(event("drop.over", json!({ "x": position.x, "y": position.y })));
                 }
-                files.get()
             }
             DragDropEvent::Drop { paths, position } => {
-                let had = files.replace(false);
+                files.store(false, Ordering::Relaxed);
                 if paths.is_empty() {
-                    return had;
+                    return;
                 }
-                let flags = objc2_app_kit::NSEvent::modifierFlags_class();
-                let mode = if flags.contains(objc2_app_kit::NSEventModifierFlags::Option) {
-                    "copy"
-                } else if flags.contains(objc2_app_kit::NSEventModifierFlags::Command) {
-                    "move"
-                } else {
-                    "auto"
-                };
-                let paths: Vec<String> = paths.iter().map(|p| crate::vfs::Uri::file(p).to_string()).collect();
-                post(event("drop", json!({ "x": position.0, "y": position.1, "uris": paths, "mode": mode })));
-                true
+                let mode = drop_mode();
+                let uris: Vec<String> = paths.iter().map(|p| crate::vfs::Uri::file(p).to_string()).collect();
+                post(event("drop", json!({ "x": position.x, "y": position.y, "uris": uris, "mode": mode })));
             }
             DragDropEvent::Leave => {
-                if files.replace(false) {
+                if files.swap(false, Ordering::Relaxed) {
                     post(event("drop.leave", Value::Null));
-                    return true;
                 }
-                false
             }
-            _ => false,
+            _ => {}
         }
+    });
+}
+
+/// How a drop was asked to go by the keys held: Option copies, Command moves, neither leaves it to the page.
+fn drop_mode() -> &'static str {
+    let flags = objc2_app_kit::NSEvent::modifierFlags_class();
+    if flags.contains(objc2_app_kit::NSEventModifierFlags::Option) {
+        "copy"
+    } else if flags.contains(objc2_app_kit::NSEventModifierFlags::Command) {
+        "move"
+    } else {
+        "auto"
     }
 }
 

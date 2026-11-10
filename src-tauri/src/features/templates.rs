@@ -19,8 +19,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
-const DOCX: &[u8] = include_bytes!("../../assets/templates/Blank.docx");
-const XLSX: &[u8] = include_bytes!("../../assets/templates/Blank.xlsx");
+const DOCX: &[u8] = include_bytes!("../../../assets/templates/Blank.docx");
+const XLSX: &[u8] = include_bytes!("../../../assets/templates/Blank.xlsx");
 
 struct Builtin {
     id: &'static str,

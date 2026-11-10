@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "LazySpace",
+  "identifier": "com.eliasbui.lazyspace",
+  "mainBinaryName": "lazyspace",
+  "build": {
+    "frontendDist": "classic"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "withGlobalTauri": false,
+    "windows": [],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: lazy:; media-src lazy: blob:; object-src lazy:; frame-src lazy:; font-src 'self' data:; connect-src ipc: http://ipc.localhost",
+      "dangerousDisableAssetCspModification": true
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "app"
+    ],
+    "category": "public.app-category.utilities",
+    "icon": [
+      "icons/AppIcon.icns",
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.png"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "13.0",
+      "signingIdentity": "-",
+      "infoPlist": "Info.plist"
+    },
+    "resources": {
+      "lproj/en.lproj/InfoPlist.strings": "en.lproj/InfoPlist.strings",
+      "lproj/vi.lproj/ServicesMenu.strings": "vi.lproj/ServicesMenu.strings",
+      "lproj/vi.lproj/InfoPlist.strings": "vi.lproj/InfoPlist.strings"
+    }
+  }
+}

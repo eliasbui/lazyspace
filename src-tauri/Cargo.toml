@@ -13,10 +13,11 @@ name = "lazyspace"
 path = "src/main.rs"
 
 [dependencies]
-# The window and its web page, and the menu bar; the versions Lanes ships.
-tao = "0.37"
-wry = "0.57"
-muda = "0.21"
+# The shell around the engine: windows, web views, menu bar, tray icon and the event loop. macos-private-api makes a
+# window see-through (the glass shows through it), image-png reads the tray icon.
+tauri = { version = "2", features = ["macos-private-api", "tray-icon", "image-png"] }
+# Liquid Glass behind the page on macOS 26 and later, the system's vibrancy before it.
+window-vibrancy = "0.8"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 # The native layer: the glass behind the page, the web view's own settings, and work that must run on the main thread.
@@ -65,12 +66,13 @@ quick-xml = "0.42"
 security-framework = "3"
 # Batch rename with regular expressions.
 regex = "1"
-# The window icon is decoded from PNG at startup; the home and the well-known folders.
-png = "0.18"
+# The home and the well-known folders.
 dirs = "7"
 nucleo-matcher = "0.3"
 libc = "0.2"
-tray-icon = { version = "0.26", default-features = false }
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
 
 [profile.release]
 lto = "thin"

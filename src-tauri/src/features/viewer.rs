@@ -65,9 +65,7 @@ pub fn show(app: &mut App, paths: &[PathBuf]) {
             app.post(window, message);
         }
         if let Some(surface) = app.surfaces.get(&window) {
-            surface.window.set_visible(true);
-            surface.window.set_minimized(false);
-            surface.window.set_focus();
+            surface.bring_forward();
         }
         return;
     }
@@ -171,11 +169,11 @@ mod tests {
 
     #[test]
     fn the_bundle_declares_the_service_the_app_answers() {
-        let script = include_str!("../../scripts/bundle-macos.sh");
+        let plist = include_str!("../../Info.plist");
         let source = include_str!("../native/services.rs");
         let message = source.split("#[unsafe(method(").nth(1).and_then(|m| m.split(':').next()).unwrap();
-        assert!(script.contains(&format!("<key>NSMessage</key><string>{message}</string>")), "NSServices in scripts/bundle-macos.sh names another message than {message}");
-        assert!(script.contains("<key>NSPortName</key><string>LazySpace</string>"));
+        assert!(plist.contains(&format!("<key>NSMessage</key><string>{message}</string>")), "NSServices in src-tauri/Info.plist names another message than {message}");
+        assert!(plist.contains("<key>NSPortName</key><string>LazySpace</string>"));
     }
 
     #[test]

@@ -2,11 +2,10 @@
 //! the handlers of the core methods (`app.*`, `settings.*`, `panes.*`, `update.*`). A feature keeps its own
 //! handlers in its own file and registers them with `Dispatcher::on`.
 
-use crate::{App, Role, SurfaceOptions, native, tr, update};
+use crate::{App, Role, SurfaceOptions, WindowId, native, tr, update};
 use serde::{Deserialize, de::DeserializeOwned};
 use serde_json::{Value, json};
 use std::collections::{BTreeSet, HashMap};
-use tao::window::WindowId;
 
 pub type Handler = Box<dyn Fn(&mut App, WindowId, Value) -> Result<Value, String>>;
 
@@ -72,11 +71,20 @@ impl Dispatcher {
         app.request = Some((window, request.id));
         let result = self.call(app, window, &request.method, args);
         app.request = None;
+        if trace() {
+            eprintln!("ipc: {} {} -> {}", window.0, request.method, if result.is_ok() { "ok" } else { "error" });
+        }
         if matches!(&result, Ok(Value::String(s)) if s == DEFERRED) {
             return;
         }
         app.post(window, reply(request.id, result));
     }
+}
+
+/// Whether every request is written to the log with how it ended (`LAZYSPACE_TRACE_IPC`), for a smoke run to read.
+pub(crate) fn trace() -> bool {
+    static TRACE: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *TRACE.get_or_init(|| std::env::var_os("LAZYSPACE_TRACE_IPC").is_some_and(|v| !v.is_empty()))
 }
 
 fn reply(id: u64, result: Result<Value, String>) -> Value {
@@ -130,13 +138,13 @@ pub fn register_core(d: &mut Dispatcher) {
     });
     d.on("app.drag", |app, window, _| {
         if let Some(surface) = app.surfaces.get(&window) {
-            let _ = surface.window.drag_window();
+            let _ = surface.window.start_dragging();
         }
         Ok(Value::Null)
     });
     d.on("app.zoom", |app, window, _| {
         if let Some(surface) = app.surfaces.get(&window) {
-            surface.window.set_maximized(!surface.window.is_maximized());
+            let _ = if surface.window.is_maximized().unwrap_or(false) { surface.window.unmaximize() } else { surface.window.maximize() };
         }
         Ok(Value::Null)
     });
@@ -214,8 +222,7 @@ mod tests {
     }
 
     fn window() -> WindowId {
-        // SAFETY: the id is only used as a key that no window has.
-        unsafe { WindowId::dummy() }
+        WindowId::dummy()
     }
 
     #[test]

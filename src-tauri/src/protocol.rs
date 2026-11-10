@@ -13,8 +13,8 @@ use std::{
     path::{Path, PathBuf},
     sync::{Mutex, OnceLock},
 };
-use wry::{
-    RequestAsyncResponder,
+use tauri::{
+    UriSchemeResponder,
     http::{Request, Response, StatusCode, header},
 };
 
@@ -52,7 +52,7 @@ pub fn is_allowed(path: &Path) -> bool {
     has(path) || path.parent().is_some_and(has)
 }
 
-pub fn handle(request: Request<Vec<u8>>, responder: RequestAsyncResponder) {
+pub fn handle(request: Request<Vec<u8>>, responder: UriSchemeResponder) {
     let uri = request.uri();
     let host = uri.host().unwrap_or_default().to_owned();
     let path = uri.path().to_owned();
