@@ -26,7 +26,7 @@ export function DialogHost() {
           </>
         }
       >
-        <p className="text-[13px] leading-snug text-fg-2">{confirm?.text}</p>
+        <p className="text-[13px] leading-snug whitespace-pre-line text-fg-2">{confirm?.text}</p>
       </SheetFrame>
       {prompt ? <PromptDialog key={prompt.title} request={prompt} /> : null}
     </>

@@ -25,7 +25,7 @@ function unpin(uri: Uri): void {
 }
 
 const MENU: MenuItemDef[] = [
-  { id: 'openWindow', label: 'm.openWindow', icon: 'macwindow.badge.plus', group: 10, order: 3.5, when: folders, run: act('openInNewWindow') },
+  { id: 'openWindow', label: 'm.openWindow', icon: 'macwindow.badge.plus', group: 10, order: 3.5, when: folders, action: 'openInNewWindow', run: act('openInNewWindow') },
   {
     id: 'pin',
     label: 'm.pin',
