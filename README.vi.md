@@ -20,7 +20,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="Giấy phép MIT" /></a>
 </p>
 
-LazySpace là trình quản lý tệp viết bằng Rust. Cửa sổ là một trang web đặt trên các thành phần gốc của macOS: biểu
+LazySpace là trình quản lý tệp viết bằng Rust, trên Tauri. Cửa sổ là một trang React đặt trên các thành phần gốc của macOS: biểu
 tượng và ảnh thu nhỏ của hệ thống, Xem nhanh, Thùng rác, kéo thả với ứng dụng khác, menu chuột phải thật, Keychain.
 Mọi thư mục được liệt kê và sắp xếp trong Rust, nên thư mục một trăm nghìn tệp vẫn mở trong chưa tới một giây; mọi
 thao tác tệp chạy thành một tác vụ có tiến độ, có thể hủy và hoàn tác. Ứng dụng có tiếng Việt và tiếng Anh.
@@ -190,37 +190,48 @@ khi gỡ để Finder hiện lại chúng (hoặc chạy `defaults delete com.ap
 
 ## Build và chạy
 
-Rust 1.93 trở lên, và Command Line Tools.
+Rust 1.93 trở lên, Node 22 trở lên với pnpm, và Command Line Tools.
 
-    cargo run
+    pnpm install
+    pnpm tauri dev                   # ứng dụng, trang do Vite phục vụ ở cổng 1432 và tải lại khi bạn sửa
+    pnpm dev                         # chỉ trang, trong trình duyệt, trên host giả (docs/frontend.md)
 
-    cargo test                       # trình duyệt tệp, tác vụ, các provider và tính năng
-    scripts/check-ui.sh              # mọi script của trang đều đọc được
-    cargo run --example make_icons   # vẽ lại biểu tượng trong assets/
-    scripts/bundle-macos.sh          # build dist/LazySpace.app cho máy này
+    cargo test --manifest-path src-tauri/Cargo.toml   # trình duyệt tệp, tác vụ, các provider và tính năng
+    pnpm typecheck                   # TypeScript
+    pnpm test                        # test của trang và các quy tắc trong docs/frontend.md (src/architecture.test.ts)
+    cargo run --manifest-path src-tauri/Cargo.toml --example make_icons   # vẽ lại biểu tượng trong assets/
+    scripts/bundle-macos.sh          # build dist/LazySpace.app cho máy này (chạy pnpm build và tauri build)
     UNIVERSAL=1 scripts/bundle-macos.sh
 
 Test chỉ chạy trong thư mục tạm. Hai test nói chuyện với máy chủ thật và chạy bằng tay:
-`LZ_TEST_SFTP=user@host cargo test sftp_roundtrip -- --ignored` và
-`LZ_TEST_FTP=user:password@host cargo test ftp_roundtrip -- --ignored`.
+`LZ_TEST_SFTP=user@host cargo test --manifest-path src-tauri/Cargo.toml sftp_roundtrip -- --ignored` và
+`LZ_TEST_FTP=user:password@host cargo test --manifest-path src-tauri/Cargo.toml ftp_roundtrip -- --ignored`.
 
 ## Cách hoạt động
 
-- `src/main.rs` - các cửa sổ (chính, màn hình nền, khay tạm), vòng lặp sự kiện, và phần nối giữa trang với Rust.
-- `src/ipc.rs` - tin nhắn giữa trang và ứng dụng; `ipc::defer` trả lời từ một luồng riêng cho lệnh phải chờ ổ đĩa hay
-  máy chủ.
-- `src/vfs/` - các nơi theo URI và provider của từng scheme; `copy.rs` chép và chuyển giữa hai nơi bất kỳ, hỏi khi
-  trùng tên.
-- `src/views.rs`, `src/browse.rs` - danh sách sắp xếp và lọc trong Rust, đưa cho trang từng đoạn dòng; thao tác tệp,
-  bảng nhớ tạm và hoàn tác.
-- `src/jobs.rs` - thao tác dài có tiến độ, hủy được và hỏi người dùng khi cần.
-- `src/native/` - phần macOS qua objc2: biểu tượng và ảnh thu nhỏ, Xem nhanh, Thùng rác, kéo ra, menu chuột phải, cửa
-  sổ màn hình nền, ổ đĩa và thiết bị USB vừa cắm (NSWorkspace, DiskArbitration, IOKit).
-- `src/features/` - mỗi tính năng một module: `archive/` (libarchive qua FFI và sevenz-rust2), `remote/` (SFTP trên
-  russh, FTP trên suppaftp, S3 tự ký, NetFS, rclone, Keychain), `sync.rs`, `rename.rs`, `preview.rs`, `stash.rs`,
-  `desktop.rs`, `workspaces.rs`, `templates.rs`, `openin.rs`, `hash.rs`, `menuedit.rs`, `devices.rs`.
-- `ui/index.html` và `ui/parts/` - trang, ghép lúc build; mỗi tính năng thêm phần của mình qua `LZ`.
-- `docs/design.md` - tài liệu thiết kế.
+Ứng dụng là Tauri 2: Rust giữ mọi trạng thái và làm mọi việc, cửa sổ là một trang React xin các dòng và báo người dùng
+vừa làm gì. `src-tauri/` là phần Rust, `src/` là trang.
+
+- `src-tauri/src/main.rs` - các cửa sổ (chính, màn hình nền, khay tạm), vòng lặp sự kiện, và phần nối giữa trang với Rust.
+- `src-tauri/src/ipc.rs` - tin nhắn giữa trang và ứng dụng (một lệnh `ipc`, trả lời và đẩy ngược về dưới dạng sự kiện);
+  `ipc::defer` trả lời từ một luồng riêng cho lệnh phải chờ ổ đĩa hay máy chủ.
+- `src-tauri/src/vfs/` - các nơi theo URI và provider của từng scheme; `copy.rs` chép và chuyển giữa hai nơi bất kỳ,
+  hỏi khi trùng tên.
+- `src-tauri/src/views.rs`, `src-tauri/src/browse.rs` - danh sách sắp xếp và lọc trong Rust, đưa cho trang từng đoạn
+  dòng; thao tác tệp, bảng nhớ tạm và hoàn tác.
+- `src-tauri/src/jobs.rs` - thao tác dài có tiến độ, hủy được và hỏi người dùng khi cần.
+- `src-tauri/src/native/`, `glass.rs`, `menus.rs`, `protocol.rs` - phần macOS qua objc2: biểu tượng và ảnh thu nhỏ
+  (scheme `lazy://`), Xem nhanh, Thùng rác, kéo ra, menu gốc, lớp kính sau cửa sổ, ổ đĩa và thiết bị USB vừa cắm
+  (NSWorkspace, DiskArbitration, IOKit).
+- `src-tauri/src/features/` - mỗi tính năng một module: `archive/` (libarchive qua FFI và sevenz-rust2), `remote/`
+  (SFTP trên russh, FTP trên suppaftp, S3 tự ký, NetFS, rclone, Keychain), `sync.rs`, `rename.rs`, `preview.rs`,
+  `stash.rs`, `desktop.rs`, `workspaces.rs`, `templates.rs`, `openin.rs`, `hash.rs`, `menuedit.rs`, `devices.rs`.
+- `src-tauri/vendor/tauri-runtime-wry/` - lớp cửa sổ của Tauri với một thay đổi, để chữ, liên kết và ảnh kéo từ ứng
+  dụng khác vào được trang (`src-tauri/vendor/tauri-runtime-wry.diff`).
+- `src/` - trang: React 19, TypeScript, shadcn/ui trên React Aria, Tailwind 4 và Liquid Glass. `src/services` là cửa
+  duy nhất sang Rust, `src/features/<tên>` là một thư mục cho mỗi tính năng, `src/styles/index.css` là stylesheet duy
+  nhất. `docs/frontend.md` là hướng dẫn cho người viết một tính năng.
+- `docs/design.md` - thiết kế ban đầu (các chương về trang mô tả trang viết tay trước đây).
 
 ## Dữ liệu và quyền riêng tư
 
@@ -241,4 +252,4 @@ Cài đặt, workspace, kết nối đã lưu (không kèm bí mật) và vị t
 
 ## Giấy phép
 
-MIT. Xem [LICENSE](LICENSE). LazySpace là chương trình độc lập, không liên quan tới Apple hay QSpace.
+MIT. Xem [LICENSE](LICENSE); thông báo bản quyền của các thư viện mà trang và ứng dụng mang theo (shadcn/ui, React, React Aria và các thư viện khác) nằm trong [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). LazySpace là chương trình độc lập, không liên quan tới Apple hay QSpace.

@@ -20,7 +20,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
 </p>
 
-LazySpace is a file manager written in Rust. Its window is a web page over native macOS parts: the system's own icons
+LazySpace is a file manager written in Rust, on Tauri. Its window is a React page over native macOS parts: the system's own icons
 and thumbnails, Quick Look, the Trash, drag and drop with other apps, a real context menu, the Keychain. Every folder
 is listed and sorted in Rust, so a folder of a hundred thousand files opens in a fraction of a second, and every file
 operation runs as a job you can watch, cancel and undo. It speaks English and Vietnamese.
@@ -196,37 +196,49 @@ shows them again (or run `defaults delete com.apple.finder CreateDesktop; killal
 
 ## Build and run
 
-Rust 1.93 or later, and the Command Line Tools.
+Rust 1.93 or later, Node 22 or later with pnpm, and the Command Line Tools.
 
-    cargo run
+    pnpm install
+    pnpm tauri dev                   # the app, with the page served by Vite on port 1432 and reloaded as you edit
+    pnpm dev                         # only the page, in a browser, on a mock host (docs/frontend.md)
 
-    cargo test                       # the browser, the jobs, the providers and the features
-    scripts/check-ui.sh              # every script of the page parses
-    cargo run --example make_icons   # redraw the icons in assets/
-    scripts/bundle-macos.sh          # build dist/LazySpace.app for this Mac
+    cargo test --manifest-path src-tauri/Cargo.toml   # the browser, the jobs, the providers and the features
+    pnpm typecheck                   # TypeScript
+    pnpm test                        # the page's tests and the rules of docs/frontend.md (src/architecture.test.ts)
+    cargo run --manifest-path src-tauri/Cargo.toml --example make_icons   # redraw the icons in assets/
+    scripts/bundle-macos.sh          # build dist/LazySpace.app for this Mac (it runs pnpm build and tauri build)
     UNIVERSAL=1 scripts/bundle-macos.sh
 
 The tests run in temporary folders only. Two tests talk to real servers and run by hand:
-`LZ_TEST_SFTP=user@host cargo test sftp_roundtrip -- --ignored` and
-`LZ_TEST_FTP=user:password@host cargo test ftp_roundtrip -- --ignored`.
+`LZ_TEST_SFTP=user@host cargo test --manifest-path src-tauri/Cargo.toml sftp_roundtrip -- --ignored` and
+`LZ_TEST_FTP=user:password@host cargo test --manifest-path src-tauri/Cargo.toml ftp_roundtrip -- --ignored`.
 
 ## How it works
 
-- `src/main.rs` - the windows (main, desktop and shelf), the event loop, and the glue between pages and Rust.
-- `src/ipc.rs` - the messages between a page and the app; `ipc::defer` answers from a thread a call that waits on a
-  disk or a server.
-- `src/vfs/` - places by URI and the provider of each scheme; `copy.rs` copies and moves between any two of them,
-  asking about each clash.
-- `src/views.rs`, `src/browse.rs` - listings sorted and filtered in Rust, handed to the page a range of rows at a time;
-  the file operations, the clipboard and undo.
-- `src/jobs.rs` - long operations with progress, cancel and questions to the user.
-- `src/native/` - the macOS parts through objc2: icons and thumbnails, Quick Look, the Trash, drag out, the context
-  menu, the desktop's window, the disks and USB devices plugged in (NSWorkspace, DiskArbitration, IOKit).
-- `src/features/` - one module per feature: `archive/` (libarchive through FFI, and sevenz-rust2), `remote/` (SFTP on
-  russh, FTP on suppaftp, S3 signed by hand, NetFS, rclone, the Keychain), `sync.rs`, `rename.rs`, `preview.rs`,
-  `stash.rs`, `desktop.rs`, `workspaces.rs`, `templates.rs`, `openin.rs`, `hash.rs`, `menuedit.rs`, `devices.rs`.
-- `ui/index.html` and `ui/parts/` - the page, joined at build time; each feature adds its part through `LZ`.
-- `docs/design.md` - the design, in Vietnamese.
+The app is Tauri 2: Rust holds all the state and does all the work, and the window is a React page that asks for rows and
+tells what the user did. `src-tauri/` is the Rust side, `src/` the page.
+
+- `src-tauri/src/main.rs` - the windows (main, desktop and shelf), the event loop, and the glue between pages and Rust.
+- `src-tauri/src/ipc.rs` - the messages between a page and the app (one command, `ipc`, answered and pushed back as
+  events); `ipc::defer` answers from a thread a call that waits on a disk or a server.
+- `src-tauri/src/vfs/` - places by URI and the provider of each scheme; `copy.rs` copies and moves between any two of
+  them, asking about each clash.
+- `src-tauri/src/views.rs`, `src-tauri/src/browse.rs` - listings sorted and filtered in Rust, handed to the page a range
+  of rows at a time; the file operations, the clipboard and undo.
+- `src-tauri/src/jobs.rs` - long operations with progress, cancel and questions to the user.
+- `src-tauri/src/native/`, `glass.rs`, `menus.rs`, `protocol.rs` - the macOS parts through objc2: icons and thumbnails
+  (the `lazy://` scheme), Quick Look, the Trash, drag out, the native menus, the glass behind the window, the disks and
+  USB devices plugged in (NSWorkspace, DiskArbitration, IOKit).
+- `src-tauri/src/features/` - one module per feature: `archive/` (libarchive through FFI, and sevenz-rust2), `remote/`
+  (SFTP on russh, FTP on suppaftp, S3 signed by hand, NetFS, rclone, the Keychain), `sync.rs`, `rename.rs`,
+  `preview.rs`, `stash.rs`, `desktop.rs`, `workspaces.rs`, `templates.rs`, `openin.rs`, `hash.rs`, `menuedit.rs`,
+  `devices.rs`.
+- `src-tauri/vendor/tauri-runtime-wry/` - Tauri's window layer with one change, so that text, links and pictures
+  dragged from other apps reach the page (`src-tauri/vendor/tauri-runtime-wry.diff`).
+- `src/` - the page: React 19, TypeScript, shadcn/ui on React Aria, Tailwind 4 and Liquid Glass. `src/services` is the
+  only door to Rust, `src/features/<name>` is one folder per feature, `src/styles/index.css` the only stylesheet.
+  `docs/frontend.md` is the guide for whoever writes a feature.
+- `docs/design.md` - the first design, in Vietnamese (its page chapters describe the older hand-written page).
 
 ## Data and privacy
 
@@ -248,4 +260,4 @@ for the update check (which a switch in Settings turns off). Nothing else leaves
 
 ## Licence
 
-MIT. See [LICENSE](LICENSE). LazySpace is an original program; it is not affiliated with Apple or with QSpace.
+MIT. See [LICENSE](LICENSE); the notices of the libraries the page and the app carry (shadcn/ui, React, React Aria and others) are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). LazySpace is an original program; it is not affiliated with Apple or with QSpace.

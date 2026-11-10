@@ -8,7 +8,6 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "check:protocol": "node scripts/migration/check-protocol.mjs",
     "tauri": "tauri"
   },
   "dependencies": {

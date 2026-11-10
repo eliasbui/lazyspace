@@ -5,6 +5,12 @@ Tài liệu này là nguồn sự thật duy nhất cho các worker triển khai
 tiếng Việt, định danh và mã bằng tiếng Anh. Mọi API và crate quan trọng đã được kiểm chứng bằng cách đọc nguồn trong
 `~/.cargo/registry/src` hoặc bằng thí nghiệm; chỗ nào chưa kiểm chứng được ghi rõ "chưa kiểm chứng".
 
+> Cập nhật sau khi chuyển sang Tauri và React (xem mục 18). Cửa sổ không còn là tao, wry và một trang HTML viết tay:
+> phần Rust nằm trong `src-tauri/` và chạy trên Tauri 2; trang là React 19, TypeScript, shadcn/ui trên React Aria,
+> Tailwind 4 và Liquid Glass, nằm trong `src/`. Hợp đồng IPC ở mục 5 vẫn đúng từng phương thức và từng sự kiện
+> (chỉ đường vận chuyển đổi), mục 6 được viết lại, các mục 13 và 14 đã sửa theo cách build mới. Các mục còn lại là lịch
+> sử của thiết kế đầu: đường dẫn `src/...` của phần Rust nay là `src-tauri/src/...`, và `ui/` không còn.
+
 Tham chiếu mã nguồn tái dùng (MIT, cùng tác giả):
 
 - Lanes: `/Users/bdthai/Desktop/lanes` (viết tắt `lanes/`).
@@ -355,88 +361,31 @@ thao tác), `view.sizes`, `jobs.started|progress|ask|finished`, `drop { window, 
 
 ## 6. Kiến trúc giao diện
 
-### 6.1 Cấu trúc trang (`ui/index.html`)
+Trang là một ứng dụng React trong `src/`; hướng dẫn đầy đủ cho người viết một tính năng là `docs/frontend.md`. Mục này
+nói những gì không đổi theo thời gian.
 
-```
-html[lang][data-theme][data-glass]  -> script đầu trang đặt class dark/glass/mac như Lanes
-  .backdrop                        -> ánh sáng màu dưới kính (Lanes)
-  .app (grid: sidebar | main)
-    aside.sidebar                  -> .side-top (chỗ traffic lights), nav: Favourites, iCloud/Home, Volumes (eject), Tags?, [slot sidebar.sections], .side-foot (jobs mini, settings)
-    main
-      .toolbar                     -> nút back/forward, [slot toolbar.left], .address (breadcrumb | input), [slot toolbar.right], view mode, search
-      .workspace                   -> .pane-grid[data-layout=single|h2|v2|grid] chứa 1..4 .pane
-        .pane[data-pane=p0]        -> .tabs (per-pane), .list (virtualized), .pane-overlay [slot pane.overlay], .status
-      .preview-slot                -> [slot preview.right | preview.bottom], W4 lấp đầy
-      .statusbar                   -> số mục, dung lượng chọn, dung lượng trống; [slot status]
-  .sheets                          -> lớp sheet chung: settings, conflict, progress, [slot sheets]
-  .toasts
-  #templates (các <template> của lõi)
-```
-
-### 6.2 Mô hình trạng thái (JS, `window.S`)
-
-```js
-S = {
-  window: { role: "main", id: 1 },
-  layout: "single" | "h2" | "v2" | "grid",     // 1, 2 ngang, 2 dọc, 2x2
-  panes: [ { id: "p0", tabs: [Tab], active: 0 } ],      // 1..4
-  focus: "p0",
-  viewMode: "list" | "icons" | "columns",              // columns là mục tiêu phụ, lõi giao "list" và "icons"
-  showHidden: false,
-  Tab: { id: "p0t2", uri: "file:///Users/me", history: [uri], hi: 0, sort: Sort, selection: Set<name>, anchor: name,
-         count, generation, scrollTop, capabilities: ["write","trash","watch","sizes"] }
-}
-```
-
-`view` trong IPC chính là `Tab.id`; Rust giữ listing, page giữ selection, scroll và lịch sử. Mỗi thay đổi bố cục gọi
-`panes.state` (debounce 500 ms) để lưu `layout.json` và cho W1.
-
-### 6.3 Danh sách ảo cho 100k mục
-
-Listing sống trong Rust (`src/views.rs`): `Vec<Entry>` đã sắp xếp cộng chỉ số lọc. Page chỉ vẽ các hàng nhìn thấy:
-
-- Một `.list` có `.spacer` cao `count * rowHeight` và một lớp hàng tái dùng (pool khoảng 60 phần tử).
-- Khi cuộn: tính `start = floor(scrollTop / rowHeight) - 20`, xin `view.rows` cho `[start, start + visible + 40)`;
-  cache thưa `Map<index, Entry>` theo `generation`; các khối đã có không xin lại; một yêu cầu đang bay thì gộp.
-- Mỗi lần `view.changed` tăng `generation`: page xóa cache, giữ scroll và selection theo tên, hỏi lại `view.index_of`
-  cho anchor.
-- Icon là `<img loading="lazy" src="lazy://icon/32/<uri>">`; trình duyệt tự gộp và hủy khi hàng rời màn hình; Rust
-  cache (mục 8.1).
-- Chế độ icons: cùng cơ chế, hàng là một dòng ô.
-- Chọn tất cả 100k mục là `{ all: true, except: [] }` nên không bao giờ gửi 100k tên; chọn bằng Shift gửi `{names}`
-  nếu dưới 2000 tên, nếu không gửi `{ range: [a, b], names: [...] }` (Rust hiểu range theo chỉ số đã sắp).
-
-### 6.4 UI extension API (`window.LZ`, F3 cung cấp trong index.html)
-
-Feature parts chỉ gọi API này, không chạm DOM của lõi ngoài slot của mình:
-
-```js
-LZ.words({ vi: { stashAdd: "Thêm vào Stash" }, en: { stashAdd: "Add to Stash" } });   // gộp vào WORDS, t(key) dùng chung
-LZ.menu.add({ id: "stash.add", label: "stashAdd", icon: "tray.and.arrow.down", when: ctx => ctx.items.length > 0, group: "feature", order: 70,
-              run: ctx => call("stash.add", { uris: ctx.uris }) });
-LZ.toolbar.add({ id: "stash.toggle", side: "right", icon: "tray", label: "stash", run: () => ... });
-LZ.sheet.register("rename.batch", { title: "batchRename", build(el, ctx) {...}, onClose() {...} });  LZ.sheet.open("rename.batch", ctx)
-LZ.settings.section({ id: "archive", title: "archive", order: 60, build(el, settings) {...} });   // vào sheet Settings
-LZ.keys.add({ id: "rename.batch", mac: "Cmd+Shift+R", windows: "F2+Shift", when: "list", run: ctx => ... });
-LZ.pane.overlay(paneId, element | null);            // phủ lên vùng list của pane (sync, archive progress, preview nhỏ)
-LZ.sidebar.section({ id: "remote", title: "servers", order: 40, items: () => [{ label, icon, uri, menu }] });
-LZ.vfs.scheme("archive", { label: "archive", icon: "archive", openEntry: (entry) => uri | null });  // mục 6.5
-LZ.preview.register({ id: "video", match: entry => /\.(mp4|mov)$/i.test(entry.name), build(el, entry) {...} });  // W4 sở hữu slot, feature khác góp
-LZ.on("view.changed", fn); LZ.off(...); LZ.emit(...)
-LZ.state(); LZ.focusedTab(); LZ.selection(); LZ.navigate(paneId, uri); LZ.openTab(paneId, uri); LZ.refresh(view)
-LZ.toast(text); LZ.confirm(text); LZ.prompt(text, value)
-LZ.icons.add({ tray: "<svg ...>" })                 // SVG nội tuyến theo tên
-```
-
-`ctx` của menu và phím: `{ paneId, tabId, uri, items: [Entry], uris, where: "list" | "empty" | "sidebar" | "tab" | "desktop" }`.
-Phần lõi tự đăng ký các mục menu và phím mặc định của mình qua cùng API, nên W1 chỉ cần sắp xếp lại một danh sách
-thống nhất (mục 8.12).
-
-### 6.5 Vị trí VFS trên page
-
-Một tab chỉ biết `uri`. Mở một `Entry` kind `file` đi qua các `LZ.vfs.scheme(...).openEntry`: W6 đăng ký trả
-`archive:///path/to/a.zip!/` cho đuôi nén, nếu không có ai nhận thì `native.open`. Breadcrumb tách theo `/` sau phần
-authority, phần authority (`sftp://user@host`) là crumb đầu, W6 vẽ crumb `a.zip` rồi các thư mục trong archive.
+- Rust giữ mọi trạng thái. Trang xin dòng theo đoạn và theo `generation` (`view.rows`, lỗi `"stale"` nghĩa là xin lại),
+  rồi báo người dùng vừa làm gì. Trang chỉ giữ trạng thái xem: vùng chọn, sheet đang mở, vị trí cuộn, các dòng đã nhận.
+- Cửa duy nhất sang Rust là `src/services`: giao thức có kiểu (132 phương thức, 37 sự kiện), host thật (Tauri: một
+  lệnh `ipc`, trả lời và sự kiện đẩy về bằng `window.app.receive`) và host giả trong bộ nhớ để chạy trang ngoài app
+  (webshot, `pnpm dev`). Chỉ thư mục này import `@tauri-apps`.
+- Bố cục cửa sổ: thanh bên kính nổi (Bookmarks, tính năng thêm vào giữa, Locations); bên phải là thanh công cụ (các
+  viên thuốc kính), lưới pane (1 đến 6 pane, mỗi pane có tab, thanh đường dẫn, danh sách hay biểu tượng hay cột hay
+  thư viện, thanh trạng thái), khung xem trước; sheet, hộp thoại, bảng tác vụ, thông báo cập nhật nằm trên cùng.
+  Cửa sổ màn hình nền và khay tạm là những trang riêng, đăng ký theo vai trò (`registry.role`).
+- Tính năng cắm vào lõi qua `src/lib/registry.ts` (mục menu ngữ cảnh, nút thanh công cụ, mục thanh bên và cài đặt,
+  sheet, xem trước, phím, hành động, nơi, cách mở, kiểu xem, huy hiệu và lớp phủ của pane). Lõi không import tính năng
+  nào; `src/features/index.ts` liệt kê và gọi `register()` của từng cái. Pane và thanh bên đưa ra `src/lib/panes-api.ts`
+  và `src/lib/sidebar-api.ts` để tính năng dùng mà không import lõi.
+- Ba tầng kính: chất liệu cửa sổ (native, Rust); thứ nổi dùng để điều hướng (thanh bên, viên thuốc thanh công cụ, menu,
+  sheet, tooltip); điều khiển trên thẻ (viền sáng, đổ bóng, không làm mờ). Nội dung (danh sách, bảng, văn bản, xem
+  trước) không bao giờ là kính. Một màu nhấn (của hệ thống), chữ hệ thống 13 px, lưới 4 pt, bo góc đồng tâm.
+- Chữ trong trang chỉ nằm ở `src/i18n` (hai từ điển vi và en cùng khóa, kiểm tra bằng kiểu và bằng
+  `src/architecture.test.ts`). Chỉ một stylesheet, `src/styles/index.css`.
+- CSP của trang (`src-tauri/tauri.conf.json`): `default-src 'self'; script-src 'self'; style-src 'self'
+  'unsafe-inline'; img-src 'self' data: blob: lazy:; media-src lazy: blob:; font-src 'self' data:; connect-src ipc:
+  http://ipc.localhost; object-src lazy:; frame-src 'none'; base-uri 'none'; form-action 'none'`. Không có script nội
+  tuyến nào; `style-src` cho phép thuộc tính `style` vì trang tính một số giá trị lúc chạy (vị trí dòng ảo, bề rộng).
 
 ## 7. VFS
 
@@ -788,6 +737,8 @@ in thời gian `local.list` (ngưỡng 1 s) và `view.rows` (ngưỡng 5 ms).
 | `src/update.rs` | giữ tên | `REPO = "eliasbui/lazyspace"`, `BUNDLE_ID`, `APP = "LazySpace.app"`, `STAGE = ".LazySpace-update"`, `OLD`; xóa mọi nhánh `cfg!(windows)`, `EXE`, `put_exe_in_place`, `check_exe`; `check_app` kiểm tra `Contents/MacOS/lazyspace`; ureq 3 thay 2 (`ureq::get(url).header("User-Agent", "lazyspace").call()`, `response.body_mut().read_to_string()`); giữ nguyên `parse`, `verify`, `swap`, `relaunch`, các test |
 | `scripts/install.ps1`, `package-windows.sh`, `build-ffmpeg.sh`, `winresource`, `extension/` | bỏ | |
 
+Sau khi chuyển sang Tauri, `scripts/bundle-macos.sh` gọi `pnpm tauri build --bundles app` (cộng `--target universal-apple-darwin` khi `UNIVERSAL=1`), chép `.app` vào `dist/`, kiểm tra phiên bản và id của bundle, rồi ký như trước; `Info.plist`, chuỗi bản địa hóa và biểu tượng nằm trong `src-tauri/`. `scripts/release.sh` chạy `cargo test`, `pnpm typecheck` và `pnpm test` trước khi đẩy tag.
+
 Checklist phát hành: `cargo test` xanh; `scripts/smoke.sh` xanh (mục 14); `scripts/screenshots.sh` xem bằng mắt ba
 ảnh; `scripts/release.sh X.Y.Z` (bump, test, bundle universal, zip bằng `ditto`, tag, `gh release create`, upload
 `latest.json`, cập nhật cask); mở app vừa cài từ cask một lần để xác nhận Gatekeeper không chặn và updater thấy
@@ -801,9 +752,8 @@ phiên bản mới nhất.
   thread giả), `keymap` (bảng windows ánh xạ Ctrl+C), `contextmenu` (lọc `when`), `update` (các test của Lanes),
   `settings` (tệp cũ giữ giá trị), và của từng W (mục 15). Test không chạm AppKit; mã objc2 được bọc bởi hàm mỏng
   không có logic.
-- `scripts/check-ui.sh`: `node --check` cho mọi script nội tuyến của `ui/index.html` và từng `ui/parts/*.js`; chạy sau
-  mọi thay đổi trong `ui/`.
-- `scripts/smoke.sh`: `cargo build --release`, `scripts/bundle-macos.sh`, `open dist/LazySpace.app`, chờ 3 s,
+- Trang: `pnpm typecheck` (TypeScript chặt, không `any`), `pnpm test` (vitest: logic thuần của từng tính năng, `src/services/services.test.ts` chạy trên host giả, và `src/architecture.test.ts` kiểm các quy tắc của `docs/frontend.md`: chỉ `src/services` import `@tauri-apps`, một stylesheet, không `.js` trong `src`, `index.html` chỉ có thẻ gốc và script, không emoji, hai từ điển cùng khóa).
+- `scripts/smoke.sh`: `scripts/bundle-macos.sh`, `open dist/LazySpace.app`, chờ 3 s,
   `pgrep -x lazyspace`, kiểm tra `~/Library/Application Support/LazySpace/settings.json` xuất hiện, `osascript -e
   'quit app "LazySpace"'`. Thoát khác 0 nếu bất kỳ bước nào hỏng.
 - `scripts/screenshots.sh`: chạy app với biến môi trường `LAZYSPACE_SETTINGS=<tệp tạm>` (F1 hỗ trợ để test không
@@ -1234,3 +1184,18 @@ màu"), đọc lúc phục vụ `view.rows` nên chỉ trả giá cho dòng trê
   `application:openURLs:` dù Info.plist không khai kiểu tệp, tao đưa ra `Event::Opened`. Thư mục mở thành tab, mục khác
   mở thư mục chứa nó và chọn nó. "Hiện trong Finder" của chính LazySpace (`native.reveal`) gọi Finder bằng AppleScript
   khi `NSFileViewer` không còn là Finder, để không vòng lại LazySpace.
+
+## 18. Chuyển sang Tauri và React
+
+- Phần Rust chuyển vào `src-tauri/` và chạy trên Tauri 2 thay cho tao và wry: một `Host` trong thread-local trên luồng
+  chính giữ `App` và `Dispatcher`; trang gọi một lệnh `ipc(body)`; trả lời và sự kiện về qua `window.eval`. Cửa sổ có
+  nhãn `lz-<id>`. Kính dùng `window-vibrancy` (macOS 26 trở lên: Liquid Glass; trước đó: vibrancy Sidebar).
+- Kéo thả thứ không phải tệp (chữ, liên kết, ảnh từ trình duyệt vào khay tạm) cần một thay đổi nhỏ của
+  `tauri-runtime-wry` 2.12.3, giữ trong `src-tauri/vendor/` và nối bằng `[patch.crates-io]`; xem
+  `src-tauri/vendor/tauri-runtime-wry.diff`.
+- Trang cũ (`ui/index.html` cộng `ui/parts/*`, API `LZ`) đã bị xóa cùng lớp tương thích và `scripts/check-ui.sh`. Bản
+  cũ nằm trong lịch sử git (commit `c1994a1`, Release 0.4.6). `MIGRATION.md` và `PARITY.md` ghi từng phương thức, sự
+  kiện, mục host và mục giao diện của trang cũ nằm ở đâu trong bản mới.
+- Hai khóa `sidebar_hidden` và `full_disk_later` mà trang cũ gửi trong `settings.set` không có trong `Settings` của
+  Rust nên bị từ chối âm thầm; trang mới giữ nơi bị ẩn trong `sidebar_sections` và "để sau" của Toàn quyền truy cập đĩa
+  trong `localStorage`.

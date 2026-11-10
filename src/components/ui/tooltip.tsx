@@ -1,7 +1,6 @@
 import * as React from "react"
 import { cn } from "cn"
 import {
-  Focusable,
   Tooltip as TooltipPrimitive,
   TooltipTrigger as TooltipTriggerPrimitive,
 } from "react-aria-components"
@@ -19,9 +18,8 @@ function TooltipTrigger({
       delay={delay}
       {...props}
     >
-      <Focusable>
-        {trigger as React.ComponentProps<typeof Focusable>["children"]}
-      </Focusable>
+      {/* React Aria's own buttons are focusable by themselves; a `Focusable` around them warned whenever a sheet made the page behind it inert. */}
+      {trigger}
       {tooltip}
     </TooltipTriggerPrimitive>
   )

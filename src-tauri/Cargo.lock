@@ -2330,6 +2330,7 @@ dependencies = [
  "objc2-quick-look-ui",
  "objc2-uniform-type-identifiers",
  "objc2-web-kit",
+ "png",
  "quick-xml",
  "regex",
  "russh",
