@@ -18,7 +18,7 @@ export function register(): void {
   registry.sidebar.section({ id: 'stash', title: null, order: 11, Component: StashSection });
   registry.role('shelf', ShelfPage);
 
-  registry.toolbar.add({ id: 'stash', side: 'right', icon: <TrayIcon />, label: 'stashShow', run: () => void panes.action('toggleShelf') });
+  registry.toolbar.add({ id: 'stash', side: 'right', order: 70, icon: <TrayIcon />, label: 'stashShow', run: () => void panes.action('toggleShelf') });
   registry.actions.set('toggleShelf', () => void api.stash.show({}).catch(say));
   registry.keys.add({ 'Cmd+Alt+T': 'toggleShelf' });
 
@@ -39,7 +39,14 @@ export function register(): void {
     useStash.setState({ count: d.count });
     for (const pane of panes.all()) if (pane.tab.uri === STASH) pane.refresh();
   });
-  on('app.hello', () => {
+  on('app.hello', (hello) => {
+    // Files dropped on the sidebar's Stash go on the shelf: the shelf cannot be written to as a folder.
+    if (hello.windowRole === 'main')
+      panes.setDropHandler((drop, target) => {
+        if (target.uri !== STASH) return false;
+        add(drop.uris);
+        return true;
+      });
     api.lanes.available().then(
       (yes) => useStash.setState({ hasLanes: yes }),
       () => undefined,

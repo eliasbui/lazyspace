@@ -164,7 +164,7 @@ function PreviewPanel({ bottom }: { bottom: boolean }) {
       <Grip bottom={bottom} />
       <div className="flex h-9 flex-none items-center justify-between gap-1.5 pr-1.5 pl-3.5">
         <span className="truncate text-[12px] font-semibold">{title}</span>
-        <IconButton size="icon-sm" label={t(bottom ? 'moveRight' : 'moveBottom')} icon={bottom ? <SidebarSimpleIcon mirrored /> : <SquareSplitVerticalIcon />} onPress={side} className="text-fg-2" />
+        <IconButton size="icon-sm" label={t(bottom ? 'moveRight' : 'moveBottom')} icon={bottom ? <SidebarSimpleIcon className="-scale-x-100" /> : <SquareSplitVerticalIcon />} onPress={side} className="text-fg-2" />
       </div>
       <div className={cn('flex min-h-0 flex-1 gap-3 overflow-y-auto px-3.5 pt-1 pb-3.5', bottom ? 'flex-row' : 'flex-col')}>{body}</div>
     </aside>

@@ -153,7 +153,7 @@ export function Toolbar() {
     items
       .filter((item) => item.side === side && (!item.when || item.when()))
       .sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
-      .map((item) => ({ id: item.id, label: t(item.label), icon: item.icon, run: item.run }));
+      .map((item) => ({ id: item.id, label: t(item.label), icon: item.icon, pressed: item.active?.(), run: item.run }));
 
   const layoutMenu = async (rect: DOMRect) => {
     const id = await choose(
