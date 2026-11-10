@@ -7,6 +7,7 @@ import { IconButton } from '@/components/macos/Tip';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select';
+import { Progress, ProgressIndicator, ProgressTrack } from '@/components/ui/progress';
 import { Spinner } from '@/components/ui/spinner';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useT } from '@/i18n';
@@ -27,6 +28,7 @@ export function SyncSheet({ close }: SheetProps<undefined>) {
   const right = useSync((s) => s.right);
   const pairs = useSync((s) => s.pairs);
   const job = useSync((s) => s.job);
+  const progress = useSync((s) => s.progress);
   const filter = useSync((s) => s.filter);
   const options = useSync((s) => s.options);
   const status = useSync((s) => s.status);
@@ -127,6 +129,16 @@ export function SyncSheet({ close }: SheetProps<undefined>) {
           {status?.kind === 'error' ? status.text : null}
           {status?.kind === 'result' ? `${t('syncSummary', status.same, pairs.length)}${status.truncated ? ` ${t('syncTruncated')}` : ''}` : null}
         </p>
+        {busy && progress && progress.total > 0 ? (
+          <div className="flex flex-col gap-1">
+            <Progress aria-label={t('comparing')} value={Math.min(100, (progress.done / progress.total) * 100)}>
+              <ProgressTrack>
+                <ProgressIndicator className="bg-tint" />
+              </ProgressTrack>
+            </Progress>
+            <span className="truncate text-[11px] text-fg-3">{progress.current}</span>
+          </div>
+        ) : null}
         {shown.length ? (
           <ul className="pane max-h-[min(calc(80vh-330px),390px)] divide-y divide-hair overflow-y-auto rounded-card">
             {shown.slice(0, SHOWN).map(([p, i]) => (

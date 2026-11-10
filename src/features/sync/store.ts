@@ -27,6 +27,8 @@ interface SyncStore {
   pairs: SyncPair[];
   /** The job that runs (a compare or a sync), or null. */
   job: number | null;
+  /** How far the job is, from `jobs.progress`; null before the first report. */
+  progress: { done: number; total: number; current: string } | null;
   filter: 'all' | (typeof STATES)[number];
   options: Options;
   status: Status;
@@ -37,6 +39,7 @@ export const useSync = create<SyncStore>(() => ({
   right: null,
   pairs: [],
   job: null,
+  progress: null,
   filter: 'all',
   options: { mode: 'ltr', content: false, ignoreHidden: true, mirror: false },
   status: null,
@@ -47,7 +50,7 @@ let round = 0;
 
 function run(job: Promise<{ job: number }>, failed: (error: unknown) => void): void {
   const mine = ++round;
-  useSync.setState({ job: null });
+  useSync.setState({ job: null, progress: null });
   job.then((d) => mine === round && useSync.setState({ job: d.job }), failed);
 }
 
@@ -60,9 +63,12 @@ export function compare(): void {
 
 /** Listens to the end of the jobs; called once by register(). */
 export function listen(): void {
+  on('jobs.progress', (d) => {
+    if (d.id === useSync.getState().job) useSync.setState({ progress: { done: d.done, total: d.total, current: d.current } });
+  });
   on('jobs.finished', (d) => {
     if (d.id !== useSync.getState().job) return;
-    useSync.setState({ job: null });
+    useSync.setState({ job: null, progress: null });
     if (!d.ok) {
       useSync.setState({ status: 'cancelled' in d ? null : { kind: 'error', text: d.error } });
       return;
