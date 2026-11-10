@@ -86,6 +86,13 @@ export const vi = {
   noCommand: "Không có lệnh nào khớp",
   needTwoPanes: "Cần hai khung: chọn bố cục hai khung bằng Cmd+Option+2",
   noClosedTab: "Không có tab nào vừa đóng",
+  "cmdGroup.menu": "Với mục đang chọn",
+  "key.ArrowUp": "Lên",
+  "key.ArrowDown": "Xuống",
+  "key.ArrowLeft": "Trái",
+  "key.ArrowRight": "Phải",
+  "key.Backspace": "Delete",
+  "key.Alt": "Option",
 } as const;
 
 export const en = {
@@ -175,4 +182,11 @@ export const en = {
   noCommand: "No command matches",
   needTwoPanes: "Two panes are needed: choose a layout of two with Cmd+Option+2",
   noClosedTab: "No tab was closed",
+  "cmdGroup.menu": "For the Selection",
+  "key.ArrowUp": "Up",
+  "key.ArrowDown": "Down",
+  "key.ArrowLeft": "Left",
+  "key.ArrowRight": "Right",
+  "key.Backspace": "Delete",
+  "key.Alt": "Option",
 } as const;

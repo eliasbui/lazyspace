@@ -79,6 +79,8 @@ export function menuTree(ctx: MenuCtx, translate: (key: WordKey) => string, shor
 
 /** The chords an action answers to ("Cmd+Shift+N" = "newFolder"), for the Mac keys, the Windows keys, or both. */
 const extraKeys: Record<'all' | 'mac' | 'windows', Record<string, string>> = { all: {}, mac: {}, windows: {} };
+/** The keys feature's own keymaps (the old page's KEYMAPS), which it gives with `registry.keys.base`. */
+const baseKeys: Record<'mac' | 'windows', Record<string, string>> = { mac: {}, windows: {} };
 const actions = new Map<string, (pane: PaneHandle) => void | Promise<void>>();
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -184,6 +186,14 @@ export const registry = {
     },
     extra(keymap: 'mac' | 'windows'): Record<string, string> {
       return { ...extraKeys.all, ...extraKeys[keymap] };
+    },
+    /** The keys feature gives its own chords of a keymap here, so that a list of every key (the commands) can show them. */
+    base(keymap: 'mac' | 'windows', chords: Record<string, string>): void {
+      baseKeys[keymap] = { ...chords };
+    },
+    /** Every chord of a keymap: the keys feature's own, with those the features add over them. */
+    map(keymap: 'mac' | 'windows'): Record<string, string> {
+      return { ...baseKeys[keymap], ...extraKeys.all, ...extraKeys[keymap] };
     },
   },
   actions: {
