@@ -2,12 +2,12 @@
 // other pane), reopening a closed tab, moving between tabs, refreshing, and Finder's Move Item Here.
 import { t } from '@/i18n';
 import { useApp } from '@/lib/app-state';
-import { panes, usePanesRevision, type PaneHandle } from '@/lib/panes-api';
+import { panes, type PaneHandle } from '@/lib/panes-api';
 import { registry } from '@/lib/registry';
 import { sidebar } from '@/lib/sidebar-api';
 import { say, toast } from '@/lib/ui';
 import { api } from '@/services';
-import { closedTabs, remember, type PaneTabs } from './closed-tabs';
+import { remember } from './closed-tabs';
 
 /** The pane after `pane`, round, when there are two or more. */
 function other(pane: PaneHandle): PaneHandle | null {
@@ -25,14 +25,6 @@ function toOther(pane: PaneHandle, mode: 'copy' | 'move'): void {
 }
 
 let closed: string[] = [];
-let tabs: PaneTabs = new Map();
-
-function trackClosedTabs(): void {
-  const now: PaneTabs = new Map(panes.all().map((p) => [p.id, p.tabs.map((tab) => ({ id: tab.id, uri: tab.uri }))]));
-  const gone = closedTabs(tabs, now);
-  if (gone.length) closed = remember(closed, gone);
-  tabs = now;
-}
 
 function stepTab(pane: PaneHandle, by: 1 | -1): void {
   const count = pane.tabs.length;
@@ -40,7 +32,9 @@ function stepTab(pane: PaneHandle, by: 1 | -1): void {
 }
 
 export function registerActions(): void {
-  usePanesRevision.subscribe(trackClosedTabs);
+  panes.on('tabClosed', ({ uri }) => {
+    closed = remember(closed, [uri]);
+  });
   const set = registry.actions.set;
   set('pinQuick', () => sidebar.pinHere());
   set('copyToOther', (pane) => toOther(pane, 'copy'));

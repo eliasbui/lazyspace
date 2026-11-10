@@ -1,24 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { closedTabs, remember, type TabRef } from './closed-tabs';
+import { remember } from './closed-tabs';
 import { keysOf, matches } from './list';
 
-const tab = (id: string): TabRef => ({ id, uri: `file:///${id}` });
-const panes = (...list: Array<[string, TabRef[]]>) => new Map(list);
-
 describe('closed tabs', () => {
-  it('finds the tab a pane lost', () => {
-    expect(closedTabs(panes(['p1', [tab('a'), tab('b')]]), panes(['p1', [tab('a')]]))).toEqual(['file:///b']);
-  });
-
-  it('does not count a tab moved to another pane', () => {
-    expect(closedTabs(panes(['p1', [tab('a'), tab('b')]], ['p2', [tab('c')]]), panes(['p1', [tab('a')]], ['p2', [tab('c'), tab('b')]]))).toEqual([]);
-  });
-
-  it('does not count a pane closed or replaced', () => {
-    expect(closedTabs(panes(['p1', [tab('a')]], ['p2', [tab('b'), tab('c')]]), panes(['p1', [tab('a')]]))).toEqual([]);
-    expect(closedTabs(panes(['p1', [tab('a'), tab('b'), tab('c')]]), panes(['p1', [tab('x')]]))).toEqual([]);
-  });
-
   it('keeps the last twenty', () => {
     const many = Array.from({ length: 25 }, (_, i) => `file:///${i}`);
     expect(remember([], many)).toHaveLength(20);

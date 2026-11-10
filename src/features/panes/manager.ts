@@ -37,7 +37,7 @@ class Manager implements PanesApi, PaneHost, ActionHost {
   readonly cut = new Set<string>();
   dropHandler: DropHandler | null = null;
   private focusedPane: Pane | null = null;
-  private readonly handlers: Handlers = { render: new Set(), selection: new Set(), pointerdown: new Set() };
+  private readonly handlers: Handlers = { render: new Set(), selection: new Set(), tabClosed: new Set(), pointerdown: new Set() };
   private saveTimer: ReturnType<typeof setTimeout> | undefined;
   private sizesOn = false;
   private readonly actions: Record<string, Action> = makeActions(this);
@@ -342,6 +342,9 @@ class Manager implements PanesApi, PaneHost, ActionHost {
   rendered(pane: Pane): void {
     this.emit('render', { pane });
     bumpPanes();
+  }
+  tabClosed(pane: Pane, uri: string): void {
+    this.emit('tabClosed', { pane, uri });
   }
   pointerDown(pane: Pane, event: MouseEvent, index: number): void {
     this.emit('pointerdown', { pane, event, index });

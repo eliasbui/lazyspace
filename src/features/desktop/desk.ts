@@ -135,7 +135,7 @@ export function range(name: string): string[] {
 }
 
 // The panes revision and the panes' events follow the desktop, for the features that read them.
-const listeners: { [K in keyof PaneEvents]: Set<(detail: PaneEvents[K]) => void> } = { render: new Set(), selection: new Set(), pointerdown: new Set() };
+const listeners: { [K in keyof PaneEvents]: Set<(detail: PaneEvents[K]) => void> } = { render: new Set(), selection: new Set(), tabClosed: new Set(), pointerdown: new Set() };
 function emit<K extends keyof PaneEvents>(event: K, detail: PaneEvents[K]): void {
   const set: Set<(detail: PaneEvents[K]) => void> = listeners[event];
   for (const handler of [...set]) handler(detail);

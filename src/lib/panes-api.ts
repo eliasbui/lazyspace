@@ -112,6 +112,8 @@ export interface PaneEvents {
   render: { pane: PaneHandle };
   /** The selection or the focused pane changed. */
   selection: { pane: PaneHandle };
+  /** A tab was closed in a pane that keeps others (Reopen Closed Tab remembers its place). */
+  tabClosed: { pane: PaneHandle; uri: Uri };
   /** A press on a row, for the features that start a drag. */
   pointerdown: { pane: PaneHandle; event: PointerEvent | MouseEvent; index: number };
 }

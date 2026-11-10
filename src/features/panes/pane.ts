@@ -25,6 +25,7 @@ export interface PaneHost {
   closePane(pane: Pane): void;
   readonly cut: ReadonlySet<string>;
   pointerDown(pane: Pane, event: MouseEvent, index: number): void;
+  tabClosed(pane: Pane, uri: string): void;
   action(name: string, pane: Pane): boolean;
   contextMenu(pane: Pane, x: number, y: number, index: number | null): void;
   stackMenu(pane: Pane, way: 'back' | 'forward', x: number, y: number): void;
@@ -843,7 +844,10 @@ export class Pane implements PaneHandle {
       return;
     }
     const [tab] = this.tabs.splice(i, 1);
-    if (tab) api.view.close({ view: tab.id }).catch(() => undefined);
+    if (tab) {
+      api.view.close({ view: tab.id }).catch(() => undefined);
+      this.host.tabClosed(this, tab.uri);
+    }
     if (this.active >= this.tabs.length) this.active = this.tabs.length - 1;
     else if (i < this.active) this.active--;
     this.renamingTab = null;
