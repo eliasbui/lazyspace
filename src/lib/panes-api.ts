@@ -33,6 +33,8 @@ export interface TabView {
   /** The places Back and Forward go to, the nearest last. Optional: a pane of a feature's own (the desktop) has none. */
   readonly back?: readonly Uri[];
   readonly forward?: readonly Uri[];
+  /** Sets `marks` and `branch` (the git feature) and draws the tab again if it is shown. */
+  setGit?(marks: Readonly<Record<string, string>> | null, branch: string | null): void;
   /** How many items are selected (everything but the exceptions when everything is). */
   selCount(): number;
   isSel(name: string): boolean;
@@ -91,8 +93,6 @@ export interface PaneHandle {
   select?(index: number, how?: 'only' | 'toggle' | 'range'): void;
   /** Narrows the tab to the items whose name holds `text`; "" shows them all again. */
   setFilter?(text: string): void;
-  /** Sets the letters beside the names and the branch of a git work tree (the git feature). */
-  setMarks?(marks: Record<string, string> | null, branch: string | null): void;
   /** The context menu at (x, y) for row `index`, or for the folder itself when null. */
   contextMenu?(x: number, y: number, index: number | null): void;
   /** The places Back (or Forward) goes to as a menu at (x, y), as a right click on the button lists them. */

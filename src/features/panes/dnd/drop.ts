@@ -5,6 +5,7 @@
 //
 // Targets outside the panes say what they take with attributes: `data-drop-uri` (a place of the sidebar) and
 // `data-drop-quick` (Quick Access, which pins what is dropped on it).
+import { useApp } from '@/lib/app-state';
 import { sidebar } from '@/lib/sidebar-api';
 import { say } from '@/lib/ui';
 import { isLocal, samePlace } from '@/lib/uri';
@@ -123,9 +124,12 @@ export function listenDrops(): void {
         tab.uri,
       );
   });
-  on('drop.over', (d) => light(targetAt(d.x, d.y)));
-  on('drop.leave', () => light(null));
+  // The desktop's window takes the drops on it itself.
+  const mine = () => useApp.getState().role !== 'desktop';
+  on('drop.over', (d) => mine() && light(targetAt(d.x, d.y)));
+  on('drop.leave', () => mine() && light(null));
   on('drop', (d) => {
+    if (!mine()) return;
     const target = targetAt(d.x, d.y);
     light(null);
     if (!target) return;

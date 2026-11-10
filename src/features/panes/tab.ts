@@ -1,6 +1,6 @@
 // A tab of a pane: where it is, its history, and the part of its listing the page has (the rows live in Rust; the tab
 // keeps those it was given, by index, with the selection, the cursor and the scroll).
-import type { TabView } from '@/lib/panes-api';
+import { bumpPanes, type TabView } from '@/lib/panes-api';
 import type { Capabilities, Groups, Row, Selection, TabColor, Uri, ViewMode, ViewSort } from '@/services';
 
 export const NO_CAPABILITIES: Capabilities = { write: false, rename: false, trash: false, watch: false, sizes: false, localPath: false };
@@ -42,7 +42,7 @@ export class Tab implements TabView {
   showHidden = false;
   /** Where the list was scrolled, so the tab shows where it was when it is shown again. */
   scrollTop = 0;
-  marks: Record<string, string> | null = null;
+  marks: Readonly<Record<string, string>> | null = null;
   branch: string | null = null;
   /** The place last put in the path history, and the place typed in the path bar that is on its way. */
   recorded: Uri | null = null;
@@ -117,6 +117,11 @@ export class Tab implements TabView {
   selectWhenListed(names: string[]): void {
     this.pendingSelect = names;
     this.onPending?.(this);
+  }
+  setGit(marks: Readonly<Record<string, string>> | null, branch: string | null): void {
+    this.marks = marks;
+    this.branch = branch;
+    bumpPanes();
   }
   renameWhenListed(name: string): void {
     this.pendingRename = name;

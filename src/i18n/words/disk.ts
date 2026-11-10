@@ -14,6 +14,16 @@ export const vi = {
   pickNone: "Bỏ chọn",
   trashPicked: "Chuyển {0} mục vào Thùng rác",
   finding: "Đang so sánh tệp...",
+  "disk.kind.folder": "Thư mục",
+  "disk.kind.image": "Hình ảnh",
+  "disk.kind.video": "Phim",
+  "disk.kind.audio": "Âm thanh",
+  "disk.kind.archive": "Tệp nén",
+  "disk.kind.doc": "Tài liệu",
+  "disk.kind.code": "Mã nguồn",
+  "disk.kind.file": "Tệp khác",
+  "disk.kind.other": "Các mục khác",
+  diskShare: "{0} trong \"{1}\"",
 } as const;
 
 export const en = {
@@ -31,4 +41,14 @@ export const en = {
   pickNone: "Deselect",
   trashPicked: "Move {0} Items to the Trash",
   finding: "Comparing files...",
+  "disk.kind.folder": "Folders",
+  "disk.kind.image": "Pictures",
+  "disk.kind.video": "Movies",
+  "disk.kind.audio": "Music",
+  "disk.kind.archive": "Archives",
+  "disk.kind.doc": "Documents",
+  "disk.kind.code": "Code",
+  "disk.kind.file": "Other files",
+  "disk.kind.other": "Other items",
+  diskShare: "{0} of \"{1}\"",
 } as const;

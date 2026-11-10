@@ -277,13 +277,6 @@ export class Pane implements PaneHandle {
     bumpPanes();
   }
 
-  setMarks(marks: Record<string, string> | null, branch: string | null): void {
-    this.tab.marks = marks;
-    this.tab.branch = branch;
-    this.touch();
-    bumpPanes();
-  }
-
   // Motion --------------------------------------------------------------------------------------------------------
 
   /** Where each item on screen is, by name, so that the next drawing moves them from there (and brings new ones in). */
