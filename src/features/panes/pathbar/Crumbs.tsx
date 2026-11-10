@@ -26,6 +26,8 @@ export function Crumbs({ pane, tinted }: { pane: Pane; tinted: boolean }) {
     const fit = () => {
       const kids = [...el.children].filter((k): k is HTMLElement => k instanceof HTMLElement);
       const more = kids.find((k) => k.hasAttribute('data-more'));
+      // Measured with the last crumb at its full width, which may shrink with an ellipsis once only it is left.
+      el.dataset.fitting = '';
       for (const k of kids) k.hidden = k === more;
       const crumbs = kids.filter((k) => k.hasAttribute('data-crumb'));
       let n = 0;
@@ -37,6 +39,7 @@ export function Crumbs({ pane, tinted }: { pane: Pane; tinted: boolean }) {
         n++;
       }
       gone.current = n;
+      delete el.dataset.fitting;
     };
     fit();
     const watch = new ResizeObserver(fit);
@@ -50,7 +53,7 @@ export function Crumbs({ pane, tinted }: { pane: Pane; tinted: boolean }) {
         box.current = el;
       }}
       aria-label={t('pathBar')}
-      className="flex h-full min-w-0 flex-1 items-center overflow-hidden"
+      className="group/crumbs flex h-full min-w-0 flex-1 items-center overflow-hidden"
     >
       <button
         type="button"
@@ -71,8 +74,8 @@ export function Crumbs({ pane, tinted }: { pane: Pane; tinted: boolean }) {
               data-crumb
               aria-current={here ? 'location' : undefined}
               className={cn(
-                'flex h-[24px] max-w-[240px] flex-none items-center gap-[6px] rounded-[6px] px-[6px] text-[12px] whitespace-nowrap transition-colors hover:bg-hover hover:text-fg',
-                here ? cn('font-medium', tinted ? 'text-tint' : 'text-fg') : 'text-fg-2',
+                'flex h-[24px] max-w-[240px] items-center gap-[6px] rounded-[6px] px-[6px] text-[12px] whitespace-nowrap transition-colors hover:bg-hover hover:text-fg',
+                here ? cn('min-w-0 shrink font-medium group-data-[fitting]/crumbs:shrink-0', tinted ? 'text-tint' : 'text-fg') : 'flex-none text-fg-2',
               )}
               onClick={() => {
                 pane.navigate(uri, { select: pane.childOf(uri) });

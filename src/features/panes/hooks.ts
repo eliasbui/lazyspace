@@ -8,14 +8,24 @@ export function usePane(pane: Pane): number {
   return useSyncExternalStore(pane.subscribe, pane.getVersion);
 }
 
+// The window counts as in front until it is left, as the old page had it (a window opens in front).
+let active = true;
 const subscribeFocus = (fn: () => void) => {
-  addEventListener('focus', fn);
-  addEventListener('blur', fn);
+  const on = () => {
+    active = true;
+    fn();
+  };
+  const off = () => {
+    active = false;
+    fn();
+  };
+  addEventListener('focus', on);
+  addEventListener('blur', off);
   return () => {
-    removeEventListener('focus', fn);
-    removeEventListener('blur', fn);
+    removeEventListener('focus', on);
+    removeEventListener('blur', off);
   };
 };
 
 /** Whether the window is in front: the selection is drawn in the accent colour only then, as macOS draws it. */
-export const useWindowActive = (): boolean => useSyncExternalStore(subscribeFocus, () => document.hasFocus());
+export const useWindowActive = (): boolean => useSyncExternalStore(subscribeFocus, () => active);

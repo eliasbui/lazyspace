@@ -81,11 +81,11 @@ function IconCell({ pane, tab, index, left, top, size, strong }: { pane: Pane; t
         {e ? <Picture entry={e} points={icon} thumbClass="rounded-[4px] shadow-[0_1px_3px_var(--glass-shadow)]" /> : null}
       </div>
       {e && pane.renaming?.index === index ? (
-        <RenameField pane={pane} entry={e} className="w-full text-center text-[12px]" />
+        <RenameField pane={pane} entry={e} className="relative z-10 w-[150%] text-center text-[12px]" />
       ) : e ? (
         <div
           data-hit
-          className={cn('line-clamp-2 rounded-[4px] px-[5px] py-px text-center text-[12px] leading-[1.25] break-words', sel && (strong ? 'bg-select text-primary-foreground' : 'bg-select-dim'))}
+          className={cn('line-clamp-2 shrink-0 rounded-[4px] px-[5px] py-px text-center text-[12px] leading-[1.25] break-words', sel && (strong ? 'bg-select text-primary-foreground' : 'bg-select-dim'))}
           style={{ maxWidth: icon + 32 }}
         >
           <TagDots entry={e} className="mr-[4px]" />
