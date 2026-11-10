@@ -167,7 +167,7 @@ export function ServerSheet({ props, close }: SheetProps<ServerSheetProps | unde
         </>
       }
     >
-      <div className="flex flex-col gap-2.5 py-1" onKeyDown={enter}>
+      <div className="flex flex-col gap-2 py-1" onKeyDown={enter}>
         <Row id={`${base}-kind`} label={t('serverKind')}>
           <Select
             id={`${base}-kind`}
