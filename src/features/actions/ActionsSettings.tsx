@@ -45,7 +45,7 @@ export function ActionsSettings() {
     <div onKeyDown={(e) => e.key !== 'Escape' && e.stopPropagation()}>
       <Group>
         {list.map((a, i) => (
-          <div key={a.id} className="grid grid-cols-[120px_minmax(0,1fr)_112px_128px_28px] items-center gap-1.5 px-3 py-2">
+          <div key={a.id} className="grid grid-cols-[116px_minmax(0,1fr)_128px_160px_28px] items-center gap-1.5 px-3 py-2">
             <Input className="h-7 text-[12px]" aria-label={t('actionName')} placeholder={t('actionName')} spellCheck={false} autoFocus={a.id === added} value={a.name} onChange={(e) => editAction(i, { name: e.target.value })} />
             <Input className="h-7 font-mono text-[12px]" aria-label={t('actionCommand')} placeholder={t('actionCommand')} spellCheck={false} value={a.command} onChange={(e) => editAction(i, { command: e.target.value })} />
             <NativeSelect size="sm" className="w-full" aria-label={t('actionWhen')} value={a.when} onChange={(e) => isWhen(e.target.value) && editAction(i, { when: e.target.value })}>
