@@ -1,5 +1,7 @@
 # PARITY: LazySpace old code to new code
 
+Note (Stage 3): the old page (`ui/`), the classic page and the compatibility layer are deleted; the `Old` column keeps their names for the trace, and `git show c1994a1:ui/parts/<file>` reads them. The five gaps of Stage 2 are closed (MIGRATION.md section 8).
+
 Status values: `carried` (same code, same behaviour), `changed` (new way, same behaviour, reason given), `open` (not done or not verified, reason given), `pending` (UI item for Stage 2). The "verified" column says exactly what was seen. Rule of the owner: no tests or runs by the agent, so "verified" is either a read of the code, a compile (`cargo check`), or a trace from an earlier run that is named.
 
 | Id | Item | Old | New | Status | Verified |
