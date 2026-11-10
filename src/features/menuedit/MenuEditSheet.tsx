@@ -115,10 +115,11 @@ export function MenuEditSheet({ props, close }: SheetProps<MenuEditProps | undef
                     <AriaDialog aria-label={t('chooseIcon')} className="outline-none">
                       {({ close: shut }) => (
                         <div className="grid grid-cols-8 gap-1.5">
+                          <p className="col-span-8 px-0.5 pb-1 text-[12px] font-semibold text-fg-2">{t('chooseIcon')}</p>
                           {SYMBOLS.map((name) => (
                             <Tip key={name} text={name}>
                               <Button
-                                variant={name === icon ? 'outline' : 'ghost'}
+                                variant={name === icon ? 'outline' : 'secondary'}
                                 aria-label={name}
                                 className={cn('size-10 rounded-tile', name === icon && 'text-tint')}
                                 onPress={() => {
