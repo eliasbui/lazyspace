@@ -209,203 +209,203 @@ Status values: `carried` (same code, same behaviour), `changed` (new way, same b
 | H37 | Notifications of the system | none (device notes are drawn by the page) | none | carried | none before, none now |
 | H38 | Power actions | none | none | carried | none before, none now |
 | H39 | Release, signing and packaging scripts | scripts/*.sh (ad hoc or "LazySpace Code Signing" identity, universal binary, zip with ditto, latest.json) | not touched in Stage 1 or 2 (Stage 3 by the brief) | open | Stage 3; `pnpm build` produces `dist-web` for the bundle |
-| U:index.html | UI part, 50 word keys | `ui/index.html` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/00-core-icons.js | UI part, 0 word keys | `ui/parts/00-core-icons.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/01-core-format.js | UI part, 6 word keys | `ui/parts/01-core-format.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/02-core-sidebar.js | UI part, 28 word keys | `ui/parts/02-core-sidebar.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/03-core-panes.js | UI part, 53 word keys | `ui/parts/03-core-panes.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/04-core-toolbar.js | UI part, 0 word keys | `ui/parts/04-core-toolbar.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/05-core-keys.js | UI part, 0 word keys | `ui/parts/05-core-keys.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/06-core-jobs.js | UI part, 18 word keys | `ui/parts/06-core-jobs.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/07-core-ext.js | UI part, 10 word keys | `ui/parts/07-core-ext.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:toolbar:layout | toolbar item | `ui/parts/07-core-ext.js` | Stage 2 | pending | - |
-| U:parts/08-core-menu.js | UI part, 25 word keys | `ui/parts/08-core-menu.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/09-core-start.js | UI part, 0 word keys | `ui/parts/09-core-start.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/10-workspaces.js | UI part, 8 word keys | `ui/parts/10-workspaces.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:sidebar:workspaces | sidebar section | `ui/parts/10-workspaces.js` | Stage 2 | pending | - |
-| U:parts/11-keyboard.js | UI part, 5 word keys | `ui/parts/11-keyboard.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:settings:keyboard | settings section | `ui/parts/11-keyboard.js` | Stage 2 | pending | - |
-| U:parts/12-menuedit.css | UI part, 0 word keys | `ui/parts/12-menuedit.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/12-menuedit.js | UI part, 7 word keys | `ui/parts/12-menuedit.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:sheet:menuEditSheet | sheet | `ui/parts/12-menuedit.js` | Stage 2 | pending | - |
-| U:sheet:iconPickSheet | sheet | `ui/parts/12-menuedit.js` | Stage 2 | pending | - |
-| U:settings:contextmenu | settings section | `ui/parts/12-menuedit.js` | Stage 2 | pending | - |
-| U:parts/13-appearance.css | UI part, 0 word keys | `ui/parts/13-appearance.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/13-appearance.js | UI part, 32 word keys | `ui/parts/13-appearance.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:settings:appearance | settings section | `ui/parts/13-appearance.js` | Stage 2 | pending | - |
-| U:parts/14-commands.css | UI part, 0 word keys | `ui/parts/14-commands.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/14-commands.js | UI part, 0 word keys | `ui/parts/14-commands.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:menu:copyToOther | context menu item | `ui/parts/14-commands.js` | Stage 2 | pending | - |
-| U:menu:moveToOther | context menu item | `ui/parts/14-commands.js` | Stage 2 | pending | - |
-| U:sheet:paletteSheet | sheet | `ui/parts/14-commands.js` | Stage 2 | pending | - |
-| U:parts/15-finder.js | UI part, 7 word keys | `ui/parts/15-finder.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:menu:revealHere | context menu item | `ui/parts/15-finder.js` | Stage 2 | pending | - |
-| U:settings:viewer | settings section | `ui/parts/15-finder.js` | Stage 2 | pending | - |
-| U:parts/16-settings.css | UI part, 0 word keys | `ui/parts/16-settings.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/16-settings.js | UI part, 2 word keys | `ui/parts/16-settings.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/17-explorer.js | UI part, 8 word keys | `ui/parts/17-explorer.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:toolbar:more | toolbar item | `ui/parts/17-explorer.js` | Stage 2 | pending | - |
-| U:parts/18-access.js | UI part, 6 word keys | `ui/parts/18-access.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/19-search.css | UI part, 0 word keys | `ui/parts/19-search.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/19-search.js | UI part, 37 word keys | `ui/parts/19-search.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:settings:search | settings section | `ui/parts/19-search.js` | Stage 2 | pending | - |
-| U:parts/20-templates.js | UI part, 4 word keys | `ui/parts/20-templates.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:menu:newFile | context menu item | `ui/parts/20-templates.js` | Stage 2 | pending | - |
-| U:menu:addTemplate | context menu item | `ui/parts/20-templates.js` | Stage 2 | pending | - |
-| U:toolbar:newFile | toolbar item | `ui/parts/20-templates.js` | Stage 2 | pending | - |
-| U:parts/21-openin.js | UI part, 3 word keys | `ui/parts/21-openin.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/22-hash.css | UI part, 0 word keys | `ui/parts/22-hash.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/22-hash.js | UI part, 8 word keys | `ui/parts/22-hash.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:menu:hash | context menu item | `ui/parts/22-hash.js` | Stage 2 | pending | - |
-| U:sheet:hashSheet | sheet | `ui/parts/22-hash.js` | Stage 2 | pending | - |
-| U:parts/25-columns.css | UI part, 0 word keys | `ui/parts/25-columns.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/25-columns.js | UI part, 5 word keys | `ui/parts/25-columns.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/26-tags.css | UI part, 0 word keys | `ui/parts/26-tags.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/26-tags.js | UI part, 9 word keys | `ui/parts/26-tags.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:menu:tags | context menu item | `ui/parts/26-tags.js` | Stage 2 | pending | - |
-| U:sidebar:tags | sidebar section | `ui/parts/26-tags.js` | Stage 2 | pending | - |
-| U:parts/27-share.js | UI part, 2 word keys | `ui/parts/27-share.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:menu:share | context menu item | `ui/parts/27-share.js` | Stage 2 | pending | - |
-| U:toolbar:share | toolbar item | `ui/parts/27-share.js` | Stage 2 | pending | - |
-| U:parts/28-actions.css | UI part, 0 word keys | `ui/parts/28-actions.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/28-actions.js | UI part, 15 word keys | `ui/parts/28-actions.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:menu:actions | context menu item | `ui/parts/28-actions.js` | Stage 2 | pending | - |
-| U:settings:actions | settings section | `ui/parts/28-actions.js` | Stage 2 | pending | - |
-| U:parts/29-disk.css | UI part, 0 word keys | `ui/parts/29-disk.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/29-disk.js | UI part, 14 word keys | `ui/parts/29-disk.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:menu:diskMap | context menu item | `ui/parts/29-disk.js` | Stage 2 | pending | - |
-| U:menu:findTwins | context menu item | `ui/parts/29-disk.js` | Stage 2 | pending | - |
-| U:sheet:diskSheet | sheet | `ui/parts/29-disk.js` | Stage 2 | pending | - |
-| U:sheet:twinsSheet | sheet | `ui/parts/29-disk.js` | Stage 2 | pending | - |
-| U:parts/30-sync.css | UI part, 0 word keys | `ui/parts/30-sync.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/30-sync.js | UI part, 30 word keys | `ui/parts/30-sync.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:menu:sync | context menu item | `ui/parts/30-sync.js` | Stage 2 | pending | - |
-| U:menu:comparePanes | context menu item | `ui/parts/30-sync.js` | Stage 2 | pending | - |
-| U:sheet:syncSheet | sheet | `ui/parts/30-sync.js` | Stage 2 | pending | - |
-| U:parts/31-git.css | UI part, 0 word keys | `ui/parts/31-git.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/31-git.js | UI part, 1 word keys | `ui/parts/31-git.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/32-devices.css | UI part, 0 word keys | `ui/parts/32-devices.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/32-devices.js | UI part, 44 word keys | `ui/parts/32-devices.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/33-phones.css | UI part, 0 word keys | `ui/parts/33-phones.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/33-phones.js | UI part, 10 word keys | `ui/parts/33-phones.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:sidebar:phones | sidebar section | `ui/parts/33-phones.js` | Stage 2 | pending | - |
-| U:parts/40-preview.css | UI part, 0 word keys | `ui/parts/40-preview.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/40-preview.js | UI part, 21 word keys | `ui/parts/40-preview.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:toolbar:preview | toolbar item | `ui/parts/40-preview.js` | Stage 2 | pending | - |
-| U:parts/50-rename.css | UI part, 0 word keys | `ui/parts/50-rename.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/50-rename.js | UI part, 39 word keys | `ui/parts/50-rename.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:menu:batchRename | context menu item | `ui/parts/50-rename.js` | Stage 2 | pending | - |
-| U:sheet:renameSheet | sheet | `ui/parts/50-rename.js` | Stage 2 | pending | - |
-| U:parts/60-archive.css | UI part, 0 word keys | `ui/parts/60-archive.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/60-archive.js | UI part, 20 word keys | `ui/parts/60-archive.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:menu:extractHere | context menu item | `ui/parts/60-archive.js` | Stage 2 | pending | - |
-| U:menu:extractTo | context menu item | `ui/parts/60-archive.js` | Stage 2 | pending | - |
-| U:menu:compress | context menu item | `ui/parts/60-archive.js` | Stage 2 | pending | - |
-| U:menu:extractSelected | context menu item | `ui/parts/60-archive.js` | Stage 2 | pending | - |
-| U:sheet:compressSheet | sheet | `ui/parts/60-archive.js` | Stage 2 | pending | - |
-| U:parts/70-stash.css | UI part, 0 word keys | `ui/parts/70-stash.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/70-stash.js | UI part, 13 word keys | `ui/parts/70-stash.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:menu:stashAdd | context menu item | `ui/parts/70-stash.js` | Stage 2 | pending | - |
-| U:menu:stashRemove | context menu item | `ui/parts/70-stash.js` | Stage 2 | pending | - |
-| U:menu:stashClear | context menu item | `ui/parts/70-stash.js` | Stage 2 | pending | - |
-| U:menu:downloadLanes | context menu item | `ui/parts/70-stash.js` | Stage 2 | pending | - |
-| U:toolbar:stash | toolbar item | `ui/parts/70-stash.js` | Stage 2 | pending | - |
-| U:sidebar:stash | sidebar section | `ui/parts/70-stash.js` | Stage 2 | pending | - |
-| U:parts/80-remote.css | UI part, 0 word keys | `ui/parts/80-remote.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/80-remote.js | UI part, 69 word keys | `ui/parts/80-remote.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:sheet:serverSheet | sheet | `ui/parts/80-remote.js` | Stage 2 | pending | - |
-| U:sidebar:cloud | sidebar section | `ui/parts/80-remote.js` | Stage 2 | pending | - |
-| U:sidebar:remote | sidebar section | `ui/parts/80-remote.js` | Stage 2 | pending | - |
-| U:parts/81-office.js | UI part, 4 word keys | `ui/parts/81-office.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:menu:openInOffice | context menu item | `ui/parts/81-office.js` | Stage 2 | pending | - |
-| U:parts/90-desktop.css | UI part, 0 word keys | `ui/parts/90-desktop.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:parts/90-desktop.js | UI part, 8 word keys | `ui/parts/90-desktop.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
-| U:settings:desktop | settings section | `ui/parts/90-desktop.js` | Stage 2 | pending | - |
-| K:mac:Enter | shortcut -> rename | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Space | shortcut -> quickLook | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Tab | shortcut -> nextPane | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Shift+Tab | shortcut -> previousPane | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+1 | shortcut -> viewIcons | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+2 | shortcut -> viewList | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+3 | shortcut -> viewColumns | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+4 | shortcut -> viewGallery | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Alt+1 | shortcut -> layoutSingle | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Alt+2 | shortcut -> layoutH2 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Alt+3 | shortcut -> layoutV2 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Alt+4 | shortcut -> layoutH3 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Alt+5 | shortcut -> layoutL1R2 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Alt+6 | shortcut -> layoutGrid | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Alt+7 | shortcut -> layoutH4 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Alt+8 | shortcut -> layoutG6 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+\ | shortcut -> splitRight | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Shift+\ | shortcut -> splitDown | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+D | shortcut -> duplicate | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+I | shortcut -> getInfo | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Alt+C | shortcut -> copyPath | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Shift+R | shortcut -> reveal | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+O | shortcut -> open | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+ArrowDown | shortcut -> open | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+ArrowUp | shortcut -> enclosing | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+[ | shortcut -> back | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+] | shortcut -> forward | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Backspace | shortcut -> trash | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Alt+Backspace | shortcut -> delete | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Shift+N | shortcut -> newFolder | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+A | shortcut -> selectAll | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+C | shortcut -> copy | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+X | shortcut -> cut | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+V | shortcut -> paste | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Z | shortcut -> undo | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Shift+. | shortcut -> toggleHidden | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+T | shortcut -> newTab | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+W | shortcut -> closeTab | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+L | shortcut -> editAddress | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Shift+G | shortcut -> editAddress | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+F | shortcut -> find | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Alt+S | shortcut -> toggleSidebar | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Shift+H | shortcut -> home | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Shift+D | shortcut -> desktop | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Alt+L | shortcut -> downloads | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Cmd+Shift+A | shortcut -> applications | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:mac:Escape | shortcut -> deselect | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Enter | shortcut -> open | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Space | shortcut -> quickLook | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Tab | shortcut -> nextPane | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Shift+Tab | shortcut -> previousPane | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+1 | shortcut -> viewIcons | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+2 | shortcut -> viewList | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+3 | shortcut -> viewColumns | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+4 | shortcut -> viewGallery | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Cmd+Alt+1 | shortcut -> layoutSingle | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Cmd+Alt+2 | shortcut -> layoutH2 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Cmd+Alt+3 | shortcut -> layoutV2 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Cmd+Alt+4 | shortcut -> layoutH3 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Cmd+Alt+5 | shortcut -> layoutL1R2 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Cmd+Alt+6 | shortcut -> layoutGrid | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Cmd+Alt+7 | shortcut -> layoutH4 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Cmd+Alt+8 | shortcut -> layoutG6 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Cmd+\ | shortcut -> splitRight | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Cmd+Shift+\ | shortcut -> splitDown | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+D | shortcut -> duplicate | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Alt+Enter | shortcut -> getInfo | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+Shift+C | shortcut -> copyPath | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:F2 | shortcut -> rename | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Delete | shortcut -> trash | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Shift+Delete | shortcut -> delete | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Backspace | shortcut -> enclosing | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Alt+ArrowUp | shortcut -> enclosing | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Alt+ArrowLeft | shortcut -> back | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Alt+ArrowRight | shortcut -> forward | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+Shift+N | shortcut -> newFolder | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+A | shortcut -> selectAll | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+C | shortcut -> copy | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+X | shortcut -> cut | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+V | shortcut -> paste | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+Z | shortcut -> undo | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+H | shortcut -> toggleHidden | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+T | shortcut -> newTab | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+W | shortcut -> closeTab | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+L | shortcut -> editAddress | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Ctrl+F | shortcut -> find | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Cmd+Alt+S | shortcut -> toggleSidebar | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
-| K:windows:Escape | shortcut -> deselect | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| U:index.html | UI part, 50 word keys | `ui/index.html` | `src/App.tsx, src/main.tsx, index.html` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/00-core-icons.js | UI part, 0 word keys | `ui/parts/00-core-icons.js` | `Phosphor icons (src/components)` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/01-core-format.js | UI part, 6 word keys | `ui/parts/01-core-format.js` | `src/lib/format.ts` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/02-core-sidebar.js | UI part, 28 word keys | `ui/parts/02-core-sidebar.js` | `src/features/sidebar` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/03-core-panes.js | UI part, 53 word keys | `ui/parts/03-core-panes.js` | `src/features/panes` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2; drops from the system, Quick Look, drag out and native menus not seen |
+| U:parts/04-core-toolbar.js | UI part, 0 word keys | `ui/parts/04-core-toolbar.js` | `src/features/toolbar` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/05-core-keys.js | UI part, 0 word keys | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/06-core-jobs.js | UI part, 18 word keys | `ui/parts/06-core-jobs.js` | `src/features/jobs` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/07-core-ext.js | UI part, 10 word keys | `ui/parts/07-core-ext.js` | `src/lib/registry.ts, src/features/panes` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:toolbar:layout | toolbar item | `ui/parts/07-core-ext.js` | `src/lib/registry.ts, src/features/panes` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/08-core-menu.js | UI part, 25 word keys | `ui/parts/08-core-menu.js` | `src/features/panes/menu` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/09-core-start.js | UI part, 0 word keys | `ui/parts/09-core-start.js` | `src/features/panes (PaneGrid), src/lib/app-state.ts` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/10-workspaces.js | UI part, 8 word keys | `ui/parts/10-workspaces.js` | `src/features/workspaces` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sidebar:workspaces | sidebar section | `ui/parts/10-workspaces.js` | `src/features/workspaces` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/11-keyboard.js | UI part, 5 word keys | `ui/parts/11-keyboard.js` | `src/features/keyboard` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:settings:keyboard | settings section | `ui/parts/11-keyboard.js` | `src/features/keyboard` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/12-menuedit.css | UI part, 0 word keys | `ui/parts/12-menuedit.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/12-menuedit.js | UI part, 7 word keys | `ui/parts/12-menuedit.js` | `src/features/menuedit` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sheet:menuEditSheet | sheet | `ui/parts/12-menuedit.js` | `src/features/menuedit` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sheet:iconPickSheet | sheet | `ui/parts/12-menuedit.js` | `src/features/menuedit` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:settings:contextmenu | settings section | `ui/parts/12-menuedit.js` | `src/features/menuedit` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/13-appearance.css | UI part, 0 word keys | `ui/parts/13-appearance.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/13-appearance.js | UI part, 32 word keys | `ui/parts/13-appearance.js` | `src/features/appearance` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:settings:appearance | settings section | `ui/parts/13-appearance.js` | `src/features/appearance` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/14-commands.css | UI part, 0 word keys | `ui/parts/14-commands.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/14-commands.js | UI part, 0 word keys | `ui/parts/14-commands.js` | `src/features/commands` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:copyToOther | context menu item | `ui/parts/14-commands.js` | `src/features/commands` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:moveToOther | context menu item | `ui/parts/14-commands.js` | `src/features/commands` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sheet:paletteSheet | sheet | `ui/parts/14-commands.js` | `src/features/commands` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/15-finder.js | UI part, 7 word keys | `ui/parts/15-finder.js` | `src/features/finder` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:revealHere | context menu item | `ui/parts/15-finder.js` | `src/features/finder` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:settings:viewer | settings section | `ui/parts/15-finder.js` | `src/features/finder` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/16-settings.css | UI part, 0 word keys | `ui/parts/16-settings.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/16-settings.js | UI part, 2 word keys | `ui/parts/16-settings.js` | `src/features/settings` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/17-explorer.js | UI part, 8 word keys | `ui/parts/17-explorer.js` | `src/features/explorer` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:toolbar:more | toolbar item | `ui/parts/17-explorer.js` | `src/features/explorer` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/18-access.js | UI part, 6 word keys | `ui/parts/18-access.js` | `src/features/access` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/19-search.css | UI part, 0 word keys | `ui/parts/19-search.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/19-search.js | UI part, 37 word keys | `ui/parts/19-search.js` | `src/features/search` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:settings:search | settings section | `ui/parts/19-search.js` | `src/features/search` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/20-templates.js | UI part, 4 word keys | `ui/parts/20-templates.js` | `src/features/templates` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:newFile | context menu item | `ui/parts/20-templates.js` | `src/features/templates` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:addTemplate | context menu item | `ui/parts/20-templates.js` | `src/features/templates` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:toolbar:newFile | toolbar item | `ui/parts/20-templates.js` | `src/features/templates` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/21-openin.js | UI part, 3 word keys | `ui/parts/21-openin.js` | `src/features/openin` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/22-hash.css | UI part, 0 word keys | `ui/parts/22-hash.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/22-hash.js | UI part, 8 word keys | `ui/parts/22-hash.js` | `src/features/hash` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:hash | context menu item | `ui/parts/22-hash.js` | `src/features/hash` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sheet:hashSheet | sheet | `ui/parts/22-hash.js` | `src/features/hash` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/25-columns.css | UI part, 0 word keys | `ui/parts/25-columns.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/25-columns.js | UI part, 5 word keys | `ui/parts/25-columns.js` | `src/features/columns` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/26-tags.css | UI part, 0 word keys | `ui/parts/26-tags.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/26-tags.js | UI part, 9 word keys | `ui/parts/26-tags.js` | `src/features/tags` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:tags | context menu item | `ui/parts/26-tags.js` | `src/features/tags` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sidebar:tags | sidebar section | `ui/parts/26-tags.js` | `src/features/tags` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/27-share.js | UI part, 2 word keys | `ui/parts/27-share.js` | `src/features/share` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:share | context menu item | `ui/parts/27-share.js` | `src/features/share` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:toolbar:share | toolbar item | `ui/parts/27-share.js` | `src/features/share` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/28-actions.css | UI part, 0 word keys | `ui/parts/28-actions.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/28-actions.js | UI part, 15 word keys | `ui/parts/28-actions.js` | `src/features/actions` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:actions | context menu item | `ui/parts/28-actions.js` | `src/features/actions` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:settings:actions | settings section | `ui/parts/28-actions.js` | `src/features/actions` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/29-disk.css | UI part, 0 word keys | `ui/parts/29-disk.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/29-disk.js | UI part, 14 word keys | `ui/parts/29-disk.js` | `src/features/disk` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:diskMap | context menu item | `ui/parts/29-disk.js` | `src/features/disk` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:findTwins | context menu item | `ui/parts/29-disk.js` | `src/features/disk` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sheet:diskSheet | sheet | `ui/parts/29-disk.js` | `src/features/disk` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sheet:twinsSheet | sheet | `ui/parts/29-disk.js` | `src/features/disk` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/30-sync.css | UI part, 0 word keys | `ui/parts/30-sync.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/30-sync.js | UI part, 30 word keys | `ui/parts/30-sync.js` | `src/features/sync` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:sync | context menu item | `ui/parts/30-sync.js` | `src/features/sync` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:comparePanes | context menu item | `ui/parts/30-sync.js` | `src/features/sync` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sheet:syncSheet | sheet | `ui/parts/30-sync.js` | `src/features/sync` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/31-git.css | UI part, 0 word keys | `ui/parts/31-git.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/31-git.js | UI part, 1 word keys | `ui/parts/31-git.js` | `src/features/git` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/32-devices.css | UI part, 0 word keys | `ui/parts/32-devices.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/32-devices.js | UI part, 44 word keys | `ui/parts/32-devices.js` | `src/features/devices` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/33-phones.css | UI part, 0 word keys | `ui/parts/33-phones.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/33-phones.js | UI part, 10 word keys | `ui/parts/33-phones.js` | `src/features/phones` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sidebar:phones | sidebar section | `ui/parts/33-phones.js` | `src/features/phones` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/40-preview.css | UI part, 0 word keys | `ui/parts/40-preview.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/40-preview.js | UI part, 21 word keys | `ui/parts/40-preview.js` | `src/features/preview` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:toolbar:preview | toolbar item | `ui/parts/40-preview.js` | `src/features/preview` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/50-rename.css | UI part, 0 word keys | `ui/parts/50-rename.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/50-rename.js | UI part, 39 word keys | `ui/parts/50-rename.js` | `src/features/rename` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:batchRename | context menu item | `ui/parts/50-rename.js` | `src/features/rename` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sheet:renameSheet | sheet | `ui/parts/50-rename.js` | `src/features/rename` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/60-archive.css | UI part, 0 word keys | `ui/parts/60-archive.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/60-archive.js | UI part, 20 word keys | `ui/parts/60-archive.js` | `src/features/archive` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:extractHere | context menu item | `ui/parts/60-archive.js` | `src/features/archive` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:extractTo | context menu item | `ui/parts/60-archive.js` | `src/features/archive` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:compress | context menu item | `ui/parts/60-archive.js` | `src/features/archive` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:extractSelected | context menu item | `ui/parts/60-archive.js` | `src/features/archive` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sheet:compressSheet | sheet | `ui/parts/60-archive.js` | `src/features/archive` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/70-stash.css | UI part, 0 word keys | `ui/parts/70-stash.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/70-stash.js | UI part, 13 word keys | `ui/parts/70-stash.js` | `src/features/stash` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:stashAdd | context menu item | `ui/parts/70-stash.js` | `src/features/stash` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:stashRemove | context menu item | `ui/parts/70-stash.js` | `src/features/stash` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:stashClear | context menu item | `ui/parts/70-stash.js` | `src/features/stash` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:downloadLanes | context menu item | `ui/parts/70-stash.js` | `src/features/stash` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:toolbar:stash | toolbar item | `ui/parts/70-stash.js` | `src/features/stash` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sidebar:stash | sidebar section | `ui/parts/70-stash.js` | `src/features/stash` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/80-remote.css | UI part, 0 word keys | `ui/parts/80-remote.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/80-remote.js | UI part, 69 word keys | `ui/parts/80-remote.js` | `src/features/remote` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sheet:serverSheet | sheet | `ui/parts/80-remote.js` | `src/features/remote` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sidebar:cloud | sidebar section | `ui/parts/80-remote.js` | `src/features/remote` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:sidebar:remote | sidebar section | `ui/parts/80-remote.js` | `src/features/remote` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/81-office.js | UI part, 4 word keys | `ui/parts/81-office.js` | `src/features/office` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:menu:openInOffice | context menu item | `ui/parts/81-office.js` | `src/features/office` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:parts/90-desktop.css | UI part, 0 word keys | `ui/parts/90-desktop.css` | Tailwind utilities in the components of the feature, tokens in `src/styles/index.css` | changed | the styles became utilities and tokens; photographed in the mock host with the feature (light and dark, vi and en); real glass not looked at |
+| U:parts/90-desktop.js | UI part, 8 word keys | `ui/parts/90-desktop.js` | `src/features/desktop` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| U:settings:desktop | settings section | `ui/parts/90-desktop.js` | `src/features/desktop` | changed | ported; typechecks; photographed in the mock host in light and dark, vi and en (shots/lazyspace); behaviour against the real app not run, master runs Gate 2 |
+| K:mac:Enter | shortcut -> rename | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Space | shortcut -> quickLook | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Tab | shortcut -> nextPane | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Shift+Tab | shortcut -> previousPane | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+1 | shortcut -> viewIcons | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+2 | shortcut -> viewList | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+3 | shortcut -> viewColumns | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+4 | shortcut -> viewGallery | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Alt+1 | shortcut -> layoutSingle | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Alt+2 | shortcut -> layoutH2 | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Alt+3 | shortcut -> layoutV2 | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Alt+4 | shortcut -> layoutH3 | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Alt+5 | shortcut -> layoutL1R2 | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Alt+6 | shortcut -> layoutGrid | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Alt+7 | shortcut -> layoutH4 | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Alt+8 | shortcut -> layoutG6 | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+\ | shortcut -> splitRight | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Shift+\ | shortcut -> splitDown | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+D | shortcut -> duplicate | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+I | shortcut -> getInfo | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Alt+C | shortcut -> copyPath | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Shift+R | shortcut -> reveal | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+O | shortcut -> open | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+ArrowDown | shortcut -> open | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+ArrowUp | shortcut -> enclosing | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+[ | shortcut -> back | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+] | shortcut -> forward | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Backspace | shortcut -> trash | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Alt+Backspace | shortcut -> delete | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Shift+N | shortcut -> newFolder | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+A | shortcut -> selectAll | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+C | shortcut -> copy | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+X | shortcut -> cut | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+V | shortcut -> paste | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Z | shortcut -> undo | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Shift+. | shortcut -> toggleHidden | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+T | shortcut -> newTab | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+W | shortcut -> closeTab | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+L | shortcut -> editAddress | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Shift+G | shortcut -> editAddress | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+F | shortcut -> find | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Alt+S | shortcut -> toggleSidebar | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Shift+H | shortcut -> home | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Shift+D | shortcut -> desktop | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Alt+L | shortcut -> downloads | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Cmd+Shift+A | shortcut -> applications | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:mac:Escape | shortcut -> deselect | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Enter | shortcut -> open | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Space | shortcut -> quickLook | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Tab | shortcut -> nextPane | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Shift+Tab | shortcut -> previousPane | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+1 | shortcut -> viewIcons | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+2 | shortcut -> viewList | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+3 | shortcut -> viewColumns | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+4 | shortcut -> viewGallery | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Cmd+Alt+1 | shortcut -> layoutSingle | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Cmd+Alt+2 | shortcut -> layoutH2 | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Cmd+Alt+3 | shortcut -> layoutV2 | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Cmd+Alt+4 | shortcut -> layoutH3 | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Cmd+Alt+5 | shortcut -> layoutL1R2 | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Cmd+Alt+6 | shortcut -> layoutGrid | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Cmd+Alt+7 | shortcut -> layoutH4 | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Cmd+Alt+8 | shortcut -> layoutG6 | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Cmd+\ | shortcut -> splitRight | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Cmd+Shift+\ | shortcut -> splitDown | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+D | shortcut -> duplicate | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Alt+Enter | shortcut -> getInfo | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+Shift+C | shortcut -> copyPath | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:F2 | shortcut -> rename | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Delete | shortcut -> trash | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Shift+Delete | shortcut -> delete | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Backspace | shortcut -> enclosing | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Alt+ArrowUp | shortcut -> enclosing | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Alt+ArrowLeft | shortcut -> back | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Alt+ArrowRight | shortcut -> forward | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+Shift+N | shortcut -> newFolder | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+A | shortcut -> selectAll | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+C | shortcut -> copy | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+X | shortcut -> cut | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+V | shortcut -> paste | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+Z | shortcut -> undo | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+H | shortcut -> toggleHidden | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+T | shortcut -> newTab | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+W | shortcut -> closeTab | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+L | shortcut -> editAddress | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Ctrl+F | shortcut -> find | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Cmd+Alt+S | shortcut -> toggleSidebar | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
+| K:windows:Escape | shortcut -> deselect | `ui/parts/05-core-keys.js` | `src/features/keys, src/lib/keymap.ts` | changed | keymap data ported to `src/features/keys/keymaps.ts`; typechecks; the chord was not pressed in a window (photographs cannot press keys), master checks at Gate 2 |
