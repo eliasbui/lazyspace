@@ -360,7 +360,7 @@ Keys added by parts: see the `Keys.add` calls in `07-core-ext.js`, `14-commands.
 
 Risks, most serious first:
 
-1. Drag and drop of things that are not files. Tauri's web view handler takes every drag and never hands one back to WebKit, so text, links and pictures dragged from a browser onto the shelf (`70-stash.js` `fromData`, HTML5 `drop`) no longer reach the page. File drops are unaffected. Open; decision for Stage 2 (a small patch of `tauri-runtime-wry` in a vendored copy, or a native drop handler on the shelf window).
+1. Drag and drop of things that are not files. Tauri's web view handler took every drag and never handed one back to WebKit, so text, links and pictures dragged from a browser onto the shelf (`70-stash.js` `fromData`, HTML5 `drop`) would no longer reach the page. Decision of master in Stage 2: carry a small patch of `tauri-runtime-wry` in a vendored copy (section 7). Written and compiled, not run: master verifies it at Gate 2 by dragging a link onto the shelf.
 2. The window-vibrancy full-window glass layer and the traffic lights could not be looked at (owner rule). The library does not reparent the content view with the options used, so a crash like window-vibrancy issue 229 is not expected, but this is unverified. `tauri-plugin-liquid-glass` was not evaluated for the same reason; `window-vibrancy` stays the choice.
 3. Ordering of events. Calls from other threads now arrive through `run_on_main_thread` and a queue; if a handler held the host while another call arrived, it runs after. Same order as the old event loop in the cases read, not stress tested.
 4. `RunEvent::Opened` can arrive before `setup`; handled by `early()`, not exercised.
@@ -369,3 +369,24 @@ Risks, most serious first:
 7. Universal binary and the signing identity are Stage 3 work; the dev bundle was built once ad hoc (`pnpm tauri build --debug --bundles app`, signed with `-`, `codesign --verify --strict` ok, Info.plist keys read back with `plutil -p`).
 
 Order of work: Stage 1 host (done, see report); Stage 2 per the brief: services and mock, i18n, stores, registry, sidebar, panes, toolbar and keys, then the features in the order of the old parts; Stage 3 cleanup and release scripts.
+
+## 7. Stage 2: the front end
+
+### The vendored `tauri-runtime-wry` (patch for risk 1)
+
+- Version: `tauri-runtime-wry` 2.12.3, copied from the cargo registry into `src-tauri/vendor/tauri-runtime-wry/` and wired by `[patch.crates-io] tauri-runtime-wry = { path = "vendor/tauri-runtime-wry" }` in `src-tauri/Cargo.toml`.
+- Change (one file, `src/lib.rs`, the drag and drop handler given to `wry::WebViewBuilder::with_drag_drop_handler`, 14 lines added and 1 changed): the handler used to end with `true`, which tells WebKit that the app handled the drag. It now answers `true` only for a drag whose `Enter` event carried file paths; `Over`, `Drop` and `Leave` repeat the answer of `Enter` (they carry no paths), kept in an `AtomicBool`. A drag with no file (text, a link, a picture) is therefore handed back to the web view and reaches the page as an HTML5 `drop`. Files are handled exactly as before: they still produce Tauri's `DragDrop` events, which `interact.rs` `watch_drops` turns into `drop.over`, `drop` and `drop.leave`.
+- The exact diff is `src-tauri/vendor/tauri-runtime-wry.diff` (33 lines). To drop the patch: delete the `[patch.crates-io]` section and the `vendor` directory when Tauri ships the same behaviour.
+- Not verified: no drag was performed (owner rule). Master checks at Gate 2.
+
+### The three host rows that were open after Stage 1
+
+- H17 (files dragged in): the patch above plus `watch_drops`; compiled, not run.
+- H22 (glass): `window-vibrancy` kept as master decided; the plugin comparison is skipped. The page paints a veil of its own colour over the window material (`html.glass body`), and `app.hello` reports `glassAvailable`. It cannot be looked at (owner rule); master looks at Gate 2.
+- H39 (release scripts): Stage 3 by the brief; nothing to do in Stage 2 except that `pnpm build` now produces `dist-web`, which `tauri.conf.json` serves.
+
+### The page
+
+- `src/` is the React page (see `docs/frontend.md` for the layout and the rules). `index.html` holds the root div and one module script. `LAZYSPACE_CLASSIC=1` makes the app serve `dist-web/classic.html` (the old page, written by `build.rs`) instead of the new one.
+- Outside the app the page talks to a mock host (`src/services/mock`) so that it can be photographed.
+- `src/architecture.test.ts` and `scripts/migration/check-protocol.mjs` (also `pnpm check:protocol`) are written and not run; master runs them at Gate 2.
