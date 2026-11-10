@@ -30,6 +30,9 @@ export interface TabView {
   /** Letters beside the names, set by the git feature (`M`, `A`, `D`, `R`, `?`, `U`); null for none. */
   readonly marks: Readonly<Record<string, string>> | null;
   readonly branch: string | null;
+  /** The places Back and Forward go to, the nearest last. Optional: a pane of a feature's own (the desktop) has none. */
+  readonly back?: readonly Uri[];
+  readonly forward?: readonly Uri[];
   /** Sets `marks` and `branch` (the git feature) and draws the tab again if it is shown. */
   setGit?(marks: Readonly<Record<string, string>> | null, branch: string | null): void;
   /** How many items are selected (everything but the exceptions when everything is). */
@@ -79,12 +82,21 @@ export interface PaneHandle {
   startRename(name: string): void;
   /** Gives the keyboard back to the list of the pane. */
   focusList(): void;
-  /**
-   * Shows the context menu at a point of the window: of the selection after a right click on the row at `index`, or of
-   * the folder for null. For the views a feature draws in place of the list (columns, gallery); a pane of a window
-   * that has no such views (the desktop) need not have it.
-   */
+  // The members below are those of the panes feature; a pane of a feature's own (the desktop) may leave them out.
+  /** Asks for the rows between `first` and `last` (not included) that are not loaded yet; a view of a feature calls it for what it shows. */
+  ensure?(first: number, last: number): void;
+  /** Moves the cursor by `delta` rows (Infinity and -Infinity go to the ends), extending the selection when `extend`. */
+  move?(delta: number, extend?: boolean): void;
+  /** Finds the item whose name starts with what was typed within the last second plus `text`, as typing in Finder does. */
+  find?(text: string): void;
+  /** Selects row `index`: only it, turned over (Command), or from the anchor (Shift). */
+  select?(index: number, how?: 'only' | 'toggle' | 'range'): void;
+  /** Narrows the tab to the items whose name holds `text`; "" shows them all again. */
+  setFilter?(text: string): void;
+  /** The context menu at (x, y) for row `index`, or for the folder itself when null. */
   contextMenu?(x: number, y: number, index: number | null): void;
+  /** The places Back (or Forward) goes to as a menu at (x, y), as a right click on the button lists them. */
+  stackMenu?(way: 'back' | 'forward', x: number, y: number): void;
 }
 
 /** What the panes tell. */
