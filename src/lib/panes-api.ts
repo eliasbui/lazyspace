@@ -30,6 +30,9 @@ export interface TabView {
   /** Letters beside the names, set by the git feature (`M`, `A`, `D`, `R`, `?`, `U`); null for none. */
   readonly marks: Readonly<Record<string, string>> | null;
   readonly branch: string | null;
+  /** The places Back and Forward go to, the nearest last (the toolbar dims its buttons when they are empty). */
+  readonly back?: readonly Uri[];
+  readonly forward?: readonly Uri[];
   /** How many items are selected (everything but the exceptions when everything is). */
   selCount(): number;
   isSel(name: string): boolean;
@@ -77,6 +80,8 @@ export interface PaneHandle {
   startRename(name: string): void;
   /** Gives the keyboard back to the list of the pane. */
   focusList(): void;
+  /** Narrows the tab to the items whose name holds `text` (`view.filter`, kept in `tab.filter`); '' shows all again. */
+  setFilter?(text: string): void;
 }
 
 /** What the panes tell. */
@@ -123,6 +128,8 @@ export interface PanesApi {
   emit<K extends keyof PaneEvents>(event: K, detail: PaneEvents[K]): void;
   /** A feature that takes drops itself (the desktop moves its icons where they are dropped) returns true from it. */
   setDropHandler(handler: ((drop: { x: number; y: number; uris: Uri[]; mode: 'copy' | 'move' | 'auto' }, target: DropTarget) => boolean) | null): void;
+  /** The places Back (or Forward) of the pane's tab as a menu at (x, y); the one chosen is gone to as if by that many steps. */
+  stackMenu?(pane: PaneHandle, way: 'back' | 'forward', x: number, y: number): void;
 }
 
 let implementation: PanesApi | null = null;
@@ -162,6 +169,7 @@ export const panes: PanesApi = {
   on: (event, handler) => installed().on(event, handler),
   emit: (event, detail) => implementation?.emit(event, detail),
   setDropHandler: (handler) => installed().setDropHandler(handler),
+  stackMenu: (pane, way, x, y) => implementation?.stackMenu?.(pane, way, x, y),
 };
 
 /**
