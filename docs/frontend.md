@@ -56,3 +56,18 @@ classes `reduce-transparency`, `increase-contrast`, `reduce-motion`; the media q
 `pnpm dev --port <port>` serves the page; outside Tauri it talks to the mock host (`src/services/mock`), a believable fake file
 system with a folder of 100000 items. Query parameters: `?lang=vi|en&theme=light|dark&role=main|desktop|shelf&glass=1&update=1&sheet=<id>
 &folder=<path>`. Photograph with `tools/webshot` (see the run folder): `webshot --w 1100 --h 720 --dark --strict URL out.png`.
+
+## Build, release and the page's policy
+
+`pnpm build` type-checks and writes the page to `dist-web`, which Tauri embeds (`src-tauri/tauri.conf.json`,
+`frontendDist`). `scripts/bundle-macos.sh` runs `pnpm tauri build --bundles app` for you, adds the licence and
+`THIRD_PARTY_NOTICES.md`, and signs; `scripts/release.sh` builds the universal app, zips it and describes the release.
+
+The Content Security Policy of the page allows no inline script and no `eval`: scripts only from the app itself, styles from
+the app and as `style` attributes (some values are computed at run time), pictures and media from the app, `data:`,
+`blob:` and the `lazy://` scheme of Rust, calls to Rust through `ipc:`. A feature that wants more (a font, a frame, a
+network address) changes the policy in `src-tauri/tauri.conf.json` on purpose and says why in its commit.
+
+A library or a component copied into the page carries its licence: add it to `THIRD_PARTY_NOTICES.md`. A tooltip (`Tip`,
+`IconButton`) wraps only React Aria components, which are focusable on their own; for anything else, give the element
+`tabIndex={0}` and wrap it in React Aria's `Focusable` yourself.
