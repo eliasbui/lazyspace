@@ -308,6 +308,10 @@
   html.glass body {
     background: var(--veil);
   }
+  /* The shelf's window is clear around its basket. */
+  html.shelf-mode body {
+    background: transparent;
+  }
 
   button,
   input,
