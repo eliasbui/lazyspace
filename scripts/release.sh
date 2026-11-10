@@ -18,6 +18,7 @@ cargo update --workspace --offline -q --manifest-path src-tauri/Cargo.toml 2>/de
 
 # Built and tested before anything is pushed, so a broken build never leaves a tag behind.
 cargo test --quiet --manifest-path src-tauri/Cargo.toml
+pnpm install --frozen-lockfile
 pnpm typecheck
 pnpm test
 UNIVERSAL=1 REQUIRE_IDENTITY=1 scripts/bundle-macos.sh

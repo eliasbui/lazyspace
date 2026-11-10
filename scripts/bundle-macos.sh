@@ -12,6 +12,9 @@ APP="dist/LazySpace.app"
 # Where cargo puts the build, which CARGO_TARGET_DIR or a config may move away from the manifest's own folder.
 TARGET_DIR=$(cargo metadata --format-version 1 --no-deps --manifest-path src-tauri/Cargo.toml | plutil -extract target_directory raw -o - -)
 
+# The packages of the front end, as the lockfile has them (Tauri's CLI is one of them).
+pnpm install --frozen-lockfile
+
 # The build of the front end is Tauri's beforeBuildCommand, so the page the binary carries is always the one of this tree.
 if [ "${UNIVERSAL:-}" = 1 ]; then
     pnpm tauri build --bundles app --target universal-apple-darwin
