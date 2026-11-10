@@ -1,0 +1,411 @@
+# PARITY: LazySpace old code to new code
+
+Status values: `carried` (same code, same behaviour), `changed` (new way, same behaviour, reason given), `open` (not done or not verified, reason given), `pending` (UI item for Stage 2). The "verified" column says exactly what was seen. Rule of the owner: no tests or runs by the agent, so "verified" is either a read of the code, a compile (`cargo check`), or a trace from an earlier run that is named.
+
+| Id | Item | Old | New | Status | Verified |
+|---|---|---|---|---|---|
+| M:actions.list | method | `src/features/actions.rs` | `src-tauri/src/features/actions.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:actions.run | method | `src/features/actions.rs` | `src-tauri/src/features/actions.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:actions.save | method | `src/features/actions.rs` | `src-tauri/src/features/actions.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:app.drag | method | `src/ipc.rs` | `src-tauri/src/ipc.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:app.drawn | method | `src/ipc.rs` | `src-tauri/src/ipc.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:app.log | method | `src/ipc.rs` | `src-tauri/src/ipc.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:app.new_window | method | `src/ipc.rs` | `src-tauri/src/ipc.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:app.open_url | method | `src/ipc.rs` | `src-tauri/src/ipc.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:app.ready | method | `src/ipc.rs` | `src-tauri/src/ipc.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:app.zoom | method | `src/ipc.rs` | `src-tauri/src/ipc.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:archive.create | method | `src/features/archive/mod.rs` | `src-tauri/src/features/archive/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:archive.extract | method | `src/features/archive/mod.rs` | `src-tauri/src/features/archive/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:archive.password | method | `src/features/archive/mod.rs` | `src-tauri/src/features/archive/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:clipboard.copy | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:clipboard.cut | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:clipboard.paste | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:clipboard.state | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:clipboard.text | method | `src/interact.rs` | `src-tauri/src/interact.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:desktop.enable | method | `src/features/desktop.rs` | `src-tauri/src/features/desktop.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:desktop.move | method | `src/features/desktop.rs` | `src-tauri/src/features/desktop.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:desktop.place | method | `src/features/desktop.rs` | `src-tauri/src/features/desktop.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:desktop.state | method | `src/features/desktop.rs` | `src-tauri/src/features/desktop.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:devices.install | method | `src/features/devices.rs` | `src-tauri/src/features/devices.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:devices.open_app | method | `src/features/devices.rs` | `src-tauri/src/features/devices.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:devices.phones | method | `src/features/phones.rs` | `src-tauri/src/features/phones.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:disk.map | method | `src/features/disk.rs` | `src-tauri/src/features/disk.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:disk.twins | method | `src/features/disk.rs` | `src-tauri/src/features/disk.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:drag.arm | method | `src/interact.rs` | `src-tauri/src/interact.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:drag.disarm | method | `src/interact.rs` | `src-tauri/src/interact.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:fs.complete | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:fs.copy | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:fs.create_file | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:fs.delete | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:fs.list | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:fs.mkdir | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:fs.read_text | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:fs.rename | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:fs.sizes | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:fs.stat | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:fs.subfolders | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:fs.trash | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:fs.undo | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:fs.undo_title | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:fs.write_text | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:git.status | method | `src/features/git.rs` | `src-tauri/src/features/git.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:hash.start | method | `src/features/hash.rs` | `src-tauri/src/features/hash.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:history.add | method | `src/features/history.rs` | `src-tauri/src/features/history.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:history.clear | method | `src/features/history.rs` | `src-tauri/src/features/history.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:history.list | method | `src/features/history.rs` | `src-tauri/src/features/history.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:history.remove | method | `src/features/history.rs` | `src-tauri/src/features/history.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:index.rebuild | method | `src/features/index.rs` | `src-tauri/src/features/index.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:index.search | method | `src/features/index.rs` | `src-tauri/src/features/index.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:index.state | method | `src/features/index.rs` | `src-tauri/src/features/index.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:jobs.answer | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:jobs.cancel | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:jobs.list | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:jobs.pause | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:lanes.available | method | `src/features/lanes.rs` | `src-tauri/src/features/lanes.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:lanes.send | method | `src/features/lanes.rs` | `src-tauri/src/features/lanes.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:menu.show | method | `src/interact.rs` | `src-tauri/src/interact.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:menuedit.get | method | `src/features/menuedit.rs` | `src-tauri/src/features/menuedit.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:menuedit.set | method | `src/features/menuedit.rs` | `src-tauri/src/features/menuedit.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:native.apps_for | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:native.eject | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:native.fonts | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:native.full_disk | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:native.get_info | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:native.home | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:native.office_apps | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:native.open | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:native.open_full_disk | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:native.open_with | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:native.quicklook | method | `src/interact.rs` | `src-tauri/src/interact.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:native.reveal | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:native.share | method | `src/interact.rs` | `src-tauri/src/interact.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:native.volumes | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:openin.add | method | `src/features/openin.rs` | `src-tauri/src/features/openin.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:openin.open | method | `src/features/openin.rs` | `src-tauri/src/features/openin.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:openin.tools | method | `src/features/openin.rs` | `src-tauri/src/features/openin.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:panes.state | method | `src/ipc.rs` | `src-tauri/src/ipc.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:preview.info | method | `src/features/preview.rs` | `src-tauri/src/features/preview.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:remote.clouds | method | `src/features/remote/mod.rs` | `src-tauri/src/features/remote/mod.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:remote.connect | method | `src/features/remote/mod.rs` | `src-tauri/src/features/remote/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:remote.delete | method | `src/features/remote/mod.rs` | `src-tauri/src/features/remote/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:remote.disconnect | method | `src/features/remote/mod.rs` | `src-tauri/src/features/remote/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:remote.list | method | `src/features/remote/mod.rs` | `src-tauri/src/features/remote/mod.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:remote.onedrive_app | method | `src/features/remote/mod.rs` | `src-tauri/src/features/remote/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:remote.onedrive_open | method | `src/features/remote/mod.rs` | `src-tauri/src/features/remote/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:remote.password | method | `src/features/remote/mod.rs` | `src-tauri/src/features/remote/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:remote.rclone_add | method | `src/features/remote/mod.rs` | `src-tauri/src/features/remote/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:remote.rclone_install | method | `src/features/remote/mod.rs` | `src-tauri/src/features/remote/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:remote.rclone_remove | method | `src/features/remote/mod.rs` | `src-tauri/src/features/remote/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:remote.save | method | `src/features/remote/mod.rs` | `src-tauri/src/features/remote/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:remote.test | method | `src/features/remote/mod.rs` | `src-tauri/src/features/remote/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:remote.trust | method | `src/features/remote/mod.rs` | `src-tauri/src/features/remote/mod.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:rename.apply | method | `src/features/rename.rs` | `src-tauri/src/features/rename.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:rename.preview | method | `src/features/rename.rs` | `src-tauri/src/features/rename.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:settings.choose_folder | method | `src/ipc.rs` | `src-tauri/src/ipc.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:settings.get | method | `src/ipc.rs` | `src-tauri/src/ipc.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:settings.set | method | `src/ipc.rs` | `src-tauri/src/ipc.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:stash.add | method | `src/features/stash.rs` | `src-tauri/src/features/stash.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:stash.add_clipboard | method | `src/features/stash.rs` | `src-tauri/src/features/stash.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:stash.add_data | method | `src/features/stash.rs` | `src-tauri/src/features/stash.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:stash.clear | method | `src/features/stash.rs` | `src-tauri/src/features/stash.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:stash.count | method | `src/features/stash.rs` | `src-tauri/src/features/stash.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:stash.items | method | `src/features/stash.rs` | `src-tauri/src/features/stash.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:stash.remove | method | `src/features/stash.rs` | `src-tauri/src/features/stash.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:stash.show | method | `src/features/stash.rs` | `src-tauri/src/features/stash.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:sync.apply | method | `src/features/sync.rs` | `src-tauri/src/features/sync.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:sync.compare | method | `src/features/sync.rs` | `src-tauri/src/features/sync.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:tags.set | method | `src/features/tags.rs` | `src-tauri/src/features/tags.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:templates.add | method | `src/features/templates.rs` | `src-tauri/src/features/templates.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:templates.create | method | `src/features/templates.rs` | `src-tauri/src/features/templates.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:templates.folder | method | `src/features/templates.rs` | `src-tauri/src/features/templates.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:templates.list | method | `src/features/templates.rs` | `src-tauri/src/features/templates.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:update.check | method | `src/ipc.rs` | `src-tauri/src/ipc.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:update.install | method | `src/ipc.rs` | `src-tauri/src/ipc.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:update.relaunch | method | `src/ipc.rs` | `src-tauri/src/ipc.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:view.close | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:view.filter | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:view.find | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:view.hidden | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:view.index_of | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:view.rows | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:view.sort | method | `src/browse.rs` | `src-tauri/src/browse.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:viewer.enable | method | `src/features/viewer.rs` | `src-tauri/src/features/viewer.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:viewer.reveal | method | `src/features/viewer.rs` | `src-tauri/src/features/viewer.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:viewer.state | method | `src/features/viewer.rs` | `src-tauri/src/features/viewer.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:workspaces.delete | method | `src/features/workspaces.rs` | `src-tauri/src/features/workspaces.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:workspaces.list | method | `src/features/workspaces.rs` | `src-tauri/src/features/workspaces.rs` | carried | answered ok to the classic page in a smoke run (trace, before the owner rule) |
+| M:workspaces.rename | method | `src/features/workspaces.rs` | `src-tauri/src/features/workspaces.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| M:workspaces.save | method | `src/features/workspaces.rs` | `src-tauri/src/features/workspaces.rs` | carried | compiles; handler unchanged; not exercised, master runs the smoke |
+| E:app.hello | event | `main.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:desktop.screens | event | `features/desktop.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:devices.files | event | `features/phones.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:devices.installed | event | `features/devices.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:devices.phones | event | `features/phones.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:devices.removed | event | `features/devices.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:drop | event | `interact.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:drop.leave | event | `interact.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:drop.over | event | `interact.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:hash.started | event | `features/hash.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:jobs.ask | event | `jobs.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:jobs.finished | event | `jobs.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:jobs.paused | event | `browse.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:jobs.progress | event | `jobs.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:jobs.started | event | `jobs.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:menu.action | event | `main.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:menu.chosen | event | `interact.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:menu.closed | event | `interact.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:preview.ready | event | `features/preview.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:remote.changed | event | `features/remote/mod.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:settings.changed | event | `main.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:stash.changed | event | `features/stash.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:theme.changed | event | `main.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:toast | event | `browse.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:update.available | event | `main.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:update.error | event | `main.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:update.none | event | `main.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:update.progress | event | `main.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:update.ready | event | `main.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:view.changed | event | `browse.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:view.error | event | `browse.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:view.sizes | event | `sizes.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:viewer.show | event | `features/viewer.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| E:volumes.changed | event | `features/devices.rs` | same | carried | compiles; delivered by `Surface::send` (`app.receive`), same as before; master runs |
+| H01 | Main window: size 1100x720 or the saved size, minimum 640x420, transparent title bar, hidden title, full-size  | src/main.rs `create_surface` | src-tauri/src/main.rs `create_surface` (WebviewWindowBuilder, TitleBarStyle::Overlay) | changed | Tauri builder; window created in a smoke run (trace "window: lz-1 made as main"); look not seen |
+| H02 | Desktop window: no decorations, transparent, on every Space, pinned to the desktop icon level, one per run | src/main.rs, src/native/panel.rs `pin_to_desktop`, src/features/desktop.rs | same files; `pin_to_desktop` takes a Tauri window | changed | compiles; not run |
+| H03 | Shelf window: no decorations, transparent, always on top, right edge of the main screen, 264x440 | src/main.rs `create_surface` (Role::Shelf), src/features/stash.rs `show` | same | changed | compiles; not run |
+| H04 | Main window hidden until the page says `app.drawn`, with a 3 s fallback | src/main.rs `page_drawn`, `create_surface` | same | changed | `app.drawn` answered in a smoke run; window shown at that point not seen |
+| H05 | Window drag (`app.drag`) and zoom (`app.zoom`) from the toolbar | src/ipc.rs | src-tauri/src/ipc.rs (`start_dragging`, `maximize`/`unmaximize`) | changed | compiles; not run |
+| H06 | Menu bar: App, File, Edit, View, Go, Window, Help, both languages, rebuilt on a language change; Window and He | src/menus.rs (muda) | src-tauri/src/menus.rs (tauri::menu) | changed | muda to tauri::menu; compiles; the bar was not looked at |
+| H07 | Menu actions: Settings, New Window (Cmd+N), Close Window (Cmd+Shift+W), Quit (Cmd+Q), the two Help links handl | src/main.rs `menu` | same, `App::menu` | changed | compiles; not run (Quit handler now in `App::menu`) |
+| H08 | Icon in the menu bar while Settings `background` is on: Open, New Window, Quit for Good; made again on a langu | src/menus.rs `tray`, src/main.rs `sync_tray` | src-tauri/src/menus.rs `tray`; id `lazyspace-tray`; the menu events go through the one global handler | changed | tray built with TrayIconBuilder; menu events share the global handler to avoid doubling; not run |
+| H09 | Background mode: Quit and closing the last main window hide every window but the desktop; the app leaves the D | src/main.rs `hide_all`, `close_or_hide` | same | carried | same code; not run |
+| H10 | Activation policy Regular or Accessory as windows show and hide | src/main.rs `set_in_dock` (NSApplication) | same (NSApplication directly) | carried | same code; not run |
+| H11 | Dock icon click with no window: bring the windows back or open a main window | tao `Event::Reopen` | `RunEvent::Reopen { has_visible_windows: false }` | changed | RunEvent::Reopen; not run |
+| H12 | Last window closed does not quit the app | event loop never exited on window close | `RunEvent::ExitRequested { code: None }` is prevented | changed | prevent_exit when code is None; read in tauri-runtime-wry: only the last window destroyed raises it; not run |
+| H13 | Open-documents events (reveal from another app, folders): kept until the first main window exists | tao `Event::Opened`, `opened_early` | `RunEvent::Opened`, `early()` | changed | RunEvent::Opened plus early(); not run |
+| H14 | Services: "Open in LazySpace" provider object (`LZServices`) | src/native/services.rs, registered by src/features/viewer.rs `on_start` | same; the NSServices entry is in src-tauri/Info.plist | carried | provider object unchanged; NSServices in Info.plist read back from the built bundle; not run |
+| H15 | Custom protocol `lazy://` : `icon`, `symbol`, `thumb`, `file` (allow-listed, with ranges) | src/protocol.rs (wry asynchronous protocol) | src-tauri/src/protocol.rs (`register_asynchronous_uri_scheme_protocol`) | changed | `lazy://` registered through Tauri; same handler code; not run |
+| H16 | Navigation: only the page itself; web links open in the browser; new windows refused | src/main.rs `allow_navigation`, `with_new_window_req_handler` | `on_navigation`, `on_new_window` | changed | navigation to tauri://localhost allowed in a smoke run (trace); refusal covered by a unit test |
+| H17 | Files dragged in: pointer position while over, drop with paths and copy/move mode from the modifier keys | src/interact.rs `drop_handler` (wry) | src-tauri/src/interact.rs `watch_drops` (`WebviewEvent::DragDrop`) | open | changed to WebviewEvent::DragDrop; non-file drags no longer reach the page (risk 1); not run |
+| H18 | Files dragged out (Finder, other apps, other panes): armed on press, started from the first drag event | src/native/drag.rs | same; the web view comes from `native::web_view` | carried | same code, web view from `native::web_view`; not run |
+| H19 | Quick Look panel on Space, per window | src/native/quicklook.rs | same; the NSWindow comes from `native::ns_window` | carried | same code; not run |
+| H20 | Native context menu (NSMenu) from a data tree, Open With, SF Symbols | src/native/menu.rs, src/contextmenu.rs, src/interact.rs `menu.show` | same | carried | same code; not run |
+| H21 | Share sheet | src/native/share.rs | same | carried | same code; not run |
+| H22 | Liquid Glass behind the page | src/glass.rs (own NSGlassEffectView / NSVisualEffectView strip) | src-tauri/src/glass.rs (window-vibrancy) | open | window-vibrancy in place of the home-made strip; not looked at (owner rule); tauri-plugin-liquid-glass not evaluated |
+| H23 | Theme: window follows Settings theme; `theme.changed` on a system change | src/main.rs `window_theme`, `WindowEvent::ThemeChanged` | `set_theme`, `WindowEvent::ThemeChanged` | changed | compiles; not run |
+| H24 | Updater: check, download, verify SHA-256, swap the app in place, relaunch; the app's own GitHub client | src/update.rs | unchanged | carried | unchanged; a packaged Tauri copy must be checked by master (relaunch path) |
+| H25 | File watcher (FSEvents through notify), debounced, one re-list per touched tab | src/fswatch.rs | unchanged except the proxy type | carried | unchanged |
+| H26 | Volumes and devices: mount and unmount notifications, eject, USB and Image Capture phones and cameras | src/native/devices.rs, camera.rs, src/features/devices.rs, phones.rs | unchanged except the proxy type | carried | unchanged |
+| H27 | Trash (NSFileManager), tags, workspace (reveal, open with, default apps, file viewer role), clipboard (pastebo | src/native/trash.rs, tags.rs, workspace.rs, src/clipboard.rs | unchanged | carried | unchanged |
+| H28 | Screen changes re-pin the desktop window | src/native/panel.rs `on_screens_changed` | unchanged | carried | unchanged |
+| H29 | Environment overrides: `LAZYSPACE_SETTINGS` (settings.json and layout.json beside it); `LAZYSPACE_FOLDER` for  | src/settings.rs | unchanged. New, hidden: `LAZYSPACE_NO_FOCUS`, `LAZYSPACE_TRACE_IPC` | carried | LAZYSPACE_SETTINGS used by every smoke run; the two new switches added |
+| H30 | Keychain items for server secrets (service `com.eliasbui.lazyspace`) | src/features/remote/keychain use | unchanged | carried | unchanged; not touched in any run |
+| H31 | External tools by absolute path: bsdtar, open, ditto, diskutil, hdiutil, defaults, osascript, mdfind, lsof, ki | various | unchanged | carried | unchanged |
+| H32 | Bundle identity: id `com.eliasbui.lazyspace`, executable `lazyspace`, product `LazySpace`, version from Cargo. | scripts/bundle-macos.sh | src-tauri/tauri.conf.json (`productName`, `identifier`, `mainBinaryName`), Cargo.toml version, icons/AppIcon.icns | changed | read back from the built debug bundle: id, executable, icon, version |
+| H33 | Info.plist keys: NSServices, CFBundleDocumentTypes (Folder, alternate), CFBundleLocalizations, five usage desc | scripts/bundle-macos.sh | src-tauri/Info.plist, src-tauri/lproj/*, `bundle.resources` | changed | all keys read back with plutil from the built debug bundle; strings files present |
+| H34 | Content security policy (the old page had none; the brief asks for lazy: in img-src and ipc: for Tauri) | - | src-tauri/tauri.conf.json `app.security.csp` | changed | a CSP is new (the old page had none); no violation reported in a smoke run |
+| H35 | Single-instance lock | none | none | carried | none before, none now |
+| H36 | Autostart / login item | none | none | carried | none before, none now |
+| H37 | Notifications of the system | none (device notes are drawn by the page) | none | carried | none before, none now |
+| H38 | Power actions | none | none | carried | none before, none now |
+| H39 | Release, signing and packaging scripts | scripts/*.sh (ad hoc or "LazySpace Code Signing" identity, universal binary, zip with ditto, latest.json) | not touched in Stage 1 (Stage 3) | open | Stage 3 |
+| U:index.html | UI part, 50 word keys | `ui/index.html` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/00-core-icons.js | UI part, 0 word keys | `ui/parts/00-core-icons.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/01-core-format.js | UI part, 6 word keys | `ui/parts/01-core-format.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/02-core-sidebar.js | UI part, 28 word keys | `ui/parts/02-core-sidebar.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/03-core-panes.js | UI part, 53 word keys | `ui/parts/03-core-panes.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/04-core-toolbar.js | UI part, 0 word keys | `ui/parts/04-core-toolbar.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/05-core-keys.js | UI part, 0 word keys | `ui/parts/05-core-keys.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/06-core-jobs.js | UI part, 18 word keys | `ui/parts/06-core-jobs.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/07-core-ext.js | UI part, 10 word keys | `ui/parts/07-core-ext.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:toolbar:layout | toolbar item | `ui/parts/07-core-ext.js` | Stage 2 | pending | - |
+| U:parts/08-core-menu.js | UI part, 25 word keys | `ui/parts/08-core-menu.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/09-core-start.js | UI part, 0 word keys | `ui/parts/09-core-start.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/10-workspaces.js | UI part, 8 word keys | `ui/parts/10-workspaces.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:sidebar:workspaces | sidebar section | `ui/parts/10-workspaces.js` | Stage 2 | pending | - |
+| U:parts/11-keyboard.js | UI part, 5 word keys | `ui/parts/11-keyboard.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:settings:keyboard | settings section | `ui/parts/11-keyboard.js` | Stage 2 | pending | - |
+| U:parts/12-menuedit.css | UI part, 0 word keys | `ui/parts/12-menuedit.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/12-menuedit.js | UI part, 7 word keys | `ui/parts/12-menuedit.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:sheet:menuEditSheet | sheet | `ui/parts/12-menuedit.js` | Stage 2 | pending | - |
+| U:sheet:iconPickSheet | sheet | `ui/parts/12-menuedit.js` | Stage 2 | pending | - |
+| U:settings:contextmenu | settings section | `ui/parts/12-menuedit.js` | Stage 2 | pending | - |
+| U:parts/13-appearance.css | UI part, 0 word keys | `ui/parts/13-appearance.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/13-appearance.js | UI part, 32 word keys | `ui/parts/13-appearance.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:settings:appearance | settings section | `ui/parts/13-appearance.js` | Stage 2 | pending | - |
+| U:parts/14-commands.css | UI part, 0 word keys | `ui/parts/14-commands.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/14-commands.js | UI part, 0 word keys | `ui/parts/14-commands.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:menu:copyToOther | context menu item | `ui/parts/14-commands.js` | Stage 2 | pending | - |
+| U:menu:moveToOther | context menu item | `ui/parts/14-commands.js` | Stage 2 | pending | - |
+| U:sheet:paletteSheet | sheet | `ui/parts/14-commands.js` | Stage 2 | pending | - |
+| U:parts/15-finder.js | UI part, 7 word keys | `ui/parts/15-finder.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:menu:revealHere | context menu item | `ui/parts/15-finder.js` | Stage 2 | pending | - |
+| U:settings:viewer | settings section | `ui/parts/15-finder.js` | Stage 2 | pending | - |
+| U:parts/16-settings.css | UI part, 0 word keys | `ui/parts/16-settings.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/16-settings.js | UI part, 2 word keys | `ui/parts/16-settings.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/17-explorer.js | UI part, 8 word keys | `ui/parts/17-explorer.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:toolbar:more | toolbar item | `ui/parts/17-explorer.js` | Stage 2 | pending | - |
+| U:parts/18-access.js | UI part, 6 word keys | `ui/parts/18-access.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/19-search.css | UI part, 0 word keys | `ui/parts/19-search.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/19-search.js | UI part, 37 word keys | `ui/parts/19-search.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:settings:search | settings section | `ui/parts/19-search.js` | Stage 2 | pending | - |
+| U:parts/20-templates.js | UI part, 4 word keys | `ui/parts/20-templates.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:menu:newFile | context menu item | `ui/parts/20-templates.js` | Stage 2 | pending | - |
+| U:menu:addTemplate | context menu item | `ui/parts/20-templates.js` | Stage 2 | pending | - |
+| U:toolbar:newFile | toolbar item | `ui/parts/20-templates.js` | Stage 2 | pending | - |
+| U:parts/21-openin.js | UI part, 3 word keys | `ui/parts/21-openin.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/22-hash.css | UI part, 0 word keys | `ui/parts/22-hash.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/22-hash.js | UI part, 8 word keys | `ui/parts/22-hash.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:menu:hash | context menu item | `ui/parts/22-hash.js` | Stage 2 | pending | - |
+| U:sheet:hashSheet | sheet | `ui/parts/22-hash.js` | Stage 2 | pending | - |
+| U:parts/25-columns.css | UI part, 0 word keys | `ui/parts/25-columns.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/25-columns.js | UI part, 5 word keys | `ui/parts/25-columns.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/26-tags.css | UI part, 0 word keys | `ui/parts/26-tags.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/26-tags.js | UI part, 9 word keys | `ui/parts/26-tags.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:menu:tags | context menu item | `ui/parts/26-tags.js` | Stage 2 | pending | - |
+| U:sidebar:tags | sidebar section | `ui/parts/26-tags.js` | Stage 2 | pending | - |
+| U:parts/27-share.js | UI part, 2 word keys | `ui/parts/27-share.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:menu:share | context menu item | `ui/parts/27-share.js` | Stage 2 | pending | - |
+| U:toolbar:share | toolbar item | `ui/parts/27-share.js` | Stage 2 | pending | - |
+| U:parts/28-actions.css | UI part, 0 word keys | `ui/parts/28-actions.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/28-actions.js | UI part, 15 word keys | `ui/parts/28-actions.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:menu:actions | context menu item | `ui/parts/28-actions.js` | Stage 2 | pending | - |
+| U:settings:actions | settings section | `ui/parts/28-actions.js` | Stage 2 | pending | - |
+| U:parts/29-disk.css | UI part, 0 word keys | `ui/parts/29-disk.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/29-disk.js | UI part, 14 word keys | `ui/parts/29-disk.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:menu:diskMap | context menu item | `ui/parts/29-disk.js` | Stage 2 | pending | - |
+| U:menu:findTwins | context menu item | `ui/parts/29-disk.js` | Stage 2 | pending | - |
+| U:sheet:diskSheet | sheet | `ui/parts/29-disk.js` | Stage 2 | pending | - |
+| U:sheet:twinsSheet | sheet | `ui/parts/29-disk.js` | Stage 2 | pending | - |
+| U:parts/30-sync.css | UI part, 0 word keys | `ui/parts/30-sync.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/30-sync.js | UI part, 30 word keys | `ui/parts/30-sync.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:menu:sync | context menu item | `ui/parts/30-sync.js` | Stage 2 | pending | - |
+| U:menu:comparePanes | context menu item | `ui/parts/30-sync.js` | Stage 2 | pending | - |
+| U:sheet:syncSheet | sheet | `ui/parts/30-sync.js` | Stage 2 | pending | - |
+| U:parts/31-git.css | UI part, 0 word keys | `ui/parts/31-git.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/31-git.js | UI part, 1 word keys | `ui/parts/31-git.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/32-devices.css | UI part, 0 word keys | `ui/parts/32-devices.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/32-devices.js | UI part, 44 word keys | `ui/parts/32-devices.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/33-phones.css | UI part, 0 word keys | `ui/parts/33-phones.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/33-phones.js | UI part, 10 word keys | `ui/parts/33-phones.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:sidebar:phones | sidebar section | `ui/parts/33-phones.js` | Stage 2 | pending | - |
+| U:parts/40-preview.css | UI part, 0 word keys | `ui/parts/40-preview.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/40-preview.js | UI part, 21 word keys | `ui/parts/40-preview.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:toolbar:preview | toolbar item | `ui/parts/40-preview.js` | Stage 2 | pending | - |
+| U:parts/50-rename.css | UI part, 0 word keys | `ui/parts/50-rename.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/50-rename.js | UI part, 39 word keys | `ui/parts/50-rename.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:menu:batchRename | context menu item | `ui/parts/50-rename.js` | Stage 2 | pending | - |
+| U:sheet:renameSheet | sheet | `ui/parts/50-rename.js` | Stage 2 | pending | - |
+| U:parts/60-archive.css | UI part, 0 word keys | `ui/parts/60-archive.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/60-archive.js | UI part, 20 word keys | `ui/parts/60-archive.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:menu:extractHere | context menu item | `ui/parts/60-archive.js` | Stage 2 | pending | - |
+| U:menu:extractTo | context menu item | `ui/parts/60-archive.js` | Stage 2 | pending | - |
+| U:menu:compress | context menu item | `ui/parts/60-archive.js` | Stage 2 | pending | - |
+| U:menu:extractSelected | context menu item | `ui/parts/60-archive.js` | Stage 2 | pending | - |
+| U:sheet:compressSheet | sheet | `ui/parts/60-archive.js` | Stage 2 | pending | - |
+| U:parts/70-stash.css | UI part, 0 word keys | `ui/parts/70-stash.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/70-stash.js | UI part, 13 word keys | `ui/parts/70-stash.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:menu:stashAdd | context menu item | `ui/parts/70-stash.js` | Stage 2 | pending | - |
+| U:menu:stashRemove | context menu item | `ui/parts/70-stash.js` | Stage 2 | pending | - |
+| U:menu:stashClear | context menu item | `ui/parts/70-stash.js` | Stage 2 | pending | - |
+| U:menu:downloadLanes | context menu item | `ui/parts/70-stash.js` | Stage 2 | pending | - |
+| U:toolbar:stash | toolbar item | `ui/parts/70-stash.js` | Stage 2 | pending | - |
+| U:sidebar:stash | sidebar section | `ui/parts/70-stash.js` | Stage 2 | pending | - |
+| U:parts/80-remote.css | UI part, 0 word keys | `ui/parts/80-remote.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/80-remote.js | UI part, 69 word keys | `ui/parts/80-remote.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:sheet:serverSheet | sheet | `ui/parts/80-remote.js` | Stage 2 | pending | - |
+| U:sidebar:cloud | sidebar section | `ui/parts/80-remote.js` | Stage 2 | pending | - |
+| U:sidebar:remote | sidebar section | `ui/parts/80-remote.js` | Stage 2 | pending | - |
+| U:parts/81-office.js | UI part, 4 word keys | `ui/parts/81-office.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:menu:openInOffice | context menu item | `ui/parts/81-office.js` | Stage 2 | pending | - |
+| U:parts/90-desktop.css | UI part, 0 word keys | `ui/parts/90-desktop.css` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:parts/90-desktop.js | UI part, 8 word keys | `ui/parts/90-desktop.js` | `src/features/...` (Stage 2) | pending | classic page runs under the new host; the port is Stage 2 |
+| U:settings:desktop | settings section | `ui/parts/90-desktop.js` | Stage 2 | pending | - |
+| K:mac:Enter | shortcut -> rename | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Space | shortcut -> quickLook | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Tab | shortcut -> nextPane | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Shift+Tab | shortcut -> previousPane | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+1 | shortcut -> viewIcons | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+2 | shortcut -> viewList | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+3 | shortcut -> viewColumns | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+4 | shortcut -> viewGallery | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Alt+1 | shortcut -> layoutSingle | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Alt+2 | shortcut -> layoutH2 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Alt+3 | shortcut -> layoutV2 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Alt+4 | shortcut -> layoutH3 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Alt+5 | shortcut -> layoutL1R2 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Alt+6 | shortcut -> layoutGrid | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Alt+7 | shortcut -> layoutH4 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Alt+8 | shortcut -> layoutG6 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+\ | shortcut -> splitRight | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Shift+\ | shortcut -> splitDown | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+D | shortcut -> duplicate | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+I | shortcut -> getInfo | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Alt+C | shortcut -> copyPath | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Shift+R | shortcut -> reveal | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+O | shortcut -> open | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+ArrowDown | shortcut -> open | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+ArrowUp | shortcut -> enclosing | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+[ | shortcut -> back | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+] | shortcut -> forward | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Backspace | shortcut -> trash | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Alt+Backspace | shortcut -> delete | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Shift+N | shortcut -> newFolder | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+A | shortcut -> selectAll | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+C | shortcut -> copy | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+X | shortcut -> cut | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+V | shortcut -> paste | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Z | shortcut -> undo | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Shift+. | shortcut -> toggleHidden | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+T | shortcut -> newTab | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+W | shortcut -> closeTab | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+L | shortcut -> editAddress | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Shift+G | shortcut -> editAddress | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+F | shortcut -> find | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Alt+S | shortcut -> toggleSidebar | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Shift+H | shortcut -> home | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Shift+D | shortcut -> desktop | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Alt+L | shortcut -> downloads | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Cmd+Shift+A | shortcut -> applications | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:mac:Escape | shortcut -> deselect | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Enter | shortcut -> open | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Space | shortcut -> quickLook | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Tab | shortcut -> nextPane | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Shift+Tab | shortcut -> previousPane | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+1 | shortcut -> viewIcons | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+2 | shortcut -> viewList | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+3 | shortcut -> viewColumns | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+4 | shortcut -> viewGallery | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Cmd+Alt+1 | shortcut -> layoutSingle | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Cmd+Alt+2 | shortcut -> layoutH2 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Cmd+Alt+3 | shortcut -> layoutV2 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Cmd+Alt+4 | shortcut -> layoutH3 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Cmd+Alt+5 | shortcut -> layoutL1R2 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Cmd+Alt+6 | shortcut -> layoutGrid | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Cmd+Alt+7 | shortcut -> layoutH4 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Cmd+Alt+8 | shortcut -> layoutG6 | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Cmd+\ | shortcut -> splitRight | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Cmd+Shift+\ | shortcut -> splitDown | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+D | shortcut -> duplicate | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Alt+Enter | shortcut -> getInfo | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+Shift+C | shortcut -> copyPath | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:F2 | shortcut -> rename | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Delete | shortcut -> trash | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Shift+Delete | shortcut -> delete | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Backspace | shortcut -> enclosing | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Alt+ArrowUp | shortcut -> enclosing | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Alt+ArrowLeft | shortcut -> back | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Alt+ArrowRight | shortcut -> forward | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+Shift+N | shortcut -> newFolder | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+A | shortcut -> selectAll | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+C | shortcut -> copy | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+X | shortcut -> cut | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+V | shortcut -> paste | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+Z | shortcut -> undo | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+H | shortcut -> toggleHidden | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+T | shortcut -> newTab | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+W | shortcut -> closeTab | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+L | shortcut -> editAddress | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Ctrl+F | shortcut -> find | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Cmd+Alt+S | shortcut -> toggleSidebar | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
+| K:windows:Escape | shortcut -> deselect | `ui/parts/05-core-keys.js` | Stage 2 | pending | - |
