@@ -4,7 +4,7 @@ import { coreHandlers } from './core';
 import type { Handlers } from './handlers';
 import { MockState } from './state';
 import { toolsHandlers } from './tools';
-import { setLanguage, sleep, tr } from './util';
+import { setLanguage, sleep, tr, wire } from './util';
 
 // A host that answers all of the protocol from memory, for a page opened in a browser or photographed.
 //
@@ -45,10 +45,10 @@ export function createMockHost(search = globalThis.location?.search ?? ''): Host
       const handler = table[method];
       if (!handler) throw new Error(`${tr('Lệnh không rõ', 'Unknown command')}: ${method}`);
       // A copy, as the answer of the host is: the page cannot change what the mock keeps.
-      return structuredClone(await handler(args as never, s));
+      return wire(await handler(args as never, s));
     },
     subscribe(handler) {
-      const listener = (event: string, data: unknown): void => handler(event, structuredClone(data));
+      const listener = (event: string, data: unknown): void => handler(event, wire(data));
       s.listeners.add(listener);
       return () => s.listeners.delete(listener);
     },

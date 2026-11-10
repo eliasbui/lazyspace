@@ -65,3 +65,8 @@ export function fold(text: string): string {
 export function errorText(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
+
+/** A copy through JSON, which is what the wire does to an answer or an event. */
+export function wire<T>(value: T): T {
+  return value === undefined ? (null as T) : (JSON.parse(JSON.stringify(value)) as T);
+}

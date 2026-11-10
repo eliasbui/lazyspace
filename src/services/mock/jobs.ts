@@ -43,6 +43,8 @@ export class Jobs {
         while (handle.paused && !handle.cancelled) await sleep(50);
         this.emit('jobs.progress', { id, done, total, current });
         await sleep(pause);
+        // A cancel stops the work at its next step, as the host's jobs do.
+        if (handle.cancelled) throw new Error('cancelled');
       },
       ask: async (question) => {
         const kind = question.type === 'conflict' && question.folder ? 'conflict-folder' : question.type;

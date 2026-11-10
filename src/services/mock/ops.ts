@@ -36,7 +36,8 @@ function merge(from: Node, into: Node, mtime: number): void {
   }
 }
 
-export async function transfer(s: MockState, ctx: JobContext, from: string[], toUri: string, mv: boolean): Promise<TransferResult> {
+export async function transfer(s: MockState, ctx: JobContext, fromUris: string[], toUri: string, mv: boolean): Promise<TransferResult> {
+  const from = fromUris.map((u) => s.localPath(u));
   const dest = s.localPath(toUri);
   s.fs.folder(dest);
   const total = Math.max(1, from.reduce((sum, p) => sum + Math.max(1, s.fs.total(p) || s.fs.stat(p).size), 0));
