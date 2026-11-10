@@ -14,6 +14,7 @@ import { fold } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import type { Language, Settings, SettingsPatch, ThemeChoice } from '@/services';
 import { busy, updateButton, updateNote, updateStep, useUpdate } from './update';
+import appIcon from '../../../assets/icon-256.png';
 
 /** A row with a switch that sets one setting. */
 function Toggle({ label, hint, on, patch }: { label: WordKey; hint: WordKey; on: boolean; patch: (on: boolean) => SettingsPatch }) {
@@ -110,10 +111,11 @@ export function AboutSection() {
     <Group>
       {shown ? (
         <div data-slot="settings-row" className="flex flex-col gap-3 px-4 py-3.5">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3.5">
+            <img src={appIcon} alt="" draggable={false} className="size-[52px] shrink-0" />
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="text-[13px] font-semibold">
-                {t('appName')} <span className="font-normal text-fg-2 tabular-nums">{version || '-'}</span>
+              <span className="text-[15px] font-semibold">
+                {t('appName')} <span className="text-[13px] font-normal text-fg-2 tabular-nums">{version || '-'}</span>
               </span>
               {note ? <span className={cn('text-[12px] leading-snug text-fg-2 select-text', u.stage === 'error' && 'text-bad')}>{note}</span> : null}
             </div>
