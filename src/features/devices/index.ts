@@ -8,7 +8,7 @@ import { useApp } from '@/lib/app-state';
 import { fmtSize } from '@/lib/format';
 import { panes, type PaneHandle } from '@/lib/panes-api';
 import { registry } from '@/lib/registry';
-import { sidebar } from '@/lib/sidebar-api';
+import { setEjector, sidebar } from '@/lib/sidebar-api';
 import { confirm, errorText, say, toast } from '@/lib/ui';
 import { fileUri, isLocal, pathOf, schemeOf, withPath } from '@/lib/uri';
 import { api, iconUrl, on, pixelRatio, type DeviceNote, type Uri, type VolumeNote } from '@/services';
@@ -94,7 +94,7 @@ async function install(key: string, app: ImageApp, eject: boolean): Promise<void
   }
 }
 
-/** Ejects a disk, from its note or Cmd+E; a refusal comes as a note, with the apps that hold it when that is why, and a way to force it. */
+/** Ejects a disk, from its note, the sidebar or Cmd+E; a refusal comes as a note, with the apps that hold it when that is why, and a way to force it. */
 export async function eject(path: string, name = nameOf(path)): Promise<void> {
   const key = `vol:${path}`;
   busy(key, t('dev.ejecting'));
@@ -247,4 +247,6 @@ export function register(): void {
     for (const v of targets) void eject(v.path, v.name);
   });
   registry.keys.add({ 'Cmd+E': 'eject' }, 'mac');
+  // The eject buttons of the sidebar go through the same notes and forced eject.
+  setEjector(eject);
 }
