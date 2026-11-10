@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog as AriaDialog } from 'react-aria-components';
 import { CaretDownIcon, CaretUpIcon } from '@phosphor-icons/react';
 import { Group } from '@/components/macos/Settings';
@@ -27,17 +27,6 @@ const SYMBOLS = [
 /** An SF Symbol painted as a mask in the colour of the text, so it follows light and dark. */
 function Symbol({ name }: { name: string }) {
   return <span aria-hidden className="size-4 bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain]" style={{ maskImage: `url("${symbolUrl(name, 16 * pixelRatio())}")` }} />;
-}
-
-/** Up or down; a button that cannot move takes no tooltip, as a disabled button cannot take the focus a tooltip needs. */
-function Move({ label, icon, disabled, onPress }: { label: string; icon: ReactNode; disabled: boolean; onPress: () => void }) {
-  return disabled ? (
-    <Button aria-label={label} variant="ghost" size="icon-sm" isDisabled>
-      {icon}
-    </Button>
-  ) : (
-    <IconButton label={label} icon={icon} size="icon-sm" onPress={onPress} />
-  );
 }
 
 /** What `from` says opened the editor; Done goes back there. */
@@ -114,14 +103,15 @@ export function MenuEditSheet({ props, close }: SheetProps<MenuEditProps | undef
                   <Popover placement="bottom start" className="w-auto p-3">
                     <AriaDialog aria-label={t('chooseIcon')} className="outline-none">
                       {({ close: shut }) => (
-                        <div className="grid grid-cols-8 gap-1.5">
+                        <div className="grid grid-cols-8 gap-1">
                           <p className="col-span-8 px-0.5 pb-1 text-[12px] font-semibold text-fg-2">{t('chooseIcon')}</p>
                           {SYMBOLS.map((name) => (
                             <Tip key={name} text={name}>
                               <Button
                                 variant={name === icon ? 'outline' : 'secondary'}
+                                size="icon-lg"
                                 aria-label={name}
-                                className={cn('size-10 rounded-tile', name === icon && 'text-tint')}
+                                className={cn('rounded-[8px]', name === icon && 'text-tint')}
                                 onPress={() => {
                                   store({ ...layout, icons: { ...layout.icons, [item.id]: name } });
                                   shut();
@@ -141,8 +131,8 @@ export function MenuEditSheet({ props, close }: SheetProps<MenuEditProps | undef
                 <span aria-hidden className="pr-1 text-[12px] text-fg-2">
                   {t('line')}
                 </span>
-                <Move label={t('moveUp')} icon={<CaretUpIcon />} disabled={i === 0} onPress={() => move(i, -1)} />
-                <Move label={t('moveDown')} icon={<CaretDownIcon />} disabled={i === items.length - 1} onPress={() => move(i, 1)} />
+                <IconButton label={t('moveUp')} icon={<CaretUpIcon />} size="icon-sm" isDisabled={i === 0} onPress={() => move(i, -1)} />
+                <IconButton label={t('moveDown')} icon={<CaretDownIcon />} size="icon-sm" isDisabled={i === items.length - 1} onPress={() => move(i, 1)} />
               </div>
             );
           })}

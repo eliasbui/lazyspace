@@ -94,7 +94,8 @@ export function SettingsSheet({ props, close }: SheetProps<SettingsProps | undef
             ))}
           </ListBox>
         </nav>
-        <section className="flex min-h-0 min-w-0 flex-col">
+        {/* The pages are content, so they stand on the window's solid colour; the list of pages beside them is the glass. */}
+        <section className="flex min-h-0 min-w-0 flex-col bg-background">
           <header className="flex h-14 shrink-0 items-center justify-between gap-3 pr-4 pl-7">
             <DialogTitle className="truncate text-[17px] font-bold tracking-tight">{words || !current ? t('settings') : t(current.title)}</DialogTitle>
             <Button variant="default" onPress={close}>
