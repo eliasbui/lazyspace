@@ -7,7 +7,7 @@
 import type { ComponentType, ReactNode } from 'react';
 import { create } from 'zustand';
 import type { WordKey } from '@/i18n';
-import type { MenuNode, Row, Uri, ViewMode } from '@/services';
+import type { MenuNode, Row, Uri, ViewMode, WindowRole } from '@/services';
 import type { PaneHandle, TabView } from './panes-api';
 import { nameOf, schemeOf } from './uri';
 
@@ -156,9 +156,11 @@ export interface RegistryState {
   /** A layer over the rows of a pane (a sync in progress, a progress bar). */
   overlays: Array<{ id: string; Component: ComponentType<{ pane: PaneHandle }> }>;
   views: Partial<Record<ViewMode, ComponentType<ViewProps>>>;
+  /** The whole page of a window that is not the file manager: the shelf, the desktop. */
+  roles: Partial<Record<WindowRole, ComponentType>>;
 }
 
-export const useRegistry = create<RegistryState>(() => ({ toolbar: [], sidebar: [], settings: [], sheets: {}, previews: [], pathbar: [], overlays: [], views: {} }));
+export const useRegistry = create<RegistryState>(() => ({ toolbar: [], sidebar: [], settings: [], sheets: {}, previews: [], pathbar: [], overlays: [], views: {}, roles: {} }));
 
 const upsert = <T extends { id: string }>(list: T[], item: T): T[] => [...list.filter((i) => i.id !== item.id), item];
 
@@ -237,6 +239,8 @@ export const registry = {
   preview: {
     register: (provider: PreviewProvider): void => useRegistry.setState((s) => ({ previews: upsert(s.previews, provider) })),
   },
+  /** Gives a window of this role (`app.hello.windowRole`) a page of its own, instead of the file manager. */
+  role: (role: WindowRole, Component: ComponentType): void => useRegistry.setState((s) => ({ roles: { ...s.roles, [role]: Component } })),
   pane: {
     pathbar: (item: { id: string; Component: ComponentType<{ pane: PaneHandle }> }): void => useRegistry.setState((s) => ({ pathbar: upsert(s.pathbar, item) })),
     overlay: (item: { id: string; Component: ComponentType<{ pane: PaneHandle }> }): void => useRegistry.setState((s) => ({ overlays: upsert(s.overlays, item) })),
