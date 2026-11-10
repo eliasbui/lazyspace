@@ -82,6 +82,7 @@ export function DiskSheet({ close }: SheetProps<undefined>) {
   const keys = (e: KeyboardEvent) => {
     if (e.key === 'Backspace' || (e.metaKey && e.key === 'ArrowUp')) {
       e.preventDefault();
+      if (useDisk.getState().shown.length < 2) return;
       focusFirst.current = true;
       up();
     }
@@ -126,7 +127,7 @@ export function DiskSheet({ close }: SheetProps<undefined>) {
         {node ? (
           children.map((c, i) => {
             const r = rects[i];
-            return r ? <Cell key={c.path ?? `${c.name}:${i}`} node={c} parent={node} rect={r} index={i} onPress={press} onHover={hoverIn} /> : null;
+            return r ? <Cell key={c.path ?? `${c.name}:${i}`} node={c} parent={node} rect={r} index={i} onPress={press} onReveal={reveal} onHover={hoverIn} /> : null;
           })
         ) : busy > 0 ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-fg-2">
@@ -168,10 +169,11 @@ interface CellProps {
   rect: Rect;
   index: number;
   onPress: (node: DiskNode, clicks: number) => void;
+  onReveal: (node: DiskNode) => void;
   onHover: (node: DiskNode, of: DiskNode) => void;
 }
 
-const Cell = memo(function Cell({ node, parent, rect, index, onPress, onHover }: CellProps) {
+const Cell = memo(function Cell({ node, parent, rect, index, onPress, onReveal, onHover }: CellProps) {
   // A gap of 2 points between neighbours: each cell gives up one on every side.
   const w = rect.w - 2;
   const h = rect.h - 2;
@@ -191,7 +193,7 @@ const Cell = memo(function Cell({ node, parent, rect, index, onPress, onHover }:
       onKeyDown={(e) => {
         if (e.metaKey && e.key === 'Enter') {
           e.preventDefault();
-          onPress(node, 2);
+          onReveal(node);
         }
       }}
       onPointerEnter={() => onHover(node, parent)}

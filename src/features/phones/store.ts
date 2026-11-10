@@ -41,20 +41,26 @@ export function setPhones(list: Phone[]): void {
   usePhones.setState({ list });
   const home = useApp.getState().places?.home;
   let renamed = false;
+  let moved = false;
   for (const [key, was] of before) {
     const p = now.get(key);
     if (!p) {
-      if (home) each(key, (pane, _tab, i) => retarget(pane, i, home));
+      if (home)
+        each(key, (pane, _tab, i) => {
+          retarget(pane, i, home);
+          moved = true;
+        });
       continue;
     }
     // Found by Image Capture, unlocked, or stopped: what its panes said may be out of date.
-    const moved = p.readable !== was.readable || (p.state !== was.state && (['locked', 'failed', 'ready'] as const).some((s) => s === p.state || s === was.state));
-    if (moved) each(key, (pane, _tab, i) => i === pane.active && pane.refresh());
+    const stale = p.readable !== was.readable || (p.state !== was.state && (['locked', 'failed', 'ready'] as const).some((s) => s === p.state || s === was.state));
+    if (stale) each(key, (pane, _tab, i) => i === pane.active && pane.refresh());
     if (p.name !== was.name) renamed = true;
   }
   // A device's name is the name of its place: the path bars and the tabs draw it again.
   if (renamed) bumpPanes();
-  panes.saveSoon();
+  // A window without panes (the desktop, the shelf) has no layout to save.
+  if (moved) panes.saveSoon();
 }
 
 const pending = new Map<string, ReturnType<typeof setTimeout>>();

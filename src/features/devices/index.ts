@@ -150,15 +150,18 @@ function moveTabs(from: string, to: string | null): void {
     const path = ['file', 'search', 'archive'].includes(schemeOf(uri)) ? pathOf(uri) : null;
     return path === from || path?.startsWith(`${from}/`) ? path : null;
   };
+  let moved = false;
   for (const pane of panes.all()) {
     pane.tabs.forEach((tab, i) => {
       const path = under(tab.uri);
-      if (path == null) return;
-      const uri = to && schemeOf(tab.uri) !== 'archive' ? withPath(tab.uri, to + path.slice(from.length)) : home;
-      if (uri) retarget(pane, i, uri);
+      const uri = path == null ? null : to && schemeOf(tab.uri) !== 'archive' ? withPath(tab.uri, to + path.slice(from.length)) : home;
+      if (!uri) return;
+      retarget(pane, i, uri);
+      moved = true;
     });
   }
-  panes.saveSoon();
+  // A window without panes (the desktop, the shelf) has no layout to save.
+  if (moved) panes.saveSoon();
 }
 
 // The phones and cameras told of in this window: one plugged in every day to charge is told of once.
