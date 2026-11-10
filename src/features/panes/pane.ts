@@ -380,7 +380,8 @@ export class Pane implements PaneHandle {
       })
       .finally(() => {
         this.fetching = false;
-        if (again) requestAnimationFrame(() => this.touch());
+        // Not from a frame: a window that is still hidden draws none.
+        if (again) setTimeout(() => this.touch(), 16);
         else this.touch();
       });
   }
@@ -406,7 +407,7 @@ export class Pane implements PaneHandle {
       tab.anchor = tab.lead = tab.byName.get(name) ?? -1;
       this.scrollTo(tab.lead);
       this.host.selectionChanged(this);
-      requestAnimationFrame(() => this.startRename(name));
+      this.startRename(name);
     }
     const move = tab.pendingMove;
     if (move && tab.rows.has(move.index)) {

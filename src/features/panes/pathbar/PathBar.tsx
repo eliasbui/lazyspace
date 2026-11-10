@@ -18,7 +18,6 @@ import { FilterField } from './FilterField';
 export function PathBar({ pane, multi, focused }: { pane: Pane; multi: boolean; focused: boolean }) {
   const t = useT();
   const tab = pane.tab;
-  const filtering = pane.filterOpen || !!tab.filter;
   return (
     <div className={cn('flex h-[40px] flex-none items-center gap-[2px] px-[8px] text-fg-2 transition-opacity', multi && !focused && 'opacity-60')}>
       {multi ? (
@@ -34,7 +33,12 @@ export function PathBar({ pane, multi, focused }: { pane: Pane; multi: boolean; 
       <Nav label={t('enclosingFolder')} icon={<ArrowUpIcon weight="bold" />} disabled={!tab.uri || pathOf(tab.uri) === '/'} run={() => manager.action('enclosing', pane)} />
       <AddressBox pane={pane} tinted={multi && focused} />
       <Nav label={t('refresh')} icon={<ArrowClockwiseIcon weight="bold" />} run={() => manager.action('refresh', pane)} />
-      {filtering ? <FilterField key={tab.id} pane={pane} /> : multi ? <Nav label={t('filterPane')} icon={<MagnifyingGlassIcon weight="bold" />} run={() => pane.openFilter()} /> : null}
+      {pane.filterOpen ? (
+        <FilterField key={tab.id} pane={pane} />
+      ) : multi ? (
+        // The filter of the toolbar when there is one (the action "find"), else a field of the pane's own.
+        <Nav label={t('filterPane')} icon={<MagnifyingGlassIcon weight="bold" />} run={() => manager.action('find', pane) || pane.openFilter()} />
+      ) : null}
     </div>
   );
 }

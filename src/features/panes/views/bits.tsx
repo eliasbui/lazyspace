@@ -79,7 +79,7 @@ export function RenameField({ pane, entry, className }: { pane: Pane; entry: Row
       defaultValue={draft ?? entry.name}
       spellCheck={false}
       aria-label={t('m.rename')}
-      className={cn('h-[20px] min-w-[60px] rounded-[3px] bg-pane px-[3px] text-fg shadow-[0_0_0_1px_var(--tint),0_0_0_3.5px_var(--tint-soft)] outline-none', className)}
+      className={cn('h-[20px] min-w-[60px] rounded-[3px] bg-pane px-[3px] dark:bg-background text-fg shadow-[0_0_0_1px_var(--tint),0_0_0_3.5px_var(--tint-soft)] outline-none', className)}
       onChange={(e) => {
         if (pane.renaming) pane.renaming.draft = e.currentTarget.value;
       }}

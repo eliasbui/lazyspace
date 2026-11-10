@@ -101,7 +101,6 @@ class Manager implements PanesApi, PaneHost, ActionHost {
     if (focus) this.focus(focus);
     // Every other tab lists when it is first shown.
     for (const pane of this.panes) this.showPane(pane);
-    requestAnimationFrame(() => this.focusedPane?.focusList());
   }
 
   /** Shows a pane that has just been made at the place of its tab. */

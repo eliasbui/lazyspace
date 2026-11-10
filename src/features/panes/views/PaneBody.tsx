@@ -39,6 +39,8 @@ export function PaneBody({ pane, focused, dim }: { pane: Pane; focused: boolean;
     (el: HTMLDivElement | null) => {
       pane.listEl = el;
       setListEl(el);
+      // The keys go to the focused pane's list as soon as it is there, when nothing else has them.
+      if (el && manager.focused() === pane && (document.activeElement === document.body || !document.activeElement)) el.focus({ preventScroll: true });
     },
     [pane],
   );

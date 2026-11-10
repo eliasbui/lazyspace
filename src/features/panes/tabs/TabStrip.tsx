@@ -173,7 +173,7 @@ function TabField({ pane, value }: { pane: Pane; value: string }) {
       defaultValue={value}
       spellCheck={false}
       aria-label={t('renameTab')}
-      className="h-[22px] min-w-0 flex-1 rounded-[5px] bg-pane px-[5px] text-fg outline-none ring-1 ring-tint"
+      className="h-[22px] min-w-0 flex-1 rounded-[5px] bg-pane px-[5px] text-fg outline-none ring-1 ring-tint dark:bg-background"
       onFocus={(e) => e.currentTarget.select()}
       onKeyDown={(e) => {
         e.stopPropagation();

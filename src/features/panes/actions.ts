@@ -30,7 +30,8 @@ async function goOut(pane: Pane, method: 'trash' | 'delete'): Promise<void> {
   // The selection is taken before the motion, which a click during it must not change.
   const selection = pane.tab.selection();
   const out = pane.leave(pane.tab.selectedEntries().map((e) => e.name));
-  await out.done;
+  // The motion is 200 ms and a little; a window that draws no frames (hidden) does not wait for it.
+  await Promise.race([out.done, new Promise((resolve) => setTimeout(resolve, 500))]);
   await api.fs[method](selection).catch((error: unknown) => {
     out.back();
     say(error);
@@ -195,8 +196,6 @@ export function makeActions(host: ActionHost): Record<string, Action> {
     newTab: (pane) => pane.newTab(),
     closeTab: (pane) => pane.closeTab(pane.active),
     editAddress: (pane) => pane.editAddress(),
-    // The filter of the pane, in its path bar.
-    find: (pane) => pane.openFilter(),
     deselect: (pane) => pane.clearSelection(),
     toggleSidebar: () => sidebar.toggle(),
     home: (pane) => go(pane, places()?.home),
