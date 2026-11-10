@@ -80,7 +80,7 @@
   --glass-edge: light-dark(rgb(18 20 26 / 0.1), rgb(0 0 0 / 0.5));
   --glass-shadow: light-dark(rgb(30 40 80 / 0.16), rgb(0 0 0 / 0.5));
   --panel-bg: light-dark(rgb(255 255 255 / 0.5), rgb(40 42 50 / 0.5));
-  --pop-bg: light-dark(rgb(250 251 253 / 0.82), rgb(44 46 54 / 0.82));
+  --pop-bg: light-dark(rgb(250 251 253 / 0.9), rgb(44 46 54 / 0.9));
   --glass-blur: blur(22px) saturate(1.7);
   --glass-blur-thick: blur(36px) saturate(1.9);
 
