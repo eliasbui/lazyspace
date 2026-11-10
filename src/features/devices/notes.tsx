@@ -1,4 +1,4 @@
-// The notes of disks and devices: cards in the corner of the window, of the same glass as the toasts, each about one
+// The notes of disks and devices: cards in the top right corner of the window, of the same glass as the toasts, each about one
 // thing (`key`), so a newer note of the same thing takes its place. They are toasts of sonner with a body of our own.
 import type { ComponentType } from 'react';
 import { CameraIcon, DeviceMobileIcon, DeviceMobileSpeakerIcon, DeviceTabletIcon, XIcon, type IconProps } from '@phosphor-icons/react';
@@ -64,6 +64,9 @@ function paint(key: string, shown: Shown, view: { text?: string; bad?: boolean }
   // shortcut: sonner restarts the timer only when the duration changes, so a newer note of the same thing with the same life keeps the time left.
   toast.custom(() => <Note note={note} busy={shown.busy} onClose={() => close(key)} />, {
     id: key,
+    // Top right under the toolbar, where the system's own notifications sit, away from the jobs and the toasts below.
+    position: 'top-right',
+    className: 'mt-11',
     duration: shown.busy || !note.life ? Infinity : note.life,
     onDismiss: () => forget(key, shown),
     onAutoClose: () => forget(key, shown),
