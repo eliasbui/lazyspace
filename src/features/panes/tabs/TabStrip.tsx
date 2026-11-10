@@ -18,7 +18,7 @@ import { placeIcon } from '../places';
 import type { Tab } from '../tab';
 
 const tabStyle = cva(
-  'group/tab relative flex h-[28px] min-w-[96px] flex-[0_1_200px] items-center gap-[8px] rounded-field pr-[4px] pl-[10px] text-[12px] whitespace-nowrap transition-colors duration-150 data-[drop]:shadow-[inset_0_0_0_2px_var(--tint)] focus-visible:outline-2 focus-visible:outline-ring',
+  'group/tab relative flex h-[28px] w-[200px] min-w-[96px] items-center gap-[8px] rounded-field pr-[4px] pl-[10px] text-[12px] whitespace-nowrap transition-colors duration-150 data-[drop]:shadow-[inset_0_0_0_2px_var(--tint)] focus-visible:outline-2 focus-visible:outline-ring',
   {
     variants: {
       active: { true: 'bg-field font-medium text-fg', false: 'text-fg-2 hover:bg-hover hover:text-fg' },
