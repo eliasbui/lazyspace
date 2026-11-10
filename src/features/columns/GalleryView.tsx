@@ -42,8 +42,16 @@ export function GalleryView({ pane, tab }: ViewProps) {
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 px-6 pt-4 pb-3" onDoubleClick={() => shown && panes.action('open', pane)}>
         {shown ? (
           <>
-            <div className="grid min-h-0 w-full flex-1 place-items-center">
-              <Picture key={shown.uri} row={shown} points={1024} iconPoints={256} className="max-h-full max-w-full rounded-lg object-contain shadow-lg" iconClassName="size-48" />
+            {/* The picture is laid in the room left, centred, never bigger than it. */}
+            <div className="relative min-h-0 w-full flex-1">
+              <Picture
+                key={shown.uri}
+                row={shown}
+                points={1024}
+                iconPoints={256}
+                className="absolute inset-0 m-auto max-h-full max-w-full rounded-lg object-contain shadow-lg"
+                iconClassName="absolute inset-0 m-auto size-48 max-h-full max-w-full"
+              />
             </div>
             <b className="max-w-full truncate text-[14px] font-semibold">{shown.name}</b>
             <div className="flex gap-3 text-[11px] text-fg-2">
