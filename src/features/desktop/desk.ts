@@ -88,7 +88,8 @@ async function fetchRows(generation: number, count: number): Promise<void> {
   const renaming = pendingRename && names.has(pendingRename) ? pendingRename : get().renaming;
   if (renaming === pendingRename) pendingRename = null;
   pendingSelect = pendingSelect.filter((n) => !names.has(n));
-  useDesk.setState({ rows, sel, renaming, lead: get().lead && names.has(get().lead ?? '') ? get().lead : null });
+  const { lead } = get();
+  useDesk.setState({ rows, sel, renaming, lead: lead && names.has(lead) ? lead : null });
   changed();
   await arrange();
 }

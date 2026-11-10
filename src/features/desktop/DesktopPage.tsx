@@ -220,6 +220,12 @@ export function DesktopPage() {
       tabIndex={0}
       className="group relative h-full w-full overflow-hidden outline-none"
       onPointerDown={pointerDown}
+      // In the app a press that became a drag ends in the drag of the system and never clicks; a plain click on a
+      // selected icon selects it alone (outside the app the page's own drag does this).
+      onClick={(e) => {
+        const name = nameAt(e.target);
+        if (getHost().native && name && !e.metaKey && !e.ctrlKey && !e.shiftKey && e.detail === 1) select([name]);
+      }}
       onDoubleClick={(e) => {
         if (nameAt(e.target) && !renaming) runAction('open');
       }}
