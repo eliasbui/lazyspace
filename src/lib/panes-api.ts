@@ -30,6 +30,8 @@ export interface TabView {
   /** Letters beside the names, set by the git feature (`M`, `A`, `D`, `R`, `?`, `U`); null for none. */
   readonly marks: Readonly<Record<string, string>> | null;
   readonly branch: string | null;
+  /** Sets `marks` and `branch` (the git feature) and draws the tab again if it is shown. */
+  setGit?(marks: Readonly<Record<string, string>> | null, branch: string | null): void;
   /** How many items are selected (everything but the exceptions when everything is). */
   selCount(): number;
   isSel(name: string): boolean;
