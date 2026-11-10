@@ -3,12 +3,12 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { panes, usePanesRevision } from '@/lib/panes-api';
 import { registry, type ViewProps } from '@/lib/registry';
 import { cn } from '@/lib/utils';
-import { useApp } from '@/lib/app-state';
 import { factsOf, Picture, TagDots } from './Facts';
-import { useTabRows } from './listing';
-import { findTyped, howOf, keyHasAction, moveBy, rowMenu, selectRow } from './select';
+import { indexAt, menu, press, rowKey } from './select';
 
 const CELL_W = 96;
+// The strip runs sideways: every arrow moves by one.
+const STEPS: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1, Home: -Infinity, End: Infinity };
 
 /**
  * The gallery: the item with the cursor (or the one selected, or the first) large, its name and what it is under it,
@@ -20,18 +20,18 @@ export function GalleryView({ pane, tab }: ViewProps) {
   const focused = panes.focused()?.id === pane.id;
   const virtual = useVirtualizer({ horizontal: true, count: tab.count, getScrollElement: () => stripRef.current, estimateSize: () => CELL_W, overscan: 6 });
   const items = virtual.getVirtualItems();
-  const rowAt = useTabRows(tab, Math.min(items[0]?.index ?? 0, Math.max(0, tab.lead)), Math.max((items[items.length - 1]?.index ?? 0) + 1, tab.lead + 1));
-  const scrollTo = (i: number) => virtual.scrollToIndex(i, { align: 'auto' });
-  const shown = (tab.lead >= 0 ? rowAt(tab.lead) : null) ?? tab.selectedEntries()[0] ?? rowAt(0);
-  const indexAt = (target: EventTarget): number | null => {
-    const el = target instanceof Element ? target.closest('[data-index]') : null;
-    return el ? Number(el.getAttribute('data-index')) : null;
-  };
+  const first = items[0]?.index ?? 0;
+  const last = items[items.length - 1]?.index ?? -1;
+  const shown = (tab.lead >= 0 ? tab.rowAt(tab.lead) : null) ?? tab.selectedEntries()[0] ?? tab.rowAt(0);
 
+  // After every drawing: the items on screen that are not loaded are asked for, as the list does.
   useEffect(() => {
-    if (tab.lead >= 0) scrollTo(tab.lead);
-    // Only a new cursor scrolls; `scrollTo` is a new function each time.
-  }, [tab.lead, tab.generation]);
+    if (last >= 0) pane.ensure?.(first, last + 1);
+  });
+  useEffect(() => {
+    if (tab.lead >= 0) virtual.scrollToIndex(tab.lead, { align: 'auto' });
+  }, [tab.lead, tab.generation, virtual]);
+  // The keyboard goes to the strip when the view comes, unless something else of the window has it.
   useEffect(() => {
     const active = document.activeElement;
     if (focused && (!active || active === document.body)) stripRef.current?.focus({ preventScroll: true });
@@ -63,43 +63,18 @@ export function GalleryView({ pane, tab }: ViewProps) {
         aria-activedescendant={tab.lead >= 0 ? `${tab.id}-strip-${tab.lead}` : undefined}
         tabIndex={0}
         className="relative h-[116px] shrink-0 overflow-x-auto overflow-y-hidden border-t border-hair outline-none"
-        onMouseDown={(e) => {
-          panes.focus(pane);
-          const i = indexAt(e.target);
-          if (i == null) {
-            if (e.button === 0 && !e.metaKey && !e.shiftKey && !e.ctrlKey) panes.action('deselect', pane);
-            return;
-          }
-          const row = rowAt(i);
-          if (!row) return;
-          if (e.button === 0 && !(e.ctrlKey && useApp.getState().settings?.keymap !== 'windows')) {
-            const how = howOf(e);
-            if (how !== 'only' || !tab.isSel(row.name) || tab.selCount() !== 1) selectRow(pane, i, how, rowAt);
-            panes.emit('pointerdown', { pane, event: e.nativeEvent, index: i });
-          }
-        }}
+        onMouseDown={(e) => press(pane, e)}
         onDoubleClick={(e) => indexAt(e.target) != null && panes.action('open', pane)}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          rowMenu(pane, e.clientX, e.clientY, indexAt(e.target), rowAt);
-        }}
+        onContextMenu={(e) => menu(pane, e)}
         onKeyDown={(e) => {
-          if (e.metaKey || e.ctrlKey || e.altKey) return;
-          // The strip runs sideways: every arrow moves by one.
-          const steps: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1, Home: -Infinity, End: Infinity };
-          const step = steps[e.key];
-          if (step !== undefined) {
-            const i = moveBy(pane, step, e.shiftKey, rowAt);
-            if (i != null) scrollTo(i);
-          } else if (e.key.length === 1 && e.key !== ' ' && !e.nativeEvent.isComposing && !keyHasAction(e)) findTyped(tab, e.key, scrollTo);
-          else return;
+          if (!rowKey(pane, e, STEPS)) return;
           e.preventDefault();
           e.stopPropagation();
         }}
       >
         <div className="relative h-full" style={{ width: virtual.getTotalSize() }}>
           {items.map((item) => {
-            const row = rowAt(item.index);
+            const row = tab.rowAt(item.index);
             const sel = !!row && tab.isSel(row.name);
             return (
               <div

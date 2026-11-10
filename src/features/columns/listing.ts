@@ -1,8 +1,7 @@
-// The rows the views draw. A column of a folder other than the tab's is a listing of its own, listed while the column
-// shows it and listed again by Rust when the folder changes; the tab's own rows are asked for by range, as the list does.
-import { useEffect, useRef, useState } from 'react';
+// A column of a folder other than the tab's is a listing of its own, listed while the column shows it and listed again
+// by Rust when the folder changes. (The tab's own rows are the pane's, loaded with `ensure`.)
+import { useEffect, useState } from 'react';
 import { useApp } from '@/lib/app-state';
-import type { TabView } from '@/lib/panes-api';
 import { api, on, type Row, type Uri, type ViewSort } from '@/services';
 
 /** The most rows a column of its own shows. */
@@ -57,48 +56,4 @@ export function useListing(uri: Uri, sort: ViewSort, showHidden: boolean): Listi
   }, [uri, windowId, sortKey, showHidden]);
 
   return state.uri === uri ? state : { rows: null, count: 0 };
-}
-
-/**
- * The tab's rows from `first` to `last`: those the panes have, and those asked for here, a little beyond, 500 at most at
- * a time. Returns the row at an index, or null while it is on its way.
- */
-export function useTabRows(tab: TabView, first: number, last: number): (index: number) => Row | null {
-  const key = `${tab.id}|${tab.generation}`;
-  const cache = useRef<{ key: string; rows: Map<number, Row> }>({ key, rows: new Map() });
-  if (cache.current.key !== key) cache.current = { key, rows: new Map() };
-  const [, setGot] = useState(0);
-  const rows = cache.current.rows;
-  const rowAt = (i: number): Row | null => tab.rowAt(i) ?? rows.get(i) ?? null;
-
-  let missing = -1;
-  if (tab.generation) {
-    for (let i = Math.max(0, first); i < Math.min(last, tab.count); i++) {
-      if (!rowAt(i)) {
-        missing = i;
-        break;
-      }
-    }
-  }
-  const view = tab.id;
-  const generation = tab.generation;
-  useEffect(() => {
-    if (missing < 0) return;
-    let live = true;
-    const from = Math.max(0, missing - 30);
-    const count = Math.min(500, last - from + 60);
-    api.view.rows({ view, start: from, count, generation }).then(
-      (d) => {
-        if (!live || cache.current.key !== key) return;
-        d.rows.forEach((row, k) => cache.current.rows.set(from + k, row));
-        setGot((n) => n + 1);
-      },
-      () => undefined,
-    );
-    return () => {
-      live = false;
-    };
-  }, [key, view, generation, missing, last]);
-
-  return rowAt;
 }

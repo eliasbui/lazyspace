@@ -10,9 +10,9 @@ import { nameOf } from '@/lib/uri';
 import { cn } from '@/lib/utils';
 import { api, type Row, type Uri, type ViewSort } from '@/services';
 import { factsOf, GitMark, Picture, TagDots } from './Facts';
-import { useListing, useTabRows } from './listing';
+import { useListing } from './listing';
 import { above, iconOf } from './places';
-import { findTyped, howOf, keyHasAction, moveBy, rowMenu, selectRow } from './select';
+import { indexAt, menu, press, rowKey } from './select';
 
 const ROW_H = 24;
 
@@ -76,20 +76,19 @@ function TabColumn({ pane, columnRef }: { pane: PaneHandle; columnRef: RefObject
   const focused = panes.focused()?.id === pane.id;
   const virtual = useVirtualizer({ count: tab.count, getScrollElement: () => columnRef.current, estimateSize: () => ROW_H, overscan: 12 });
   const items = virtual.getVirtualItems();
-  const rowAt = useTabRows(tab, items[0]?.index ?? 0, (items[items.length - 1]?.index ?? 0) + 1);
-  const scrollTo = (i: number) => virtual.scrollToIndex(i, { align: 'auto' });
-  const indexAt = (target: EventTarget): number | null => {
-    const el = target instanceof Element ? target.closest('[data-index]') : null;
-    return el ? Number(el.getAttribute('data-index')) : null;
-  };
-  // A new place shows from its top.
+  const first = items[0]?.index ?? 0;
+  const last = items[items.length - 1]?.index ?? -1;
+  // After every drawing: the rows on screen that are not loaded are asked for, as the list does.
+  useEffect(() => {
+    if (last >= 0) pane.ensure?.(first, last + 1);
+  });
+  // A new place shows from its top; the cursor, wherever it moves, is kept in sight.
   useLayoutEffect(() => {
     if (columnRef.current) columnRef.current.scrollTop = 0;
   }, [tab.uri, columnRef]);
   useEffect(() => {
-    if (tab.lead >= 0) scrollTo(tab.lead);
-    // Only a new cursor scrolls; `scrollTo` is a new function each time.
-  }, [tab.lead, tab.generation]);
+    if (tab.lead >= 0) virtual.scrollToIndex(tab.lead, { align: 'auto' });
+  }, [tab.lead, tab.generation, virtual]);
 
   return (
     <div
@@ -101,44 +100,20 @@ function TabColumn({ pane, columnRef }: { pane: PaneHandle; columnRef: RefObject
       tabIndex={0}
       data-tab-column
       className="relative w-[260px] shrink-0 overflow-y-auto border-r border-hair px-1.5 py-1 outline-none"
-      onMouseDown={(e) => {
-        panes.focus(pane);
-        const i = indexAt(e.target);
-        if (i == null) {
-          if (e.button === 0 && !e.metaKey && !e.shiftKey && !e.ctrlKey) panes.action('deselect', pane);
-          return;
-        }
-        const row = rowAt(i);
-        if (!row) return;
-        if (e.button === 0 && !(e.ctrlKey && useApp.getState().settings?.keymap !== 'windows')) {
-          const how = howOf(e);
-          if (how !== 'only' || !tab.isSel(row.name) || tab.selCount() !== 1) selectRow(pane, i, how, rowAt);
-          panes.emit('pointerdown', { pane, event: e.nativeEvent, index: i });
-        }
-      }}
+      onMouseDown={(e) => press(pane, e)}
       onDoubleClick={(e) => indexAt(e.target) != null && panes.action('open', pane)}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        rowMenu(pane, e.clientX, e.clientY, indexAt(e.target), rowAt);
-      }}
+      onContextMenu={(e) => menu(pane, e)}
       onKeyDown={(e) => {
-        const plain = !e.metaKey && !e.ctrlKey && !e.altKey;
-        if (!plain) return;
-        const steps: Record<string, number> = { ArrowDown: 1, ArrowUp: -1, Home: -Infinity, End: Infinity, PageDown: 20, PageUp: -20 };
-        const step = steps[e.key];
-        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') panes.action(e.key === 'ArrowLeft' ? 'columnOut' : 'columnIn', pane);
-        else if (step !== undefined) {
-          const i = moveBy(pane, step, e.shiftKey, rowAt);
-          if (i != null) scrollTo(i);
-        } else if (e.key.length === 1 && e.key !== ' ' && !e.nativeEvent.isComposing && !keyHasAction(e)) findTyped(tab, e.key, scrollTo);
-        else return;
+        const page = Math.max(1, Math.floor((columnRef.current?.clientHeight ?? 0) / ROW_H) - 1);
+        if (!e.metaKey && !e.ctrlKey && !e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) panes.action(e.key === 'ArrowLeft' ? 'columnOut' : 'columnIn', pane);
+        else if (!rowKey(pane, e, { ArrowDown: 1, ArrowUp: -1, PageDown: page, PageUp: -page, Home: -Infinity, End: Infinity })) return;
         e.preventDefault();
         e.stopPropagation();
       }}
     >
       <div className="relative" style={{ height: virtual.getTotalSize() }}>
         {items.map((item) => {
-          const row = rowAt(item.index);
+          const row = tab.rowAt(item.index);
           const sel = !!row && tab.isSel(row.name);
           const lit = sel && focused;
           return (
