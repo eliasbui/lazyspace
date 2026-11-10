@@ -292,7 +292,8 @@ export function Toolbar() {
         <ToolButton tool={{ id: 'more', label: t('moreTools'), icon: <CaretDoubleRightIcon />, run: (rect) => void more(rect) }} />
       </Capsule>
       <div className="h-full min-w-2 flex-1" />
-      <ToolGroup tools={rightTools} className="group-data-fold-right/bar:hidden" />
+      {/* The search open over the end of a folded toolbar takes the place of the buttons there. */}
+      <ToolGroup tools={rightTools} className={cn('group-data-fold-right/bar:hidden', searchOpen && 'invisible')} />
       <Capsule
         data-nodrag=""
         onMouseDown={(e) => {
