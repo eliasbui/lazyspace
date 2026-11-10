@@ -1,6 +1,6 @@
 // The body of a pane: the list or the icons of its tab (or the view a feature registered for columns and the gallery),
 // the words for an empty, loading or failed folder, and the layers features lay over the rows.
-import { useLayoutEffect, useState } from 'react';
+import { useCallback, useLayoutEffect, useState } from 'react';
 import { useT } from '@/i18n';
 import { useSettings } from '@/lib/app-state';
 import { useRegistry } from '@/lib/registry';
@@ -34,6 +34,14 @@ export function PaneBody({ pane, focused, dim }: { pane: Pane; focused: boolean;
   const Registered = useRegistry((s) => (tab.mode === 'columns' || tab.mode === 'gallery' ? s.views[tab.mode] : undefined));
   const overlays = useRegistry((s) => s.overlays);
   const [listEl, setListEl] = useState<HTMLDivElement | null>(null);
+  // A ref that stays the same function, so the list is not let go and taken again at every drawing (the rows look for it then).
+  const listRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      pane.listEl = el;
+      setListEl(el);
+    },
+    [pane],
+  );
   const { width, gutter } = useWidth(listEl);
   const size = metrics(settings);
   // Columns and the gallery are drawn by their feature; without it the tab is shown as a list.
@@ -59,10 +67,7 @@ export function PaneBody({ pane, focused, dim }: { pane: Pane; focused: boolean;
         <>
           {mode === 'list' ? <ListHeader pane={pane} columns={columns} template={template} gutter={gutter} dim={dim} /> : null}
           <div
-            ref={(el) => {
-              pane.listEl = el;
-              setListEl(el);
-            }}
+            ref={listRef}
             tabIndex={0}
             role="listbox"
             aria-multiselectable
