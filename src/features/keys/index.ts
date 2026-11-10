@@ -12,7 +12,9 @@ export { chord, KEYMAPS } from './keymaps';
 
 const keymapName = (): KeymapName => (useApp.getState().settings?.keymap === 'windows' ? 'windows' : 'mac');
 
-installKeymap(() => ({ ...KEYMAPS[keymapName()], ...registry.keys.extra(keymapName()) }));
+registry.keys.base('mac', KEYMAPS.mac);
+registry.keys.base('windows', KEYMAPS.windows);
+installKeymap(() => registry.keys.map(keymapName()));
 
 /** What the menu bar asks for, by the ids of src-tauri/src/menus.rs. */
 const MENU: Partial<Record<MenuAction, string>> = {

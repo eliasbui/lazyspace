@@ -1,12 +1,13 @@
 // A place in the sidebar, as every section draws it (the old page's `.side-item`): a click opens it in the focused pane
 // (with Command in a new tab, with the middle button in a tab behind), its menu opens it elsewhere, pins it, hides it or
 // signs out of its cloud, and it is marked while the focused pane shows it. A file dropped on it is copied there (the
-// sidebar finds it by `data-side-item` and `data-uri`).
+// sidebar finds it by `data-side-item` and `data-uri`). A section that draws its places itself gives each `data-uri`,
+// `data-name` and `data-web`, and the sidebar gives it the same menu and hides it the same way.
 import { createContext, useContext, type CSSProperties, type MouseEvent, type ReactNode } from 'react';
 import { EjectIcon, PlusIcon, PushPinIcon } from '@phosphor-icons/react';
 import { t, useT } from '@/i18n';
 import { setSetting, useApp } from '@/lib/app-state';
-import { choose, separator } from '@/lib/native-menu';
+import { choose } from '@/lib/native-choice';
 import { panes, usePanesRevision } from '@/lib/panes-api';
 import { sidebar } from '@/lib/sidebar-api';
 import { confirm, say, toast } from '@/lib/ui';
@@ -30,18 +31,83 @@ export function setSidebarPrefs(patch: Record<string, unknown>): Promise<void> {
   return setSetting({ sidebar_sections: { ...(typeof raw === 'object' && raw !== null ? raw : {}), ...patch } });
 }
 
-export function setHidden(uri: Uri, on: boolean): void {
+function setHidden(uri: Uri, on: boolean): void {
   const now = hiddenPlaces(useApp.getState().settings).filter((u) => !samePlace(u, uri));
   if (on) now.push(uri);
   void setSidebarPrefs({ hidden: now });
 }
 
-// Clouds, devices and disks can be hidden; the pinned folders, the bookmarks and the startup disk stay.
-const removable = (section: string, uri: Uri): boolean => section !== 'quick' && section !== 'bookmarks' && !(section === 'locations' && samePlace(uri, 'file:///'));
+/** Clouds, devices and disks can be hidden; the pinned folders, the bookmarks and the startup disk stay. */
+export const removable = (section: string, uri: Uri): boolean => section !== 'quick' && section !== 'bookmarks' && !(section === 'locations' && samePlace(uri, 'file:///'));
 
-export interface SideItemProps {
-  /** The place; an item without one (an offer to add a cloud) does `onPress` instead. */
-  uri?: Uri;
+export interface Place {
+  uri: Uri;
+  /** The name shown, for the notes. */
+  label: string;
+  section: string;
+  web?: string;
+  quick?: { index: number; count: number; move: (to: number) => void };
+  eject?: () => void;
+  onRemoved?: () => void;
+}
+
+/** A place's own menu: open it here, in a new tab or window or on the web, move or pin it, eject, hide or sign out. */
+export async function placeMenu({ uri, label, section, web, quick, eject, onRemoved }: Place, x: number, y: number): Promise<void> {
+  const rclone = schemeOf(uri) === 'rclone';
+  const items: MenuNode[] = [
+    { id: 'open', label: t('m.open'), icon: 'arrow.up.forward.app' },
+    { id: 'tab', label: t('m.openTab'), icon: 'plus.rectangle.on.rectangle' },
+    { id: 'window', label: t('m.openWindow'), icon: 'macwindow.badge.plus' },
+    ...(web ? [{ id: 'web', label: t('openWeb'), icon: 'globe' }] : []),
+    { separator: true },
+    ...(quick
+      ? [
+          { id: 'up', label: t('moveUp'), icon: 'arrow.up', enabled: quick.index > 0 },
+          { id: 'down', label: t('moveDown'), icon: 'arrow.down', enabled: quick.index < quick.count - 1 },
+          { id: 'unpin', label: t('unpinQuick'), icon: 'pin.slash' },
+        ]
+      : [{ id: 'pin', label: t('m.pin'), icon: 'pin' }]),
+    ...(eject ? [{ separator: true }, { id: 'eject', label: t('eject'), icon: 'eject' }] : []),
+    ...(removable(section, uri) ? [{ separator: true }, { id: 'hide', label: t('hideItem'), icon: 'eye.slash' }] : []),
+    ...(rclone ? [{ id: 'signout', label: t('signOutCloud'), icon: 'rectangle.portrait.and.arrow.right' }] : []),
+  ];
+  const id = await choose(items, x, y);
+  if (id === 'open') panes.open(uri);
+  else if (id === 'tab') panes.focused()?.newTab(uri);
+  else if (id === 'window') api.app.newWindow({ uri }).catch(say);
+  else if (id === 'web' && web) api.app.openUrl({ url: web }).catch(say);
+  else if (id === 'unpin') sidebar.unpin(uri);
+  else if (id === 'pin') sidebar.pin(uri);
+  else if ((id === 'up' || id === 'down') && quick) quick.move(quick.index + (id === 'up' ? -1 : 1));
+  else if (id === 'eject') eject?.();
+  else if (id === 'hide') {
+    setHidden(uri, true);
+    // A cloud its own app runs cannot be signed out of here.
+    if (section === 'cloud' && !rclone) toast(t('appCloudNote', label));
+  } else if (id === 'signout') {
+    const name = authorityOf(uri);
+    if (!(await confirm(t('signOutTitle', label), t('signOutText'), t('signOutCloud')))) return;
+    api.remote.rcloneRemove({ name }).then(() => {
+      toast(t('signOutDone', label));
+      setHidden(uri, false);
+      onRemoved?.();
+      const home = useApp.getState().places?.home;
+      for (const pane of panes.all()) if (home && schemeOf(pane.tab.uri) === 'rclone' && authorityOf(pane.tab.uri) === name) pane.navigate(home);
+    }, say);
+  }
+}
+
+/** The menu of a section beside its places: the places hidden from it come back. False when none is hidden. */
+export function hiddenMenu(section: Element, x: number, y: number): boolean {
+  const gone = [...section.querySelectorAll<HTMLElement>('[data-uri][hidden]')].map((el) => el.dataset.uri).filter((uri): uri is string => !!uri);
+  if (!gone.length) return false;
+  void choose([{ id: 'show', label: t('showHidden', gone.length), icon: 'eye' }], x, y).then((id) => {
+    if (id === 'show') void setSidebarPrefs({ hidden: hiddenPlaces(useApp.getState().settings).filter((u) => !gone.some((g) => samePlace(g, u))) });
+  });
+  return true;
+}
+
+export interface SideItemProps extends Partial<Omit<Place, 'label' | 'section'>> {
   label: string;
   /** A second line under the name (the account of a cloud). */
   sub?: string;
@@ -49,21 +115,14 @@ export interface SideItemProps {
   /** The name of the icon, which Settings > Appearance colours (`data-ico`). */
   ico?: string;
   title?: string;
-  /** The web page of a cloud, for its menu's Open on the Web. */
-  web?: string;
   /** What comes after the name: a count, a state. */
   end?: ReactNode;
   /** Whether it is marked; by default while the focused pane shows `uri`. */
   on?: boolean;
+  /** For an item that is not a place (an offer to add a cloud): what a click does. */
   onPress?: () => void;
   /** A menu of its own instead of the sidebar's. */
   onContextMenu?: (e: MouseEvent<HTMLDivElement>) => void;
-  /** A folder of Quick Access: where it is in the list and how it moves. */
-  quick?: { index: number; count: number; move: (to: number) => void };
-  /** A disk that can be ejected. */
-  eject?: () => void;
-  /** After the cloud of rclone it is was signed out of, so its section asks for the list again. */
-  onRemoved?: () => void;
   className?: string;
   /** A drag offset, while it is dragged. */
   style?: CSSProperties;
@@ -83,55 +142,6 @@ export function SideItem({ uri, label, sub, icon, ico, title, web, end, on, onPr
     else panes.open(uri);
   };
 
-  const menu = async (e: MouseEvent<HTMLDivElement>) => {
-    if (onContextMenu) return onContextMenu(e);
-    if (!uri) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const rclone = schemeOf(uri) === 'rclone';
-    const items: MenuNode[] = [
-      { id: 'open', label: t('m.open'), icon: 'arrow.up.forward.app' },
-      { id: 'tab', label: t('m.openTab'), icon: 'plus.rectangle.on.rectangle' },
-      { id: 'window', label: t('m.openWindow'), icon: 'macwindow.badge.plus' },
-      ...(web ? [{ id: 'web', label: t('openWeb'), icon: 'globe' }] : []),
-      separator,
-      ...(quick
-        ? [
-            { id: 'up', label: t('moveUp'), icon: 'arrow.up', enabled: quick.index > 0 },
-            { id: 'down', label: t('moveDown'), icon: 'arrow.down', enabled: quick.index < quick.count - 1 },
-            { id: 'unpin', label: t('unpinQuick'), icon: 'pin.slash' },
-          ]
-        : [{ id: 'pin', label: t('m.pin'), icon: 'pin' }]),
-      ...(eject ? [separator, { id: 'eject', label: t('eject'), icon: 'eject' }] : []),
-      ...(removable(section, uri) ? [separator, { id: 'hide', label: t('hideItem'), icon: 'eye.slash' }] : []),
-      ...(rclone ? [{ id: 'signout', label: t('signOutCloud'), icon: 'rectangle.portrait.and.arrow.right' }] : []),
-    ];
-    const id = await choose(items, e.clientX, e.clientY);
-    if (id === 'open') panes.open(uri);
-    else if (id === 'tab') panes.focused()?.newTab(uri);
-    else if (id === 'window') api.app.newWindow({ uri }).catch(say);
-    else if (id === 'web' && web) api.app.openUrl({ url: web }).catch(say);
-    else if (id === 'unpin') sidebar.unpin(uri);
-    else if (id === 'pin') sidebar.pin(uri);
-    else if ((id === 'up' || id === 'down') && quick) quick.move(quick.index + (id === 'up' ? -1 : 1));
-    else if (id === 'eject') eject?.();
-    else if (id === 'hide') {
-      setHidden(uri, true);
-      // A cloud its own app runs cannot be signed out of here.
-      if (section === 'cloud' && !rclone) toast(t('appCloudNote', label));
-    } else if (id === 'signout') {
-      const name = authorityOf(uri);
-      if (!(await confirm(t('signOutTitle', label), t('signOutText'), t('signOutCloud')))) return;
-      api.remote.rcloneRemove({ name }).then(() => {
-        toast(t('signOutDone', label));
-        setHidden(uri, false);
-        onRemoved?.();
-        const home = useApp.getState().places?.home;
-        for (const pane of panes.all()) if (home && schemeOf(pane.tab.uri) === 'rclone' && authorityOf(pane.tab.uri) === name) pane.navigate(home);
-      }, say);
-    }
-  };
-
   return (
     <div
       data-side-item=""
@@ -140,7 +150,12 @@ export function SideItem({ uri, label, sub, icon, ico, title, web, end, on, onPr
       hidden={hidden}
       title={title}
       style={style}
-      onContextMenu={(e) => void menu(e)}
+      onContextMenu={(e) => {
+        if (onContextMenu) return onContextMenu(e);
+        if (!uri) return;
+        e.preventDefault();
+        void placeMenu({ uri, label, section, web, quick, eject, onRemoved }, e.clientX, e.clientY);
+      }}
       onAuxClick={(e) => {
         const pane = panes.focused();
         if (e.button === 1 && uri && pane) pane.newTab(uri, null, { background: true, at: pane.active + 1 });
@@ -179,17 +194,8 @@ export function SideItem({ uri, label, sub, icon, ico, title, web, end, on, onPr
 
 /** The title of a section, with the small button its section may have (pin the folder open here, add a cloud). */
 export function SideHead({ title, add }: { title: string; add?: { label: string; run: () => void } }) {
-  // Right-clicked, it brings back the places hidden from its section.
-  const showHidden = async (e: MouseEvent<HTMLDivElement>) => {
-    const section = e.currentTarget.closest('[data-section]');
-    const gone = [...(section?.querySelectorAll<HTMLElement>('[data-side-item][hidden]') ?? [])].map((el) => el.dataset.uri).filter((uri): uri is string => !!uri);
-    if (!gone.length) return;
-    e.preventDefault();
-    const id = await choose([{ id: 'show', label: t('showHidden', gone.length), icon: 'eye' }], e.clientX, e.clientY);
-    if (id === 'show') void setSidebarPrefs({ hidden: hiddenPlaces(useApp.getState().settings).filter((u) => !gone.some((g) => samePlace(g, u))) });
-  };
   return (
-    <div onContextMenu={(e) => void showHidden(e)} className="group/head flex h-6.5 items-center justify-between gap-2 px-2 text-[11px] font-semibold text-fg-2">
+    <div className="group/head flex h-6.5 items-center justify-between gap-2 px-2 text-[11px] font-semibold text-fg-2">
       <span className="truncate">{title}</span>
       {add ? (
         <button

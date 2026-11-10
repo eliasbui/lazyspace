@@ -23,7 +23,7 @@ import { Capsule } from '@/components/macos/Glass';
 import { IconButton } from '@/components/macos/Tip';
 import { useSidebar } from '@/features/sidebar';
 import { useI18n, useT, type WordKey } from '@/i18n';
-import { choose, separator } from '@/lib/native-menu';
+import { choose } from '@/lib/native-choice';
 import { panes, usePanesRevision } from '@/lib/panes-api';
 import { registry, useRegistry, type ToolbarItemDef } from '@/lib/registry';
 import { say } from '@/lib/ui';
@@ -197,7 +197,7 @@ export function Toolbar() {
     const nodes: MenuNode[] = [];
     for (const fold of ['actions', 'view', 'right'] as const) {
       if (!folds.includes(fold) || !groups[fold].length) continue;
-      if (nodes.length) nodes.push(separator);
+      if (nodes.length) nodes.push({ separator: true });
       for (const tool of groups[fold]) {
         nodes.push({ id: String(tools.length), label: tool.label, icon: tool.symbol, enabled: !tool.disabled, checked: !!tool.pressed });
         tools.push(tool);

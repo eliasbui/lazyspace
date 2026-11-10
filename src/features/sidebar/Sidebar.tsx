@@ -1,6 +1,6 @@
 // The sidebar: the folders pinned to Quick Access, the well-known folders under Bookmarks, the sections features add, the
 // disks under Locations. It floats as a pane of glass and holds the window's buttons at its top.
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type MouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react';
 import {
   AppWindowIcon,
   ArrowCircleDownIcon,
@@ -19,12 +19,12 @@ import {
   type Icon,
 } from '@phosphor-icons/react';
 import { GlassPanel } from '@/components/macos/Glass';
-import { SideHead, SideItem, SideSectionContext } from '@/components/macos/SideItem';
+import { hiddenMenu, hiddenPlaces, placeMenu, removable, SideHead, SideItem, SideSectionContext } from '@/components/macos/SideItem';
 import { useT, type WordKey } from '@/i18n';
 import { useApp } from '@/lib/app-state';
 import { registry, useRegistry } from '@/lib/registry';
 import { say } from '@/lib/ui';
-import { fileUri, isLocal, nameOf } from '@/lib/uri';
+import { fileUri, isLocal, nameOf, samePlace } from '@/lib/uri';
 import { cn } from '@/lib/utils';
 import { api, on, type Places, type Uri } from '@/services';
 import { clampWidth, ejectDisk, loadVolumes, MAX_WIDTH, MIN_WIDTH, pinDropped, pinHere, reorder, setWidth, useSidebar } from './store';
@@ -185,7 +185,7 @@ function Sections() {
 function targetAt(x: number, y: number): { el: Element; uri?: Uri } | null {
   const el = document.elementFromPoint(x, y);
   if (!el?.closest('[data-sidebar]')) return null;
-  const item = el.closest<HTMLElement>('[data-side-item][data-uri]');
+  const item = el.closest<HTMLElement>('[data-uri]');
   if (item?.dataset.uri) return { el: item, uri: item.dataset.uri };
   const quick = el.closest('[data-section="quick"]');
   return quick ? { el: quick } : null;
@@ -220,6 +220,42 @@ function useDrops(): void {
       for (const off of offs) off();
     };
   }, []);
+}
+
+// The places a feature's section draws itself carry `data-uri`, `data-name` and `data-web`: they get the menu of a place,
+// and a right click beside them in their section brings back the places hidden from it.
+function sectionMenu(e: MouseEvent<HTMLDivElement>): void {
+  if (e.defaultPrevented || !(e.target instanceof Element)) return;
+  const section = e.target.closest<HTMLElement>('[data-section]');
+  const id = section?.dataset.section;
+  if (!section || !id) return;
+  const place = e.target.closest<HTMLElement>('[data-uri]');
+  const uri = place?.dataset.uri;
+  if (place && uri) {
+    e.preventDefault();
+    void placeMenu({ uri, label: place.dataset.name ?? registry.places.nameOf(uri), web: place.dataset.web, section: id }, e.clientX, e.clientY);
+  } else if (hiddenMenu(section, e.clientX, e.clientY)) e.preventDefault();
+}
+
+/** Hides the places hidden from the sidebar that features draw themselves, as they are drawn (SideItem hides its own). */
+function useHiddenPlaces(root: RefObject<HTMLElement | null>): void {
+  const settings = useApp((s) => s.settings);
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    const apply = () => {
+      const hidden = hiddenPlaces(settings);
+      for (const place of el.querySelectorAll<HTMLElement>('[data-uri]:not([data-side-item])')) {
+        const uri = place.dataset.uri ?? '';
+        const hide = removable(place.closest<HTMLElement>('[data-section]')?.dataset.section ?? '', uri) && hidden.some((u) => samePlace(u, uri));
+        if (place.hidden !== hide) place.hidden = hide;
+      }
+    };
+    apply();
+    const observer = new MutationObserver(apply);
+    observer.observe(el, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [settings, root]);
 }
 
 function Resizer() {
@@ -266,7 +302,9 @@ export function Sidebar() {
   const width = useSidebar((s) => s.width);
   const collapsed = useSidebar((s) => s.collapsed);
   const still = useSidebar((s) => s.still);
+  const places = useRef<HTMLDivElement>(null);
   useDrops();
+  useHiddenPlaces(places);
 
   useEffect(() => {
     void loadVolumes();
@@ -298,7 +336,7 @@ export function Sidebar() {
       >
         <div className="flex shrink-0 flex-col" style={{ width }}>
           <div data-drag="" className="h-13 shrink-0" />
-          <div className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-2.5 [scrollbar-width:none]">
+          <div ref={places} onContextMenu={sectionMenu} className="min-h-0 flex-1 overflow-y-auto px-2.5 pb-2.5 [scrollbar-width:none]">
             <Sections />
           </div>
         </div>
