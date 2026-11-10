@@ -170,6 +170,7 @@ export async function onViewError(view: string, error: string): Promise<void> {
   const found = panes.findTab(view);
   if (!found || !SERVER_SCHEMES.includes(schemeOf(found.tab.uri))) return;
   if (!error.startsWith(PASSWORD) && !error.startsWith(TRUST)) return;
+  if (error.startsWith(TRUST)) found.tab.setError?.(t('hostKeyNew'));
   await loaded;
   const conn = byId(authorityOf(found.tab.uri));
   if (conn && (await resolveFor(conn, error))) found.pane.refresh();

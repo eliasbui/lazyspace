@@ -123,6 +123,10 @@ export class Tab implements TabView {
     this.branch = branch;
     bumpPanes();
   }
+  setError(text: string | null): void {
+    this.error = text;
+    bumpPanes();
+  }
   renameWhenListed(name: string): void {
     this.pendingRename = name;
     this.onPending?.(this);

@@ -35,6 +35,8 @@ export interface TabView {
   readonly forward?: readonly Uri[];
   /** Sets `marks` and `branch` (the git feature) and draws the tab again if it is shown. */
   setGit?(marks: Readonly<Record<string, string>> | null, branch: string | null): void;
+  /** Replaces the text that stands for the tab's listing error (a server that is not trusted yet says so in words). */
+  setError?(text: string | null): void;
   /** How many items are selected (everything but the exceptions when everything is). */
   selCount(): number;
   isSel(name: string): boolean;
