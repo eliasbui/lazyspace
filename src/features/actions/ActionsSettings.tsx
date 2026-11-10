@@ -41,8 +41,8 @@ export function ActionsSettings() {
   };
 
   return (
-    // The keys typed here are the fields' own, not the keymap's.
-    <div onKeyDown={(e) => e.stopPropagation()}>
+    // The keys typed here are the fields' own, not the keymap's; Escape is still the sheet's.
+    <div onKeyDown={(e) => e.key !== 'Escape' && e.stopPropagation()}>
       <Group>
         {list.map((a, i) => (
           <div key={a.id} className="grid grid-cols-[120px_minmax(0,1fr)_112px_128px_28px] items-center gap-1.5 px-3 py-2">

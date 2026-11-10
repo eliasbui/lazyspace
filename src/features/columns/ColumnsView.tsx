@@ -9,7 +9,7 @@ import { say } from '@/lib/ui';
 import { nameOf } from '@/lib/uri';
 import { cn } from '@/lib/utils';
 import { api, type Row, type Uri, type ViewSort } from '@/services';
-import { factsOf, Picture } from './Facts';
+import { factsOf, GitMark, Picture, TagDots } from './Facts';
 import { useListing, useTabRows } from './listing';
 import { above, iconOf } from './places';
 import { findTyped, howOf, keyHasAction, moveBy, rowMenu, selectRow } from './select';
@@ -163,7 +163,10 @@ function TabColumn({ pane, columnRef }: { pane: PaneHandle; columnRef: RefObject
               {row ? (
                 <>
                   <img src={iconOf(row, 16)} alt="" draggable={false} className="size-4 shrink-0" />
-                  <span className="min-w-0 flex-1 truncate">{row.name}</span>
+                  <span className="min-w-0 truncate">{row.name}</span>
+                  <TagDots row={row} />
+                  <span className="flex-1" />
+                  <GitMark mark={tab.marks?.[row.name]} lit={lit} />
                   {opens(row) ? <Chevron on={lit} /> : null}
                 </>
               ) : null}

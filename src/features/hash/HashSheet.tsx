@@ -68,18 +68,23 @@ export function HashSheet({ close }: SheetProps<unknown>) {
       }
     >
       <div className="flex flex-col gap-2 pb-2">
-        <Input
-          className="h-7 font-mono text-[12px]"
-          aria-label={t('hashCompare')}
-          placeholder={t('hashCompare')}
-          spellCheck={false}
-          value={compare}
-          onChange={(e) => setCompare(e.target.value)}
-          onKeyDown={(e) => e.stopPropagation()}
-        />
-        <p role="status" className={cn('min-h-[18px] text-[12px] font-semibold', hit ? 'text-good' : 'text-bad')}>
-          {want ? (hit ? t('hashMatch', hit[0], hit[1]) : t('hashNoMatch')) : ''}
-        </p>
+        {started ? (
+          <>
+            <Input
+              className="h-7 font-mono text-[12px]"
+              aria-label={t('hashCompare')}
+              placeholder={t('hashCompare')}
+              spellCheck={false}
+              value={compare}
+              onChange={(e) => setCompare(e.target.value)}
+              // Escape is the sheet's; every other key is the field's, not the keymap's.
+              onKeyDown={(e) => e.key !== 'Escape' && e.stopPropagation()}
+            />
+            <p role="status" className={cn('min-h-[18px] text-[12px] font-semibold', hit ? 'text-good' : 'text-bad')}>
+              {want ? (hit ? t('hashMatch', hit[0], hit[1]) : t('hashNoMatch')) : ''}
+            </p>
+          </>
+        ) : null}
         <div className="flex flex-col gap-3">
           {results.map((result) => (
             <FileHashes key={result.uri} result={result} want={want} />

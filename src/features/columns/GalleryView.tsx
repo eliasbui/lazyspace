@@ -5,7 +5,7 @@ import { panes, usePanesRevision } from '@/lib/panes-api';
 import { registry, type ViewProps } from '@/lib/registry';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/lib/app-state';
-import { factsOf, Picture } from './Facts';
+import { factsOf, Picture, TagDots } from './Facts';
 import { useTabRows } from './listing';
 import { findTyped, howOf, keyHasAction, moveBy, rowMenu, selectRow } from './select';
 
@@ -123,7 +123,10 @@ export function GalleryView({ pane, tab }: ViewProps) {
                     <div className={cn('grid size-16 place-items-center rounded-tile', sel && 'bg-select-dim')}>
                       <Picture row={row} points={64} iconPoints={56} className="max-h-14 max-w-14 rounded-sm object-contain shadow-sm" iconClassName="size-14" />
                     </div>
-                    <span className={cn('max-w-full truncate rounded-sm px-1 text-[11px] leading-4', sel && (focused ? 'bg-select text-primary-foreground' : 'bg-select-dim'))}>{row.name}</span>
+                    <span className={cn('flex max-w-full items-center gap-1 rounded-sm px-1 text-[11px] leading-4', sel && (focused ? 'bg-select text-primary-foreground' : 'bg-select-dim'))}>
+                      <TagDots row={row} />
+                      <span className="truncate">{row.name}</span>
+                    </span>
                   </>
                 ) : null}
               </div>
