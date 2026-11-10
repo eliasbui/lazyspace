@@ -8,6 +8,8 @@ export const vi = {
   hideFinderIconsAsk: "Finder sẽ khởi động lại",
   hideFinderIconsText: "Để ẩn hoặc hiện lại biểu tượng của nó, Finder cần khởi động lại. Các cửa sổ Finder sẽ mở lại như cũ.",
   restartFinder: "Khởi động lại Finder",
+  moreAbout: "Thêm về {0}",
+  desktopItems: "Các mục trên màn hình nền",
 } as const;
 
 export const en = {
@@ -19,4 +21,6 @@ export const en = {
   hideFinderIconsAsk: "Finder will restart",
   hideFinderIconsText: "To hide or show its icons again, Finder has to restart. Its windows open again as they were.",
   restartFinder: "Restart Finder",
+  moreAbout: "More about {0}",
+  desktopItems: "Items on the desktop",
 } as const;
