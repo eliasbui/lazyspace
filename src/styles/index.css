@@ -46,6 +46,14 @@
   --good: light-dark(#1f9d4d, #32d74b);
   --warn: light-dark(#c77700, #ff9f0a);
   --bad: light-dark(#d70015, #ff453a);
+  /* Finder's colours for tags and for tabs marked with a colour. */
+  --mark-red: #ff453a;
+  --mark-orange: #ff9f0a;
+  --mark-yellow: #ffd60a;
+  --mark-green: #30d158;
+  --mark-blue: #0a84ff;
+  --mark-purple: #bf5af2;
+  --mark-gray: #98989d;
 
   --fg: light-dark(rgb(18 20 26 / 0.92), rgb(255 255 255 / 0.92));
   --fg-2: light-dark(rgb(18 20 26 / 0.6), rgb(255 255 255 / 0.62));
@@ -81,6 +89,16 @@
   --ctl-bg-hi: light-dark(rgb(255 255 255 / 0.98), rgb(255 255 255 / 0.19));
   --ctl-edge: light-dark(rgb(18 20 26 / 0.13), rgb(255 255 255 / 0.16));
   --track: light-dark(rgb(18 20 26 / 0.12), rgb(255 255 255 / 0.16));
+
+  /* The kinds of the disk map (src/features/disk): one categorical order, stepped for each surface, named in its legend. */
+  --disk-folder: light-dark(#2a78d6, #3987e5);
+  --disk-image: light-dark(#eb6834, #d95926);
+  --disk-video: light-dark(#6250d6, #7f72e3);
+  --disk-audio: light-dark(#e87ba4, #d55181);
+  --disk-archive: light-dark(#eda100, #c98500);
+  --disk-doc: light-dark(#1baf7a, #199e70);
+  --disk-code: light-dark(#008300, #008300);
+  --disk-file: light-dark(#8d8b85, #6e6d68);
 }
 
 @supports (color: -apple-system-control-accent) {
@@ -211,6 +229,13 @@
   --color-good: var(--good);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
+  --color-mark-red: var(--mark-red);
+  --color-mark-orange: var(--mark-orange);
+  --color-mark-yellow: var(--mark-yellow);
+  --color-mark-green: var(--mark-green);
+  --color-mark-blue: var(--mark-blue);
+  --color-mark-purple: var(--mark-purple);
+  --color-mark-gray: var(--mark-gray);
   --color-fg: var(--fg);
   --color-fg-2: var(--fg-2);
   --color-fg-3: var(--fg-3);

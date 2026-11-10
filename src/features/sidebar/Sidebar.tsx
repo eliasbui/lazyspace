@@ -23,11 +23,10 @@ import { hiddenMenu, hiddenPlaces, placeMenu, removable, SideHead, SideItem, Sid
 import { useT, type WordKey } from '@/i18n';
 import { useApp } from '@/lib/app-state';
 import { registry, useRegistry } from '@/lib/registry';
-import { say } from '@/lib/ui';
 import { fileUri, isLocal, nameOf, samePlace } from '@/lib/uri';
 import { cn } from '@/lib/utils';
-import { api, on, type Places, type Uri } from '@/services';
-import { clampWidth, ejectDisk, loadVolumes, MAX_WIDTH, MIN_WIDTH, pinDropped, pinHere, reorder, setWidth, useSidebar } from './store';
+import { on, type Places, type Uri } from '@/services';
+import { clampWidth, ejectDisk, loadVolumes, MAX_WIDTH, MIN_WIDTH, pinHere, reorder, setWidth, useSidebar } from './store';
 
 const BOOKMARKS: Array<[place: keyof Places, icon: Icon, ico: string, word: WordKey | null]> = [
   ['recents', ClockIcon, 'clock', 'recents'],
@@ -174,52 +173,12 @@ function Sections() {
     })),
     { id: 'locations', order: 90, title: t('locations'), node: <Locations /> },
   ].sort((a, b) => a.order - b.order);
+  // What is dropped on Quick Access is pinned (the panes' drop code reads `data-drop-quick` and lights `data-drop`).
   return list.map((s) => (
-    <div key={s.id} data-section={s.id} role="group" aria-label={s.title ?? undefined} className="mt-2.5 rounded-field first:mt-0 empty:hidden data-drop:ring-2 data-drop:ring-tint data-drop:ring-inset">
+    <div key={s.id} data-section={s.id} data-drop-quick={s.id === 'quick' ? '' : undefined} role="group" aria-label={s.title ?? undefined} className="mt-2.5 rounded-field first:mt-0 empty:hidden data-drop:ring-2 data-drop:ring-tint data-drop:ring-inset">
       <SideSectionContext value={s.id}>{s.node}</SideSectionContext>
     </div>
   ));
-}
-
-// The place under a point of the window: one of the sidebar's, or Quick Access itself, where what is dropped is pinned.
-function targetAt(x: number, y: number): { el: Element; uri?: Uri } | null {
-  const el = document.elementFromPoint(x, y);
-  if (!el?.closest('[data-sidebar]')) return null;
-  const item = el.closest<HTMLElement>('[data-uri]');
-  if (item?.dataset.uri) return { el: item, uri: item.dataset.uri };
-  const quick = el.closest('[data-section="quick"]');
-  return quick ? { el: quick } : null;
-}
-
-/** Files dragged over the window light up the place of the sidebar under the pointer and are copied or moved there. */
-function useDrops(): void {
-  useEffect(() => {
-    let lit: Element | null = null;
-    const light = (el: Element | null) => {
-      if (lit === el) return;
-      lit?.removeAttribute('data-drop');
-      lit = el;
-      lit?.setAttribute('data-drop', '');
-    };
-    const offs = [
-      on('drop.over', (d) => light(targetAt(d.x, d.y)?.el ?? null)),
-      on('drop.leave', () => light(null)),
-      on('drop', (d) => {
-        const target = targetAt(d.x, d.y);
-        light(null);
-        if (!target) return;
-        if (!target.uri) return void pinDropped(d.uris);
-        // The place that took the drop grows for a moment.
-        const take = 'animate-[take_420ms_var(--ease-out)]';
-        target.el.classList.add(take);
-        target.el.addEventListener('animationend', () => target.el.classList.remove(take), { once: true });
-        api.fs.copy({ from: d.uris, to: target.uri, mode: d.mode }).catch(say);
-      }),
-    ];
-    return () => {
-      for (const off of offs) off();
-    };
-  }, []);
 }
 
 // The places a feature's section draws itself carry `data-uri`, `data-name` and `data-web`: they get the menu of a place,
@@ -237,8 +196,11 @@ function sectionMenu(e: MouseEvent<HTMLDivElement>): void {
   } else if (hiddenMenu(section, e.clientX, e.clientY)) e.preventDefault();
 }
 
-/** Hides the places hidden from the sidebar that features draw themselves, as they are drawn (SideItem hides its own). */
-function useHiddenPlaces(root: RefObject<HTMLElement | null>): void {
+/**
+ * The places that features draw themselves, as they are drawn: hidden when hidden from the sidebar, and a target of drops
+ * (SideItem does both for its own).
+ */
+function useFeaturePlaces(root: RefObject<HTMLElement | null>): void {
   const settings = useApp((s) => s.settings);
   useEffect(() => {
     const el = root.current;
@@ -249,6 +211,7 @@ function useHiddenPlaces(root: RefObject<HTMLElement | null>): void {
         const uri = place.dataset.uri ?? '';
         const hide = removable(place.closest<HTMLElement>('[data-section]')?.dataset.section ?? '', uri) && hidden.some((u) => samePlace(u, uri));
         if (place.hidden !== hide) place.hidden = hide;
+        if (place.dataset.dropUri !== uri) place.dataset.dropUri = uri;
       }
     };
     apply();
@@ -303,8 +266,7 @@ export function Sidebar() {
   const collapsed = useSidebar((s) => s.collapsed);
   const still = useSidebar((s) => s.still);
   const places = useRef<HTMLDivElement>(null);
-  useDrops();
-  useHiddenPlaces(places);
+  useFeaturePlaces(places);
 
   useEffect(() => {
     void loadVolumes();

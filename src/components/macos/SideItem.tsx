@@ -1,8 +1,8 @@
 // A place in the sidebar, as every section draws it (the old page's `.side-item`): a click opens it in the focused pane
 // (with Command in a new tab, with the middle button in a tab behind), its menu opens it elsewhere, pins it, hides it or
 // signs out of its cloud, and it is marked while the focused pane shows it. A file dropped on it is copied there (the
-// sidebar finds it by `data-side-item` and `data-uri`). A section that draws its places itself gives each `data-uri`,
-// `data-name` and `data-web`, and the sidebar gives it the same menu and hides it the same way.
+// panes' drop code finds it by `data-drop-uri`). A section that draws its places itself gives each `data-uri`,
+// `data-name` and `data-web`, and the sidebar gives it the same menu, hides it and takes drops on it the same way.
 import { createContext, useContext, type CSSProperties, type MouseEvent, type ReactNode } from 'react';
 import { EjectIcon, PlusIcon, PushPinIcon } from '@phosphor-icons/react';
 import { t, useT } from '@/i18n';
@@ -146,6 +146,7 @@ export function SideItem({ uri, label, sub, icon, ico, title, web, end, on, onPr
     <div
       data-side-item=""
       data-uri={uri}
+      data-drop-uri={uri}
       data-on={marked || undefined}
       hidden={hidden}
       title={title}

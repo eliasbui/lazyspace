@@ -214,7 +214,7 @@ export function Toolbar() {
     if (!button || !pane || (way !== 'back' && way !== 'forward')) return;
     e.preventDefault();
     const r = button.getBoundingClientRect();
-    panes.stackMenu?.(pane, way, r.left, r.bottom + 6);
+    pane.stackMenu?.(way, r.left, r.bottom + 6);
   };
 
   const toolKey = [title, lang, ...Object.values(groups).flatMap((g) => g.map((tool) => tool.id))].join('|');
