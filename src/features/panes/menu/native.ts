@@ -1,17 +1,8 @@
 // Native menus: the page sends a tree to Rust, which shows it and answers with `menu.chosen` or `menu.closed`. One is
 // open at a time, so one answer is awaited at a time.
-import { useApp } from '@/lib/app-state';
-import { registry } from '@/lib/registry';
 import { api, on, type MenuNode, type Uri } from '@/services';
 
-/**
- * The chord of the keymap for an action, to show beside a menu item. The keymap is read from the keys registered with
- * `registry.keys.add`, where the keys feature puts its own too.
- */
-export function shortcutOf(action: string): string | undefined {
-  const map = registry.keys.extra(useApp.getState().settings?.keymap === 'windows' ? 'windows' : 'mac');
-  return Object.keys(map).find((chord) => map[chord] === action);
-}
+export { shortcutOf } from '@/lib/keymap';
 
 let waiting: ((id: string | null) => void) | null = null;
 
