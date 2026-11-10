@@ -106,6 +106,8 @@ export interface ToolbarItemDef {
   order?: number;
   /** Receives the rectangle of the button, for a menu that opens under it. */
   run: (rect: DOMRect) => void;
+  /** Runs on a right click on the button (Terminal and Editor pick another app); receives the rectangle of the button. */
+  menu?: (rect: DOMRect) => void;
   when?: () => boolean;
   /** Whether the button shows pressed (the preview is on). The feature adds the item again when it changes, so it redraws. */
   active?: () => boolean;

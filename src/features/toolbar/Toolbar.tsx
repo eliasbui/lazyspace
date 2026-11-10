@@ -41,6 +41,8 @@ interface Tool {
   pressed?: boolean;
   /** Receives the rectangle of its button, or of the overflow button when it runs from there. */
   run: (rect: DOMRect) => void;
+  /** Runs on a right click on the button. */
+  menu?: (rect: DOMRect) => void;
 }
 
 // The four views of Finder, in Finder's order; columns and gallery only once a feature draws them.
@@ -100,7 +102,7 @@ export function setSearchKeys(keys: ((e: KeyboardEvent) => boolean) | null): voi
 registry.actions.set('find', openSearch);
 
 function ToolButton({ tool }: { tool: Tool }) {
-  return (
+  const button = (
     <IconButton
       label={tool.label}
       icon={tool.icon}
@@ -110,6 +112,22 @@ function ToolButton({ tool }: { tool: Tool }) {
       onPress={(e) => tool.run(e.target.getBoundingClientRect())}
       className="h-7 w-8 rounded-full aria-pressed:bg-pressed disabled:opacity-30 [&_svg:not([class*='size-'])]:size-4.5"
     />
+  );
+  const menu = tool.menu;
+  if (!menu) return button;
+  return (
+    <span
+      className="contents"
+      onContextMenu={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // A `display: contents` box has no rectangle of its own; the button inside has.
+        const rect = e.currentTarget.querySelector('button')?.getBoundingClientRect();
+        if (rect) menu(rect);
+      }}
+    >
+      {button}
+    </span>
   );
 }
 
@@ -153,7 +171,7 @@ export function Toolbar() {
     items
       .filter((item) => item.side === side && (!item.when || item.when()))
       .sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
-      .map((item) => ({ id: item.id, label: t(item.label), icon: item.icon, pressed: item.active?.(), run: item.run }));
+      .map((item) => ({ id: item.id, label: t(item.label), icon: item.icon, pressed: item.active?.(), run: item.run, menu: item.menu }));
 
   const layoutMenu = async (rect: DOMRect) => {
     const id = await choose(

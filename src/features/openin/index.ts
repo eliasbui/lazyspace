@@ -1,5 +1,5 @@
 // The current folder in a terminal or an editor (src-tauri/src/features/openin.rs): two toolbar buttons open it in the
-// default of each kind (Option-click picks another), the context menu lists every one on this Mac, and the Open With
+// default of each kind (Option-click or a right click picks another), the context menu lists every one on this Mac, and the Open With
 // sheet lists them with the apps for the file selected; the one used last becomes the default.
 import { CodeIcon, TerminalWindowIcon } from '@phosphor-icons/react';
 import { createElement } from 'react';
@@ -37,6 +37,10 @@ export function register(): void {
         if (!pane) return;
         if (option) void chooseTool(pane, kind, rect.left, rect.bottom + 6);
         else openIn(pane, kind, null);
+      },
+      menu: (rect) => {
+        const pane = panes.focused();
+        if (pane) void chooseTool(pane, kind, rect.left, rect.bottom + 6);
       },
     });
     registry.menu.add({
