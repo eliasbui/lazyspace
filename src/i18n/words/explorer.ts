@@ -8,6 +8,7 @@ export const vi = {
   selectNone: "Bỏ chọn tất cả",
   invertSelection: "Đảo vùng chọn",
   moreActions: "Thao tác khác",
+  settingsMenu: "Cài đặt...",
 } as const;
 
 export const en = {
@@ -19,4 +20,5 @@ export const en = {
   selectNone: "Deselect All",
   invertSelection: "Invert Selection",
   moreActions: "More Actions",
+  settingsMenu: "Settings...",
 } as const;
