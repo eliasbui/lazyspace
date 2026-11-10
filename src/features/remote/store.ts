@@ -6,7 +6,7 @@ import { bumpPanes, panes } from '@/lib/panes-api';
 import { sidebar } from '@/lib/sidebar-api';
 import { confirm, prompt, say, toast } from '@/lib/ui';
 import { authorityOf, isLocal, schemeOf } from '@/lib/uri';
-import { api, messageOf, on, type CloudFolder, type CloudKind, type Connection, type MenuNode, type RcloneAdvanced, type RemoteList } from '@/services';
+import { api, messageOf, on, type CloudFolder, type CloudKind, type Connection, type RcloneAdvanced, type RemoteList } from '@/services';
 import { PASSWORD, remoteName, SERVER_SCHEMES, TRUST } from './kinds';
 
 export type SavedConnection = RemoteList['connections'][number];
@@ -46,20 +46,6 @@ function finished(id: number): Promise<boolean> {
       off();
       resolve(d.ok);
     });
-  });
-}
-
-/** A small native menu of choices; resolves the id chosen, or null. */
-export function choose(items: MenuNode[], x: number, y: number): Promise<string | null> {
-  return new Promise((resolve) => {
-    const done = (id: string | null) => {
-      offChosen();
-      offClosed();
-      resolve(id);
-    };
-    const offChosen = on('menu.chosen', (d) => done(d.id));
-    const offClosed = on('menu.closed', () => done(null));
-    api.menu.show({ items, x, y }).catch(() => done(null));
   });
 }
 

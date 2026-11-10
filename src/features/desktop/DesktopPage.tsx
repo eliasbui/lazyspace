@@ -9,7 +9,7 @@ import { useApp } from '@/lib/app-state';
 import { isLocal, pathOf } from '@/lib/uri';
 import { cn } from '@/lib/utils';
 import { api, getHost, iconUrl, pixelRatio, thumbUrl, type Row } from '@/services';
-import { actionOf, arrange, commitRename, dropAt, range, runAction, select, selectedRows, showMenu, startDesktop, useDesk, VIEW } from './desk';
+import { arrange, commitRename, dropAt, range, runAction, select, selectedRows, showMenu, startDesktop, useDesk, VIEW } from './desk';
 import { cellSize, covered, nearest, placeOf, type Direction } from './grid';
 
 /** The kinds Quick Look makes a picture of. */
@@ -180,12 +180,8 @@ export function DesktopPage() {
     } else startPageDrag(e, name);
   }
 
+  // The chords of the keymap reach the desktop through the keys feature and `panes.action`; the arrows and typing are its own.
   function keyDown(e: KeyboardEvent) {
-    const action = actionOf(e);
-    if (action && runAction(action)) {
-      e.preventDefault();
-      return;
-    }
     const arrows: Record<string, Direction> = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
     const direction = arrows[e.key];
     if (direction && !e.metaKey && !e.ctrlKey && !e.altKey) {
