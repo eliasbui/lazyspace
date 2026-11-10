@@ -136,7 +136,18 @@ function PreviewPanel({ bottom }: { bottom: boolean }) {
     const kind = provider ? 'other' : ready?.kind;
     body = (
       <>
-        {media ? <div className={cn('grid flex-none place-items-center pt-3 pb-1', bottom && 'min-w-0 flex-1 pt-1', kind === 'text' || kind === 'pdf' ? 'min-h-55 flex-1 place-items-stretch' : 'min-h-40')}>{media}</div> : null}
+        {media ? (
+          <div
+            className={cn(
+              'grid flex-none place-items-center pt-3 pb-1',
+              kind === 'text' || kind === 'pdf' ? 'min-h-55 flex-1 place-items-stretch' : 'min-h-40',
+              // Below the panes the media takes the height there is, and its picture fits in it.
+              bottom && 'min-h-0 min-w-0 flex-1 grid-rows-[minmax(0,1fr)] py-0 [&_img]:max-h-full [&_video]:max-h-full',
+            )}
+          >
+            {media}
+          </div>
+        ) : null}
         {ready ? <Facts info={ready} type={shown.entry?.type ?? ''} dims={dims} bottom={bottom} /> : null}
       </>
     );
@@ -273,7 +284,7 @@ function Facts({ info, type, dims, bottom }: { info: PreviewInfo; type: string; 
     if (media?.audio) lines.push(['pv.rate', rate(media.audio.dataRate, lang)]);
   } else if (info.kind === 'image' && dims) lines.push(['pv.dims', dims]);
   return (
-    <dl className={cn('grid flex-none grid-cols-[auto_1fr] content-start rounded-tile bg-stripe px-3 text-[12px] ring-[0.5px] ring-hair ring-inset', bottom && 'w-70')}>
+    <dl className={cn('grid flex-none grid-cols-[auto_1fr] content-start rounded-tile bg-stripe px-3 text-[12px] ring-[0.5px] ring-hair ring-inset', bottom && 'w-[280px] self-start')}>
       {lines
         .filter((line): line is [WordKey, string] => line[1] != null && line[1] !== '')
         .map(([label, value]) => (
