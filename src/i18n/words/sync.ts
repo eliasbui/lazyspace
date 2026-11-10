@@ -30,6 +30,9 @@ export const vi = {
   allSame: "Hai thư mục giống nhau.",
   swap: "Đổi bên",
   filterAll: "Tất cả",
+  syncDirection: "Chiều đồng bộ",
+  syncCompareBy: "So sánh theo",
+  syncShow: "Hiện",
 } as const;
 
 export const en = {
@@ -63,4 +66,7 @@ export const en = {
   allSame: "The two folders are the same.",
   swap: "Swap sides",
   filterAll: "All",
+  syncDirection: "Direction",
+  syncCompareBy: "Compare by",
+  syncShow: "Show",
 } as const;
