@@ -88,15 +88,15 @@ export function keyHasAction(e: KeyboardEvent): boolean {
  */
 export function rowMenu(pane: PaneHandle, x: number, y: number, index: number | null, rowAt: RowAt): void {
   const row = index == null ? null : rowAt(index);
-  if (!row || index == null) return pane.contextMenu(x, y, null);
+  if (!row || index == null) return pane.contextMenu?.(x, y, null);
   const ready = () => pane.tab.isSel(row.name) && pane.tab.selectedEntries().some((e) => e.name === row.name);
-  if (ready()) return pane.contextMenu(x, y, index);
+  if (ready()) return pane.contextMenu?.(x, y, index);
   selectRow(pane, index, 'only', rowAt);
   const off = panes.on('selection', () => {
     if (!ready()) return;
     clearTimeout(timer);
     off();
-    pane.contextMenu(x, y, index);
+    pane.contextMenu?.(x, y, index);
   });
   const timer = setTimeout(off, 1000);
 }

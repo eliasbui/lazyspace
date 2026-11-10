@@ -79,9 +79,10 @@ export interface PaneHandle {
   focusList(): void;
   /**
    * Shows the context menu at a point of the window: of the selection after a right click on the row at `index`, or of
-   * the folder for null. For the views a feature draws in place of the list (columns, gallery).
+   * the folder for null. For the views a feature draws in place of the list (columns, gallery); a pane of a window
+   * that has no such views (the desktop) need not have it.
    */
-  contextMenu(x: number, y: number, index: number | null): void;
+  contextMenu?(x: number, y: number, index: number | null): void;
 }
 
 /** What the panes tell. */
