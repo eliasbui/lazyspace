@@ -72,7 +72,6 @@ function PreviewColumn({ row }: { row: Row }) {
 
 /** The tab's own folder as a column: its rows, its selection, its keys and its menu are the tab's, as in the list. */
 function TabColumn({ pane, columnRef }: { pane: PaneHandle; columnRef: RefObject<HTMLDivElement | null> }) {
-  const t = useT();
   const tab = pane.tab;
   const focused = panes.focused()?.id === pane.id;
   const virtual = useVirtualizer({ count: tab.count, getScrollElement: () => columnRef.current, estimateSize: () => ROW_H, overscan: 12 });
@@ -91,8 +90,6 @@ function TabColumn({ pane, columnRef }: { pane: PaneHandle; columnRef: RefObject
     if (tab.lead >= 0) scrollTo(tab.lead);
     // Only a new cursor scrolls; `scrollTo` is a new function each time.
   }, [tab.lead, tab.generation]);
-
-  const message = tab.error ? tab.error.replace(/^LZ-[A-Z]+:/, '') : tab.loading && !tab.generation ? t('loading') : !tab.count ? (tab.filter ? t('noMatch') : t('emptyFolder')) : null;
 
   return (
     <div
@@ -139,7 +136,6 @@ function TabColumn({ pane, columnRef }: { pane: PaneHandle; columnRef: RefObject
         e.stopPropagation();
       }}
     >
-      {message ? <p className="px-2 py-2.5 text-[11px] text-fg-2">{message}</p> : null}
       <div className="relative" style={{ height: virtual.getTotalSize() }}>
         {items.map((item) => {
           const row = rowAt(item.index);

@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useT } from '@/i18n';
 import { panes, usePanesRevision } from '@/lib/panes-api';
 import { registry, type ViewProps } from '@/lib/registry';
 import { cn } from '@/lib/utils';
@@ -16,7 +15,6 @@ const CELL_W = 96;
  * over a strip of the folder's items that scrolls sideways. The strip selects, opens, drags and has the menu as the list.
  */
 export function GalleryView({ pane, tab }: ViewProps) {
-  const t = useT();
   usePanesRevision((s) => s.revision);
   const stripRef = useRef<HTMLDivElement>(null);
   const focused = panes.focused()?.id === pane.id;
@@ -39,8 +37,6 @@ export function GalleryView({ pane, tab }: ViewProps) {
     if (focused && (!active || active === document.body)) stripRef.current?.focus({ preventScroll: true });
   }, [tab.uri, focused]);
 
-  const message = tab.error ? tab.error.replace(/^LZ-[A-Z]+:/, '') : tab.loading && !tab.generation ? t('loading') : !tab.count ? (tab.filter ? t('noMatch') : t('emptyFolder')) : null;
-
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 px-6 pt-4 pb-3" onDoubleClick={() => shown && panes.action('open', pane)}>
@@ -56,8 +52,6 @@ export function GalleryView({ pane, tab }: ViewProps) {
               ))}
             </div>
           </>
-        ) : message ? (
-          <p className="text-[13px] text-fg-2">{message}</p>
         ) : null}
       </div>
       <div
