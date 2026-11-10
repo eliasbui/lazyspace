@@ -71,6 +71,11 @@ dirs = "7"
 nucleo-matcher = "0.3"
 libc = "0.2"
 
+# tauri-runtime-wry 2.12.3 with one change (vendor/tauri-runtime-wry.diff): a drag that carries no file is handed back to the
+# web view, so text, links and pictures dragged from other apps reach the page as HTML5 drops.
+[patch.crates-io]
+tauri-runtime-wry = { path = "vendor/tauri-runtime-wry" }
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 

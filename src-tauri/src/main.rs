@@ -58,6 +58,11 @@ pub(crate) fn no_focus() -> bool {
     std::env::var_os("LAZYSPACE_NO_FOCUS").is_some_and(|v| !v.is_empty())
 }
 
+/// Whether the windows open the classic page of earlier versions (`LAZYSPACE_CLASSIC=1`) instead of the new one, to compare.
+pub(crate) fn classic() -> bool {
+    std::env::var_os("LAZYSPACE_CLASSIC").is_some_and(|v| !v.is_empty())
+}
+
 /// The window of a page, as the app counts them. Tauri names a window by a label, `lz-<id>`; the id is the one of the
 /// surface that holds it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -319,7 +324,7 @@ impl App {
         let glass = self.settings.glass && role == Role::Main;
         let transparent = options.transparent || glass;
         let window_id = id.window();
-        let mut builder = WebviewWindowBuilder::new(&handle, window_id.label(), WebviewUrl::App("index.html".into()))
+        let mut builder = WebviewWindowBuilder::new(&handle, window_id.label(), WebviewUrl::App(if classic() { "classic.html" } else { "index.html" }.into()))
             .title(APP_NAME)
             .inner_size(width, height)
             .theme(self.window_theme())
@@ -501,6 +506,8 @@ impl App {
                 "windowId": surface.id.0,
                 "uri": surface.options.uri,
                 "layout": settings::load_layout(&self.layout_path),
+                "accessibility": native::accessibility(),
+                "glassAvailable": glass::available(),
             }),
         );
         surface.send(&hello);
@@ -801,9 +808,11 @@ fn set_in_dock(shown: bool) {
     }
 }
 
-/// The page is the only place a window goes: a link to the web opens in the browser, anything else is refused.
+/// The page is the only place a window goes: a link to the web opens in the browser, anything else is refused. The page is
+/// the app's own (`tauri://localhost`), or in a debug build the Vite server of the front end.
 fn allow_navigation(url: &str) -> bool {
-    if url == "about:blank" || url == "tauri://localhost/index.html" || url == "tauri://localhost" || url == "tauri://localhost/" {
+    let own = |base: &str| url.strip_prefix(base).is_some_and(|rest| rest.is_empty() || rest.starts_with(['/', '?', '#']));
+    if url == "about:blank" || own("tauri://localhost") || (cfg!(debug_assertions) && own("http://localhost:1432")) {
         return true;
     }
     let _ = native::open_url(url);
@@ -840,7 +849,8 @@ mod tests {
     fn a_window_goes_nowhere_but_its_own_page() {
         assert!(allow_navigation("about:blank"));
         assert!(allow_navigation("tauri://localhost/index.html"));
-        for url in ["file:///etc/hosts", "lazy://file/x", "javascript:alert(1)", "data:text/html,x", "tauri://evil/index.html"] {
+        assert!(allow_navigation("tauri://localhost/classic.html"));
+        for url in ["file:///etc/hosts", "lazy://file/x", "javascript:alert(1)", "data:text/html,x", "tauri://evil/index.html", "tauri://localhost.evil/x"] {
             assert!(!allow_navigation(url), "{url}");
         }
     }
@@ -861,7 +871,7 @@ mod tests {
 
     #[test]
     fn the_classic_page_has_its_parts_in_and_no_marker_left() {
-        let page = include_str!("../classic/index.html");
+        let page = include_str!("../../dist-web/classic.html");
         assert!(!page.contains("<!--parts-->"), "build.rs did not put the parts in");
         assert!(page.contains("window.paintTheme"), "the page's own script is there");
         assert!(page.trim_end().ends_with("</html>"));

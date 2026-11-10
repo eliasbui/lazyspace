@@ -48,7 +48,7 @@ function Command({
       data-slot="command"
       dir={dir}
       className={cn(
-        "flex size-full flex-col overflow-hidden rounded-xl! bg-popover p-1 text-popover-foreground",
+        "flex size-full flex-col overflow-hidden rounded-xl! glass-pop p-1 text-popover-foreground",
         className
       )}
       style={style}

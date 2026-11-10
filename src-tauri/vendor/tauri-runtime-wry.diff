@@ -1,0 +1,33 @@
+--- /Users/bdthai/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-runtime-wry-2.12.3/src/lib.rs	2006-07-24 08:21:28
++++ vendor/tauri-runtime-wry/src/lib.rs	2026-11-10 11:32:55
+@@ -4783,7 +4783,21 @@
+   if webview_attributes.drag_drop_handler_enabled {
+     let proxy = context.proxy.clone();
+     let window_id_ = window_id.clone();
++    // LazySpace patch: a drag that carries no file (text, a link, a picture from a browser) is handed back to the web
++    // view, so that the page gets it as an HTML5 drop. Over, Drop and Leave carry no paths, so Enter's answer is kept.
++    let carries_files = std::sync::atomic::AtomicBool::new(false);
+     webview_builder = webview_builder.with_drag_drop_handler(move |event| {
++      use std::sync::atomic::Ordering::Relaxed;
++      let handled = match &event {
++        WryDragDropEvent::Enter { paths, .. } => {
++          carries_files.store(!paths.is_empty(), Relaxed);
++          !paths.is_empty()
++        }
++        WryDragDropEvent::Over { .. } => carries_files.load(Relaxed),
++        WryDragDropEvent::Drop { .. } => carries_files.swap(false, Relaxed),
++        WryDragDropEvent::Leave => carries_files.swap(false, Relaxed),
++        _ => false,
++      };
+       let event = match event {
+         WryDragDropEvent::Enter {
+           paths,
+@@ -4813,7 +4827,7 @@
+       };
+ 
+       let _ = proxy.send_event(Message::Webview(*window_id_.lock().unwrap(), id, message));
+-      true
++      handled
+     });
+   }
+ 

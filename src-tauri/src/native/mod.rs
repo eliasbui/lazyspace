@@ -49,6 +49,17 @@ pub fn ns_window(window: &WebviewWindow) -> Option<&NSWindow> {
     unsafe { (pointer as *const NSWindow).as_ref() }
 }
 
+/// The system's accessibility display switches the page honours besides its own media queries: Reduce Transparency,
+/// Increase Contrast and Reduce Motion, as `app.hello` reports them.
+pub fn accessibility() -> Value {
+    let workspace = NSWorkspace::sharedWorkspace();
+    json!({
+        "reduceTransparency": workspace.accessibilityDisplayShouldReduceTransparency(),
+        "increaseContrast": workspace.accessibilityDisplayShouldIncreaseContrast(),
+        "reduceMotion": workspace.accessibilityDisplayShouldReduceMotion(),
+    })
+}
+
 /// Whether `url` is one the system may open for the page: a web page or a mail address.
 pub fn is_web_url(url: &str) -> bool {
     url.split_once(':').is_some_and(|(scheme, rest)| {

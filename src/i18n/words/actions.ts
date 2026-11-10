@@ -1,0 +1,36 @@
+// Words of the old page part parts/28-actions.js.
+export const vi = {
+  actionsTitle: "Lệnh của bạn",
+  "m.actions": "Lệnh",
+  actionsHint: "Mỗi lệnh là một dòng zsh. Các mục đang chọn là tham số của nó (\"$@\", $1) và nó chạy trong thư mục chứa chúng; $LAZYSPACE_FOLDER là thư mục đó. Tên tệp không bao giờ bị chạy thành lệnh.",
+  actionName: "Tên",
+  actionCommand: "Dòng lệnh, ví dụ: code \"$@\"",
+  addAction: "Thêm lệnh",
+  removeAction: "Xóa lệnh này",
+  "when.any": "Mọi mục",
+  "when.files": "Chỉ tệp",
+  "when.folders": "Chỉ thư mục",
+  "when.none": "Không chọn gì",
+  "out.toast": "Hiện kết quả",
+  "out.terminal": "Chạy trong Terminal",
+  "out.none": "Chạy im lặng",
+  actionDone: "Xong: {0}",
+} as const;
+
+export const en = {
+  actionsTitle: "Your Commands",
+  "m.actions": "Commands",
+  actionsHint: "Each command is a line of zsh. The items selected are its arguments (\"$@\", $1) and it runs in the folder they are in; $LAZYSPACE_FOLDER is that folder. No file name is ever run as a command.",
+  actionName: "Name",
+  actionCommand: "Command, for example: code \"$@\"",
+  addAction: "Add Command",
+  removeAction: "Remove This Command",
+  "when.any": "Any item",
+  "when.files": "Files only",
+  "when.folders": "Folders only",
+  "when.none": "Nothing selected",
+  "out.toast": "Show the output",
+  "out.terminal": "Run in Terminal",
+  "out.none": "Run quietly",
+  actionDone: "Done: {0}",
+} as const;

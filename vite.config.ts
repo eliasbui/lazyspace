@@ -8,6 +8,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   clearScreen: false,
+  build: { outDir: 'dist-web', emptyOutDir: true },
   server: {
     port: 1432,
     strictPort: true,

@@ -4,7 +4,10 @@
   "identifier": "com.eliasbui.lazyspace",
   "mainBinaryName": "lazyspace",
   "build": {
-    "frontendDist": "classic"
+    "devUrl": "http://localhost:1432",
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist-web"
   },
   "app": {
     "macOSPrivateApi": true,
@@ -12,7 +15,8 @@
     "windows": [],
     "security": {
       "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: lazy:; media-src lazy: blob:; object-src lazy:; frame-src lazy:; font-src 'self' data:; connect-src ipc: http://ipc.localhost",
-      "dangerousDisableAssetCspModification": true
+      "dangerousDisableAssetCspModification": true,
+      "devCsp": "default-src 'self' http://localhost:1432; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:1432; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: lazy: http://localhost:1432; media-src lazy: blob:; object-src lazy:; frame-src lazy:; font-src 'self' data:; connect-src ipc: http://ipc.localhost http://localhost:1432 ws://localhost:1432"
     }
   },
   "bundle": {

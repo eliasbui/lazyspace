@@ -1,8 +1,9 @@
-/target
-/dist
 .DS_Store
 .pi/
-/src-tauri/target
-/src-tauri/classic
-/src-tauri/gen
+/.claude/worktrees
+/dist
 /node_modules
+/dist-web
+/src-tauri/gen
+/src-tauri/target
+/target
