@@ -15,6 +15,8 @@ export const vi = {
   "out.terminal": "Chạy trong Terminal",
   "out.none": "Chạy im lặng",
   actionDone: "Xong: {0}",
+  actionWhen: "Dùng cho",
+  actionOutput: "Kết quả",
 } as const;
 
 export const en = {
@@ -33,4 +35,6 @@ export const en = {
   "out.terminal": "Run in Terminal",
   "out.none": "Run quietly",
   actionDone: "Done: {0}",
+  actionWhen: "Offered for",
+  actionOutput: "Output",
 } as const;

@@ -1,5 +1,4 @@
 import { GitBranchIcon } from '@phosphor-icons/react';
-import { Tip } from '@/components/macos/Tip';
 import { useT } from '@/i18n';
 import { usePanesRevision, type PaneHandle } from '@/lib/panes-api';
 import { useGit } from './store';
@@ -12,12 +11,11 @@ export function BranchPill({ pane }: { pane: PaneHandle }) {
   const kept = useGit((s) => s.byView[tab.id]);
   const branch = tab.branch ?? (kept?.uri === tab.uri ? kept.branch : null);
   if (!branch) return null;
+  // A label, not a control: its words are its title, as a tooltip wants something to press.
   return (
-    <Tip text={t('gitBranch', branch)}>
-      <span tabIndex={0} aria-label={t('gitBranch', branch)} className="inline-flex h-5 max-w-40 shrink-0 items-center gap-1 rounded-full bg-field px-2 text-[11px] font-medium text-fg-2 outline-none">
-        <GitBranchIcon className="size-3 shrink-0" />
-        <span className="truncate">{branch}</span>
-      </span>
-    </Tip>
+    <span role="note" title={t('gitBranch', branch)} aria-label={t('gitBranch', branch)} className="inline-flex h-5.5 max-w-45 shrink-0 items-center gap-1 rounded-full bg-tint-soft px-2 text-[11px] font-semibold text-tint">
+      <GitBranchIcon weight="bold" className="size-3 shrink-0" />
+      <span className="truncate">{branch}</span>
+    </span>
   );
 }

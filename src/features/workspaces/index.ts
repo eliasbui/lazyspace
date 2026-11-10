@@ -5,7 +5,8 @@ import { WorkspacesSection } from './WorkspacesSection';
 import { WorkspacesSheet } from './WorkspacesSheet';
 
 export function register(): void {
-  registry.sidebar.section({ id: 'workspaces', title: 'workspaces', order: 20, Component: WorkspacesSection });
+  // No title: the section draws its own head, which carries the + that saves one.
+  registry.sidebar.section({ id: 'workspaces', title: null, order: 20, Component: WorkspacesSection });
   registry.sheets.register({ id: 'workspaces', Component: WorkspacesSheet });
   registry.actions.set('saveWorkspace', () => openSheet('workspaces'));
   registry.keys.add({ 'Cmd+Alt+W': 'saveWorkspace' });

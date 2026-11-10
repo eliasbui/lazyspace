@@ -1,14 +1,14 @@
 // The desktop's state and what it does: one listing of ~/Desktop, each icon in the cell it was put in (desktop.json, kept
 // by Rust), a selection, and the actions of a pane on it. The window has no panes, so the desktop stands in for the one
 // pane features and menu items talk to (`installPanes`), as the old page's desktop was a pane of icons.
-import type { KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { create } from 'zustand';
 import { t } from '@/i18n';
 import { useApp } from '@/lib/app-state';
+import { shortcutOf } from '@/lib/keymap';
 import { bumpPanes, installPanes, type PaneEvents, type PaneHandle, type PanesApi, type TabView } from '@/lib/panes-api';
 import { menuTree, registry, type MenuCtx, type MenuItemDef } from '@/lib/registry';
 import { confirm, say, toast } from '@/lib/ui';
-import { isLocal, pathOf, samePlace } from '@/lib/uri';
+import { pathOf, samePlace } from '@/lib/uri';
 import { api, on, type Capabilities, type Row, type Selection, type Uri } from '@/services';
 import { cellAt, gridOf, type Cell, type Cells } from './grid';
 
@@ -267,91 +267,10 @@ export function commitRename(name: string, typed: string): void {
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
-// The keys: those of a pane that mean something on the desktop, by keymap, then the features' own.
+// The context menu: the core's items and the features', which run here through `panes.action` (the keys feature runs
+// the keys the same way); the items that only mean something in a pane of a main window are left out.
 
-const KEYS: Record<'mac' | 'windows', Record<string, string>> = {
-  mac: {
-    Enter: 'rename',
-    Space: 'quickLook',
-    'Cmd+D': 'duplicate',
-    'Cmd+I': 'getInfo',
-    'Cmd+Alt+C': 'copyPath',
-    'Cmd+Shift+R': 'reveal',
-    'Cmd+O': 'open',
-    'Cmd+ArrowDown': 'open',
-    'Cmd+Backspace': 'trash',
-    'Cmd+Alt+Backspace': 'delete',
-    'Cmd+Shift+N': 'newFolder',
-    'Cmd+A': 'selectAll',
-    'Cmd+C': 'copy',
-    'Cmd+X': 'cut',
-    'Cmd+V': 'paste',
-    'Cmd+Z': 'undo',
-    'Cmd+Shift+.': 'toggleHidden',
-    Escape: 'deselect',
-  },
-  windows: {
-    Enter: 'open',
-    Space: 'quickLook',
-    'Ctrl+D': 'duplicate',
-    'Alt+Enter': 'getInfo',
-    'Ctrl+Shift+C': 'copyPath',
-    F2: 'rename',
-    Delete: 'trash',
-    'Shift+Delete': 'delete',
-    'Ctrl+Shift+N': 'newFolder',
-    'Ctrl+A': 'selectAll',
-    'Ctrl+C': 'copy',
-    'Ctrl+X': 'cut',
-    'Ctrl+V': 'paste',
-    'Ctrl+Z': 'undo',
-    'Ctrl+H': 'toggleHidden',
-    Escape: 'deselect',
-  },
-};
-
-const keymapName = (): 'mac' | 'windows' => (useApp.getState().settings?.keymap === 'windows' ? 'windows' : 'mac');
-const keymap = (): Record<string, string> => ({ ...KEYS[keymapName()], ...registry.keys.extra(keymapName()) });
-
-const PUNCT: Record<string, string> = { Period: '.', Comma: ',', BracketLeft: '[', BracketRight: ']', Slash: '/', Backslash: '\\', Minus: '-', Equal: '=', Semicolon: ';', Quote: "'", Backquote: '`' };
-
-/** The chord of a key: modifiers in a fixed order, then the key by its place, so a Vietnamese layout gives the same chords. */
-export function chord(e: KeyboardEvent | ReactKeyboardEvent): string {
-  let key = e.code.startsWith('Key') ? e.code.slice(3) : e.code.startsWith('Digit') ? e.code.slice(5) : (PUNCT[e.code] ?? e.key);
-  if (key === ' ') key = 'Space';
-  return `${e.metaKey ? 'Cmd+' : ''}${e.ctrlKey ? 'Ctrl+' : ''}${e.altKey ? 'Alt+' : ''}${e.shiftKey ? 'Shift+' : ''}${key}`;
-}
-
-/** The action a key names here, if any. */
-export const actionOf = (e: KeyboardEvent | ReactKeyboardEvent): string | undefined => keymap()[chord(e)];
-
-const shortcutOf = (action: string): string | undefined => Object.entries(keymap()).find(([, a]) => a === action)?.[0];
-
-// ---------------------------------------------------------------------------------------------------------------------
-// The context menu: the items of a pane that mean something here, and every item features added.
-
-const one = (c: MenuCtx) => c.count === 1;
-const many = (c: MenuCtx) => c.count > 0;
-const local = (c: MenuCtx) => (c.count ? c.entries.length > 0 && c.entries.every((e) => isLocal(e.uri)) : isLocal(c.tab.uri));
-const act = (name: string) => () => void runAction(name);
-
-const OWN: MenuItemDef[] = [
-  { id: 'open', label: 'm.open', icon: 'arrow.up.forward.app', group: 10, order: 1, when: many, action: 'open', run: act('open') },
-  { id: 'quickLook', label: 'm.quickLook', icon: 'eye', group: 10, order: 4, when: many, action: 'quickLook', run: act('quickLook') },
-  { id: 'getInfo', label: 'm.getInfo', icon: 'info.circle', group: 20, order: 1, when: local, action: 'getInfo', run: act('getInfo') },
-  { id: 'rename', label: 'm.rename', icon: 'pencil', group: 20, order: 2, when: (c) => one(c) && c.tab.capabilities.rename, action: 'rename', run: act('rename') },
-  { id: 'duplicate', label: 'm.duplicate', icon: 'plus.square.on.square', group: 20, order: 3, when: (c) => many(c) && c.tab.capabilities.write, action: 'duplicate', run: act('duplicate') },
-  { id: 'copyPath', label: 'm.copyPath', icon: 'link', group: 20, order: 4, when: local, action: 'copyPath', run: act('copyPath') },
-  { id: 'copy', label: 'm.copy', icon: 'doc.on.doc', group: 30, order: 1, when: (c) => many(c) && local(c), action: 'copy', run: act('copy') },
-  { id: 'cut', label: 'm.cut', icon: 'scissors', group: 30, order: 2, when: (c) => many(c) && local(c) && c.tab.capabilities.write, action: 'cut', run: act('cut') },
-  { id: 'paste', label: 'm.paste', icon: 'doc.on.clipboard', group: 30, order: 3, when: (c) => c.tab.capabilities.write, action: 'paste', run: act('paste') },
-  { id: 'trash', label: 'm.trash', icon: 'trash', group: 40, order: 1, when: (c) => many(c) && c.tab.capabilities.trash, action: 'trash', run: act('trash') },
-  { id: 'delete', label: 'm.delete', icon: 'trash.slash', group: 40, order: 2, when: (c) => many(c) && c.tab.capabilities.write, action: 'delete', run: act('delete') },
-  { id: 'newFolder', label: 'm.newFolder', icon: 'folder.badge.plus', group: 50, order: 1, when: (c) => c.tab.capabilities.write, action: 'newFolder', run: act('newFolder') },
-  { id: 'reveal', label: 'm.reveal', icon: 'macwindow', group: 50, order: 2, when: local, action: 'reveal', run: act('reveal') },
-  { id: 'hidden', label: 'm.hidden', icon: 'eye.slash', group: 60, order: 3, when: (c) => c.count === 0, checked: () => !!useApp.getState().settings?.show_hidden, action: 'toggleHidden', run: act('toggleHidden') },
-];
-const OWN_IDS = new Set(OWN.map((i) => i.id));
+const NOT_HERE = new Set(['openTab', 'view', 'sort', 'groups']);
 
 let shownMenu: { lookup: Map<string, MenuItemDef>; ctx: MenuCtx } | null = null;
 
@@ -359,8 +278,7 @@ let shownMenu: { lookup: Map<string, MenuItemDef>; ctx: MenuCtx } | null = null;
 export function showMenu(where: 'item' | 'empty', x: number, y: number): void {
   const entries = where === 'item' ? selectedRows() : [];
   const ctx: MenuCtx = { pane: handle, tab, entries, entry: entries[0] ?? null, count: entries.length, where, x, y };
-  // The desktop's own items stand in for a pane's, whose actions go to the panes of a main window.
-  const { tree, lookup } = menuTree(ctx, (key) => t(key), shortcutOf, [...OWN, ...registry.menu.list().filter((i) => !OWN_IDS.has(i.id))]);
+  const { tree, lookup } = menuTree(ctx, (key) => t(key), shortcutOf, registry.menu.list().filter((i) => !NOT_HERE.has(i.id)));
   if (!tree.length) return;
   shownMenu = { lookup, ctx };
   api.menu.show({ items: tree, x, y, uris: entries.map((e) => e.uri) }).catch(say);
@@ -501,7 +419,8 @@ let started = false;
 
 /** Starts the desktop in its window: lists the folder and listens to the host. Once per window. */
 export function startDesktop(): void {
-  if (started) return;
+  // The panes feature installed itself when its module loaded; only the desktop's window puts the desktop in its place.
+  if (started || useApp.getState().role !== 'desktop') return;
   started = true;
   installPanes(desktopPanes);
   const { hello, places } = useApp.getState();

@@ -122,7 +122,7 @@ export function DiskSheet({ close }: SheetProps<undefined>) {
         aria-label={node ? t('diskTitle', node.name) : t('measuring')}
         onKeyDown={keys}
         onPointerLeave={() => setHover(null)}
-        className="relative h-[min(52vh,420px)] min-h-60 overflow-hidden rounded-card bg-field"
+        className="relative h-[min(52vh,420px)] min-h-60 overflow-hidden rounded-card bg-(--solid-bg) shadow-[inset_0_0_0_0.5px_var(--pane-edge)]"
       >
         {node ? (
           children.map((c, i) => {

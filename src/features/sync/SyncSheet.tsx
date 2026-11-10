@@ -128,7 +128,7 @@ export function SyncSheet({ close }: SheetProps<undefined>) {
           {status?.kind === 'result' ? `${t('syncSummary', status.same, pairs.length)}${status.truncated ? ` ${t('syncTruncated')}` : ''}` : null}
         </p>
         {shown.length ? (
-          <ul className="pane max-h-[min(40vh,320px)] divide-y divide-hair overflow-y-auto rounded-card">
+          <ul className="pane max-h-[min(calc(80vh-330px),390px)] divide-y divide-hair overflow-y-auto rounded-card">
             {shown.slice(0, SHOWN).map(([p, i]) => (
               <Line key={p.rel} pair={p} index={i} />
             ))}
@@ -153,7 +153,7 @@ function Place({ uri }: { uri: string | null }) {
 const Line = memo(function Line({ pair, index }: { pair: SyncPair; index: number }) {
   const t = useT();
   return (
-    <li className="grid h-9 grid-cols-[100px_minmax(0,1fr)_186px_148px_186px] items-center gap-2 px-3 text-[12px]">
+    <li className="grid h-8 grid-cols-[100px_minmax(0,1fr)_186px_148px_186px] items-center gap-2 px-3 text-[12px]">
       <Pill tone={TONE[pair.state]} className="justify-self-start">
         {pair.state === 'same' ? '' : t(`s.${pair.state}`)}
       </Pill>

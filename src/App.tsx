@@ -52,7 +52,7 @@ export function App() {
       <DialogHost />
       <JobsPanel />
       <UpdateBanner />
-      <Toaster position="bottom-right" />
+      <Toaster position="bottom-center" offset={40} />
     </>
   );
 }

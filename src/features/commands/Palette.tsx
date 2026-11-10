@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandShortcut } from '@/components/ui/command';
 import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { translate, useT, type WordKey } from '@/i18n';
@@ -49,9 +50,9 @@ function menuCommands(pane: PaneHandle | null, shown: ReadonlySet<string>, t: (k
   return out;
 }
 
-/** Runs an action on the focused pane once the palette has closed and given the focus back. */
+// After the palette has closed and given the focus back (a timer, as a hidden window may never draw a frame).
 function runLater(run: () => void): void {
-  requestAnimationFrame(run);
+  setTimeout(run, 0);
 }
 
 /**
@@ -66,6 +67,7 @@ export function Palette({ close }: SheetProps) {
   const shown = new Set<string>(available.map(([id]) => id));
   const pane = panes.focused();
   const menu = menuCommands(pane, shown, t);
+  const [query, setQuery] = useState('');
 
   const run = (key: string) => {
     close();
@@ -105,9 +107,10 @@ export function Palette({ close }: SheetProps) {
 
   return (
     <CommandDialog open onOpenChange={(open) => !open && close()} title={t('commandsTitle')} description={t('commandsSearch')} className="top-[14%] rounded-panel! sm:max-w-[560px]">
-      <Command className="rounded-panel! bg-transparent p-1.5 backdrop-blur-none" filter={matches}>
+      <Command className="rounded-panel! bg-transparent p-1.5 backdrop-blur-none" filter={matches} inputValue={query} onInputChange={setQuery}>
         <CommandInput placeholder={t('commandsSearch')} spellCheck={false} autoComplete="off" />
-        <CommandList autoFocus="first" aria-label={t('commandsTitle')} className="mt-1 max-h-[min(420px,60vh)]" onAction={(key) => run(String(key))} renderEmptyState={() => <CommandEmpty className="text-fg-2">{t('noCommand')}</CommandEmpty>}>
+        {/* Drawn anew for each query, so the first command that matches is the one Enter runs, as the old palette had it. */}
+        <CommandList key={query} autoFocus="first" aria-label={t('commandsTitle')} className="mt-1 max-h-[min(420px,60vh)]" onAction={(key) => run(String(key))} renderEmptyState={() => <CommandEmpty className="text-fg-2">{t('noCommand')}</CommandEmpty>}>
           {GROUPS.map((group) => {
             const ids = available.filter(([, g]) => g === group).map(([id]) => id);
             return ids.length ? (

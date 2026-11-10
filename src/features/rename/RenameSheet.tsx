@@ -126,7 +126,7 @@ export function RenameSheet({ props, close }: SheetProps<RenameProps | undefined
 function RuleCard({ rule, index, last }: { rule: RenameRule; index: number; last: boolean }) {
   const t = useT();
   return (
-    <div className="pane grid grid-cols-[150px_1fr_auto] items-start gap-2.5 rounded-card p-2.5">
+    <div className="pane grid grid-cols-[136px_1fr_auto] items-start gap-2.5 rounded-card p-2.5">
       <Choice label={t('ruleKind')} value={rule.type} options={TYPES.map((type) => [type, `r.${type}` as const] as const)} onChange={(type) => setRule(index, fresh(type))} className="w-full" />
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2">
         <Fields rule={rule} set={(next) => setRule(index, next)} />
@@ -255,7 +255,7 @@ function TextField({ label, value, onChange, wide = false }: { label: string; va
   return (
     <label className="flex items-center gap-1.5 text-[12px] text-fg-2">
       <span>{label}</span>
-      <Input type="text" spellCheck={false} value={value} onChange={(e) => onChange(e.target.value)} className={cn(fieldClass, wide ? 'w-[170px]' : 'w-[70px]')} />
+      <Input type="text" spellCheck={false} value={value} onChange={(e) => onChange(e.target.value)} className={cn(fieldClass, wide ? 'w-[150px]' : 'w-[70px]')} />
     </label>
   );
 }
