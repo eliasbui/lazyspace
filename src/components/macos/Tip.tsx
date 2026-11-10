@@ -9,11 +9,16 @@ type ButtonProps = React.ComponentProps<typeof Button>;
 
 /** A symbol button whose words are its tooltip and its accessible name: a button never repeats its own name in text. */
 export function IconButton({ label, icon, className, size = 'icon', variant = 'ghost', ...props }: Omit<ButtonProps, 'children' | 'aria-label'> & { label: string; icon: ReactNode }) {
+  const button = (
+    <Button aria-label={label} size={size} variant={variant} className={className} {...props}>
+      {icon}
+    </Button>
+  );
+  // A disabled button is not focusable, so React Aria warns when a tooltip trigger wraps it; it needs no tooltip either.
+  if (props.isDisabled) return button;
   return (
     <TooltipTrigger>
-      <Button aria-label={label} size={size} variant={variant} className={className} {...props}>
-        {icon}
-      </Button>
+      {button}
       <Tooltip>{label}</Tooltip>
     </TooltipTrigger>
   );

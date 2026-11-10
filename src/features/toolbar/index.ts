@@ -1,1 +1,1 @@
-export { Toolbar } from './Toolbar';
+export { Toolbar, openSearch, setSearchKeys } from './Toolbar';

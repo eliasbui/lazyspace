@@ -20,6 +20,7 @@ export const vi = {
   chooseExtractFolder: "Chọn thư mục để giải nén",
   archivePasswordTitle: "Tệp nén có mật khẩu",
   doCompress: "Nén",
+  archiveItems: "Tệp nén có {0} mục",
 } as const;
 
 export const en = {
@@ -43,4 +44,5 @@ export const en = {
   chooseExtractFolder: "Choose a folder to extract into",
   archivePasswordTitle: "This archive has a password",
   doCompress: "Compress",
+  archiveItems: "{0} items in the archive",
 } as const;

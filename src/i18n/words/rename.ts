@@ -39,6 +39,8 @@ export const vi = {
   moveUp: "Lên",
   moveDown: "Xuống",
   removeRule: "Bỏ quy tắc",
+  ruleKind: "Loại quy tắc",
+  scope: "Áp dụng cho",
 } as const;
 
 export const en = {
@@ -81,4 +83,6 @@ export const en = {
   moveUp: "Up",
   moveDown: "Down",
   removeRule: "Remove Rule",
+  ruleKind: "Kind of rule",
+  scope: "Applies to",
 } as const;
