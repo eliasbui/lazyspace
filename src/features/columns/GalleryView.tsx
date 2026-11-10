@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { RenameField } from '@/components/macos/RenameField';
 import { panes, usePanesRevision } from '@/lib/panes-api';
 import { registry, type ViewProps } from '@/lib/registry';
 import { cn } from '@/lib/utils';
@@ -100,10 +101,14 @@ export function GalleryView({ pane, tab }: ViewProps) {
                     <div className={cn('grid size-16 place-items-center rounded-tile', sel && 'bg-select-dim')}>
                       <Picture row={row} points={64} iconPoints={56} className="max-h-14 max-w-14 rounded-sm object-contain shadow-sm" iconClassName="size-14" />
                     </div>
-                    <span className={cn('flex max-w-full items-center gap-1 rounded-sm px-1 text-[11px] leading-4', sel && (focused ? 'bg-select text-primary-foreground' : 'bg-select-dim'))}>
-                      <TagDots row={row} />
-                      <span className="truncate">{row.name}</span>
-                    </span>
+                    {pane.renaming?.index === item.index && pane.finishRename ? (
+                      <RenameField name={row.name} isDir={row.isDir} draft={pane.renaming.draft} onDraft={(text) => pane.setRenameDraft?.(text)} onDone={(value, refocus) => pane.finishRename?.(value, refocus)} className="w-full text-center text-[11px]" />
+                    ) : (
+                      <span className={cn('flex max-w-full items-center gap-1 rounded-sm px-1 text-[11px] leading-4', sel && (focused ? 'bg-select text-primary-foreground' : 'bg-select-dim'))}>
+                        <TagDots row={row} />
+                        <span className="truncate">{row.name}</span>
+                      </span>
+                    )}
                   </>
                 ) : null}
               </div>

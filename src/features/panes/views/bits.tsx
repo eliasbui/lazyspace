@@ -1,7 +1,7 @@
 // What a row and a cell of icons share: the picture of an item, its Finder tags, its letter of git, and the field that
 // renames it in place.
-import { useLayoutEffect, useRef, useState } from 'react';
-import { useT } from '@/i18n';
+import { useState } from 'react';
+import { RenameField as NameField } from '@/components/macos/RenameField';
 import { cn } from '@/lib/utils';
 import type { Row } from '@/services';
 import type { Pane } from '../pane';
@@ -61,37 +61,14 @@ export function GitMark({ mark, strong }: { mark: string | undefined; strong: bo
 
 /** The name as a field with the part before the extension selected: Return renames, Escape leaves it as it was. */
 export function RenameField({ pane, entry, className }: { pane: Pane; entry: Row; className?: string }) {
-  const t = useT();
-  const input = useRef<HTMLInputElement | null>(null);
-  const [draft] = useState(pane.renaming?.draft);
-  useLayoutEffect(() => {
-    const el = input.current;
-    if (!el) return;
-    const name = entry.name;
-    const dot = !entry.isDir && name.lastIndexOf('.') > 0 ? name.lastIndexOf('.') : name.length;
-    el.focus();
-    if (draft != null) el.setSelectionRange(draft.length, draft.length);
-    else el.setSelectionRange(0, dot);
-  }, [entry, draft]);
   return (
-    <input
-      ref={input}
-      defaultValue={draft ?? entry.name}
-      spellCheck={false}
-      aria-label={t('m.rename')}
-      className={cn('h-[20px] min-w-[60px] rounded-[3px] bg-pane px-[3px] dark:bg-background text-fg shadow-[0_0_0_1px_var(--tint),0_0_0_3.5px_var(--tint-soft)] outline-none', className)}
-      onChange={(e) => {
-        if (pane.renaming) pane.renaming.draft = e.currentTarget.value;
-      }}
-      onKeyDown={(e) => {
-        e.stopPropagation();
-        if (e.key === 'Enter') pane.finishRename(e.currentTarget.value, true);
-        else if (e.key === 'Escape') pane.finishRename(null, true);
-      }}
-      onMouseDown={(e) => e.stopPropagation()}
-      onDoubleClick={(e) => e.stopPropagation()}
-      onContextMenu={(e) => e.stopPropagation()}
-      onBlur={(e) => pane.finishRename(e.currentTarget.value, false)}
+    <NameField
+      name={entry.name}
+      isDir={entry.isDir}
+      draft={pane.renaming?.draft}
+      onDraft={(text) => pane.setRenameDraft(text)}
+      onDone={(value, refocus) => pane.finishRename(value, refocus)}
+      className={className}
     />
   );
 }

@@ -82,6 +82,11 @@ export interface PaneHandle {
   /** Where opening a row goes inside: a folder, or a kind a feature opens as one (an archive); null for a file. */
   browsable(row: Row | null | undefined): Uri | null;
   startRename(name: string): void;
+  /** The item whose name is a field now (the views draw the field), or null. */
+  readonly renaming?: Readonly<{ index: number; name: string; draft?: string }> | null;
+  setRenameDraft?(text: string): void;
+  /** `value` is the new name, or null to leave it; `refocus` gives the keyboard back to the list. */
+  finishRename?(value: string | null, refocus: boolean): void;
   /** Gives the keyboard back to the list of the pane. */
   focusList(): void;
   // The members below are those of the panes feature; a pane of a feature's own (the desktop) may leave them out.

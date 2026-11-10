@@ -737,6 +737,10 @@ export class Pane implements PaneHandle {
 
   // Renaming in place ---------------------------------------------------------------------------------------------
 
+  setRenameDraft(text: string): void {
+    if (this.renaming) this.renaming.draft = text;
+  }
+
   /** The name becomes a field with the part before the extension selected. */
   startRename(name: string): void {
     const tab = this.tab;

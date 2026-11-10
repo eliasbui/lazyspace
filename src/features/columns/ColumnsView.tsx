@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from 'react';
 import { CaretRightIcon } from '@phosphor-icons/react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+import { RenameField } from '@/components/macos/RenameField';
 import { useT } from '@/i18n';
 import { useApp } from '@/lib/app-state';
 import { panes, usePanesRevision, type PaneHandle } from '@/lib/panes-api';
@@ -134,7 +135,11 @@ function TabColumn({ pane, columnRef }: { pane: PaneHandle; columnRef: RefObject
               {row ? (
                 <>
                   <Picture row={row} points={16} iconPoints={16} className="size-4 shrink-0 object-cover" iconClassName="size-4 shrink-0" />
-                  <span className="min-w-0 truncate">{row.name}</span>
+                  {pane.renaming?.index === item.index && pane.finishRename ? (
+                    <RenameField name={row.name} isDir={row.isDir} draft={pane.renaming.draft} onDraft={(text) => pane.setRenameDraft?.(text)} onDone={(value, refocus) => pane.finishRename?.(value, refocus)} className="min-w-0 flex-1 text-[13px]" />
+                  ) : (
+                    <span className="min-w-0 truncate">{row.name}</span>
+                  )}
                   <TagDots row={row} />
                   <span className="flex-1" />
                   <GitMark mark={tab.marks?.[row.name]} lit={lit} />
