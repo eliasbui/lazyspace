@@ -13,25 +13,26 @@ echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "a version is th
 git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null && { echo "v$VERSION is already tagged" >&2; exit 1; }
 gh auth status >/dev/null 2>&1 || { echo "sign in to GitHub first: gh auth login" >&2; exit 1; }
 
-sed -i.bak "1,/^version = /s/^version = \".*\"/version = \"$VERSION\"/" Cargo.toml && rm Cargo.toml.bak
-cargo update --workspace --offline -q 2>/dev/null || true
+sed -i.bak "1,/^version = /s/^version = \".*\"/version = \"$VERSION\"/" src-tauri/Cargo.toml && rm src-tauri/Cargo.toml.bak
+cargo update --workspace --offline -q --manifest-path src-tauri/Cargo.toml 2>/dev/null || true
 
 # Built and tested before anything is pushed, so a broken build never leaves a tag behind.
-cargo test --quiet
-scripts/check-ui.sh
+cargo test --quiet --manifest-path src-tauri/Cargo.toml
+pnpm typecheck
+pnpm test
 UNIVERSAL=1 REQUIRE_IDENTITY=1 scripts/bundle-macos.sh
 ZIP="dist/LazySpace-$VERSION-macos.zip"
 rm -f "$ZIP"
 ditto -c -k --keepParent "dist/LazySpace.app" "$ZIP"
 
-git diff --quiet Cargo.toml Cargo.lock || git commit -q -m "Release $VERSION" Cargo.toml Cargo.lock
+git diff --quiet src-tauri/Cargo.toml src-tauri/Cargo.lock || git commit -q -m "Release $VERSION" src-tauri/Cargo.toml src-tauri/Cargo.lock
 git tag "v$VERSION"
 git push origin HEAD "v$VERSION"
 
 gh release create "v$VERSION" "$ZIP" --title "v$VERSION" --generate-notes
 echo "published v$VERSION"
 
-# What the app reads to find this release (src/update.rs): the API's answer in shape, fetched through github.com's
+# What the app reads to find this release (src-tauri/src/update.rs): the API's answer in shape, fetched through github.com's
 # download links, which the API's hourly limit for a whole network does not touch.
 asset() {
     printf '{"name": "%s", "size": %s, "digest": "sha256:%s", "browser_download_url": "https://github.com/eliasbui/lazyspace/releases/download/v%s/%s"}' \

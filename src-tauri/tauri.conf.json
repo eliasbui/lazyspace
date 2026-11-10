@@ -14,7 +14,7 @@
     "withGlobalTauri": false,
     "windows": [],
     "security": {
-      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: lazy:; media-src lazy: blob:; object-src lazy:; frame-src lazy:; font-src 'self' data:; connect-src ipc: http://ipc.localhost",
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: lazy:; media-src lazy: blob:; font-src 'self' data:; connect-src ipc: http://ipc.localhost; object-src lazy:; frame-src 'none'; base-uri 'none'; form-action 'none'",
       "dangerousDisableAssetCspModification": true,
       "devCsp": "default-src 'self' http://localhost:1432; script-src 'self' 'unsafe-inline' 'unsafe-eval' http://localhost:1432; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: lazy: http://localhost:1432; media-src lazy: blob:; object-src lazy:; frame-src lazy:; font-src 'self' data:; connect-src ipc: http://ipc.localhost http://localhost:1432 ws://localhost:1432"
     }

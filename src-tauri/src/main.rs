@@ -58,11 +58,6 @@ pub(crate) fn no_focus() -> bool {
     std::env::var_os("LAZYSPACE_NO_FOCUS").is_some_and(|v| !v.is_empty())
 }
 
-/// Whether the windows open the classic page of earlier versions (`LAZYSPACE_CLASSIC=1`) instead of the new one, to compare.
-pub(crate) fn classic() -> bool {
-    std::env::var_os("LAZYSPACE_CLASSIC").is_some_and(|v| !v.is_empty())
-}
-
 /// The window of a page, as the app counts them. Tauri names a window by a label, `lz-<id>`; the id is the one of the
 /// surface that holds it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -324,7 +319,7 @@ impl App {
         let glass = self.settings.glass && role == Role::Main;
         let transparent = options.transparent || glass;
         let window_id = id.window();
-        let mut builder = WebviewWindowBuilder::new(&handle, window_id.label(), WebviewUrl::App(if classic() { "classic.html" } else { "index.html" }.into()))
+        let mut builder = WebviewWindowBuilder::new(&handle, window_id.label(), WebviewUrl::App("index.html".into()))
             .title(APP_NAME)
             .inner_size(width, height)
             .theme(self.window_theme())
@@ -334,7 +329,6 @@ impl App {
             .visible(role != Role::Main)
             .focused(role == Role::Main && !no_focus())
             .decorations(options.decorations)
-            .initialization_script(compat_script(&self.settings))
             .on_navigation(|url| {
                 let allowed = allow_navigation(url.as_str());
                 if ipc::trace() {
@@ -765,34 +759,6 @@ fn main() {
     });
 }
 
-/// The look of the settings and the bridge to the host, on the page before its own scripts run: the language, the light
-/// or dark and the glass on its root, so its first frame is already drawn in them, and `window.lazyHost.postMessage`,
-/// which hands a request to the app's one command (build.rs points the page's `window.ipc.postMessage` at it).
-fn compat_script(settings: &Settings) -> String {
-    let attributes = json!({
-        "lang": settings.language,
-        "data-theme": settings.theme,
-        "data-accent": settings.accent,
-        "data-sidebar-icons": settings.sidebar_icons,
-        "data-icon-size": settings.icon_size,
-        "data-text-size": settings.text_size,
-    });
-    let glass = if settings.glass { "root.setAttribute('data-glass', '');" } else { "" };
-    // The root may not exist yet when this runs; the look is put on it the moment it does, before the first frame.
-    format!(
-        "window.lazyHost = {{ postMessage: (body) => window.__TAURI_INTERNALS__.invoke('ipc', {{ body }}).catch(() => {{}}) }};
-(() => {{
-  const look = () => {{
-    const root = document.documentElement;
-    for (const [name, value] of Object.entries({attributes})) root.setAttribute(name, String(value));
-    {glass}
-  }};
-  if (document.documentElement) look();
-  else new MutationObserver((_, watcher) => {{ if (document.documentElement) {{ watcher.disconnect(); look(); }} }}).observe(document, {{ childList: true }});
-}})();"
-    )
-}
-
 /// The app in the Dock and the app switcher with its menu bar, or only as its icon in the menu bar while its windows
 /// are hidden.
 fn set_in_dock(shown: bool) {
@@ -834,22 +800,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn the_page_comes_in_the_language_and_look_of_the_settings() {
-        let settings = Settings { language: "en".into(), theme: "dark".into(), glass: true, ..Default::default() };
-        let script = compat_script(&settings);
-        assert!(script.contains(r#""lang":"en""#) && script.contains(r#""data-theme":"dark""#), "{script}");
-        assert!(script.contains("setAttribute('data-glass', '')"));
-        let plain = compat_script(&Settings::default());
-        assert!(plain.contains(r#""lang":"vi""#) && plain.contains(r#""data-theme":"system""#) && plain.contains(r#""data-accent":"system""#));
-        assert!(!plain.contains("data-glass"), "glass is off by default");
-        assert!(plain.contains("window.lazyHost"), "the page posts its requests through the bridge");
-    }
-
-    #[test]
     fn a_window_goes_nowhere_but_its_own_page() {
         assert!(allow_navigation("about:blank"));
         assert!(allow_navigation("tauri://localhost/index.html"));
-        assert!(allow_navigation("tauri://localhost/classic.html"));
         for url in ["file:///etc/hosts", "lazy://file/x", "javascript:alert(1)", "data:text/html,x", "tauri://evil/index.html", "tauri://localhost.evil/x"] {
             assert!(!allow_navigation(url), "{url}");
         }
@@ -867,13 +820,5 @@ mod tests {
     fn the_window_icon_is_a_png_of_rgba() {
         let icon = tauri::image::Image::from_bytes(WINDOW_ICON).unwrap();
         assert_eq!((icon.width(), icon.height(), icon.rgba().len()), (256, 256, 256 * 256 * 4));
-    }
-
-    #[test]
-    fn the_classic_page_has_its_parts_in_and_no_marker_left() {
-        let page = include_str!("../../dist-web/classic.html");
-        assert!(!page.contains("<!--parts-->"), "build.rs did not put the parts in");
-        assert!(page.contains("window.paintTheme"), "the page's own script is there");
-        assert!(page.trim_end().ends_with("</html>"));
     }
 }
