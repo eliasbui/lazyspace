@@ -1,7 +1,7 @@
 // The shelf's own window: a compact basket that takes files dropped from anywhere, text, links and pictures from a browser
 // or the clipboard, and gives its items back by dragging them out.
 import { useCallback, useEffect, useState, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent } from 'react';
-import { ClipboardIcon, TrashIcon, XIcon } from '@phosphor-icons/react';
+import { ClipboardIcon, TrashIcon, TrayIcon, XIcon } from '@phosphor-icons/react';
 import { IconButton } from '@/components/macos/Tip';
 import { useT } from '@/i18n';
 import { say } from '@/lib/ui';
@@ -190,11 +190,14 @@ export function ShelfPage() {
               className="flex flex-col items-center gap-1 rounded-tile px-0.5 py-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring aria-selected:bg-tint-soft"
             >
               <Picture item={item} />
-              <span className="line-clamp-2 max-w-18 text-center text-[11px] leading-tight break-words">{item.name}</span>
+              <span className="line-clamp-2 w-full text-center text-[11px] leading-tight break-words">{item.name}</span>
             </div>
           ))
         ) : (
-          <p className="col-span-full mx-4 my-10 text-center text-[12px] leading-normal text-fg-2">{t('stashEmpty')}</p>
+          <div className="col-span-full flex flex-col items-center gap-2 px-6 pt-16 text-center text-[12px] leading-normal text-fg-2">
+            <TrayIcon className="size-8 text-fg-3" />
+            <p>{t('stashEmpty')}</p>
+          </div>
         )}
       </div>
     </div>

@@ -85,7 +85,6 @@ export function CompressSheet({ props, close }: SheetProps<CompressProps | undef
     <SheetFrame
       open
       onClose={close}
-      size="sm"
       title={t('compressTitle', batch?.count ?? 0)}
       footer={
         <>
