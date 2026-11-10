@@ -48,8 +48,8 @@ export const INK: Record<Kind, string> = {
   other: 'text-fg-2',
 };
 
-/** Neighbours of one kind told apart by a step of light. */
-const SHADES = ['', 'brightness-110', 'brightness-90', 'brightness-120', 'brightness-95'];
+/** Neighbours of one kind told apart by a step of light; in the dark only darker, as the dark steps are light already. */
+const SHADES = ['', 'brightness-110 dark:brightness-90', 'brightness-90 dark:brightness-[.82]', 'brightness-120 dark:brightness-95', 'brightness-95 dark:brightness-[.86]'];
 export const shade = (kind: Kind, i: number): string => (kind === 'other' ? '' : (SHADES[i % (kind === 'folder' ? 5 : 3)] ?? ''));
 
 export const KIND_WORD: Record<Kind, WordKey> = {

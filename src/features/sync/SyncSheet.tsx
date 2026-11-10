@@ -64,7 +64,7 @@ export function SyncSheet({ close }: SheetProps<undefined>) {
       <div className="flex flex-col gap-3 pb-2">
         <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
           <Place uri={left} />
-          <IconButton label={t('swap')} icon={<ArrowsLeftRightIcon />} isDisabled={!left || !right} onPress={swap} />
+          <IconButton label={t('swap')} icon={<ArrowsLeftRightIcon />} onPress={swap} />
           <Place uri={right} />
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -127,17 +127,15 @@ export function SyncSheet({ close }: SheetProps<undefined>) {
           {status?.kind === 'error' ? status.text : null}
           {status?.kind === 'result' ? `${t('syncSummary', status.same, pairs.length)}${status.truncated ? ` ${t('syncTruncated')}` : ''}` : null}
         </p>
-        <div className="pane max-h-[min(40vh,320px)] min-h-32 overflow-y-auto rounded-card">
-          {shown.length ? (
-            <ul className="divide-y divide-hair">
-              {shown.slice(0, SHOWN).map(([p, i]) => (
-                <Line key={p.rel} pair={p} index={i} />
-              ))}
-            </ul>
-          ) : status?.kind === 'result' && !job ? (
-            <p className="flex h-32 items-center justify-center text-[13px] text-fg-2">{t('allSame')}</p>
-          ) : null}
-        </div>
+        {shown.length ? (
+          <ul className="pane max-h-[min(40vh,320px)] divide-y divide-hair overflow-y-auto rounded-card">
+            {shown.slice(0, SHOWN).map(([p, i]) => (
+              <Line key={p.rel} pair={p} index={i} />
+            ))}
+          </ul>
+        ) : status?.kind === 'result' && !job ? (
+          <p className="pane flex h-32 items-center justify-center rounded-card text-[13px] text-fg-2">{t('allSame')}</p>
+        ) : null}
       </div>
     </SheetFrame>
   );
@@ -155,7 +153,7 @@ function Place({ uri }: { uri: string | null }) {
 const Line = memo(function Line({ pair, index }: { pair: SyncPair; index: number }) {
   const t = useT();
   return (
-    <li className="grid h-9 grid-cols-[104px_minmax(0,1fr)_132px_164px_132px] items-center gap-2 px-3 text-[12px]">
+    <li className="grid h-9 grid-cols-[100px_minmax(0,1fr)_186px_148px_186px] items-center gap-2 px-3 text-[12px]">
       <Pill tone={TONE[pair.state]} className="justify-self-start">
         {pair.state === 'same' ? '' : t(`s.${pair.state}`)}
       </Pill>

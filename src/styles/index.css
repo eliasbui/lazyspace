@@ -85,7 +85,7 @@
   /* The kinds of the disk map (src/features/disk): one categorical order, stepped for each surface, named in its legend. */
   --disk-folder: light-dark(#2a78d6, #3987e5);
   --disk-image: light-dark(#eb6834, #d95926);
-  --disk-video: light-dark(#6250d6, #9085e9);
+  --disk-video: light-dark(#6250d6, #7f72e3);
   --disk-audio: light-dark(#e87ba4, #d55181);
   --disk-archive: light-dark(#eda100, #c98500);
   --disk-doc: light-dark(#1baf7a, #199e70);

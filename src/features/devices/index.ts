@@ -54,7 +54,7 @@ const openAction = (d: VolumeNote, key: string): NoteAction => ({
 });
 const ejectActions = (d: VolumeNote): NoteAction[] => (d.ejectable ? [{ label: t('dev.eject'), run: () => void eject(d.path, d.name) }] : []);
 
-function volumeNote(d: VolumeNote): void {
+export function volumeNote(d: VolumeNote): void {
   const key = `vol:${d.path}`;
   const named = (app: ImageApp): string => (app.version ? `${app.name} ${app.version}` : app.name);
   const [one] = d.apps;
@@ -164,7 +164,7 @@ function moveTabs(from: string, to: string | null): void {
 // The phones and cameras told of in this window: one plugged in every day to charge is told of once.
 const told = new Set<string>();
 
-function deviceNote(d: DeviceNote): void {
+export function deviceNote(d: DeviceNote): void {
   const who = `${d.kind}:${d.name}`;
   if (!shown() || told.has(who)) return;
   told.add(who);

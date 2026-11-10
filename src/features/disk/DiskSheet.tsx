@@ -195,7 +195,7 @@ const Cell = memo(function Cell({ node, parent, rect, index, onPress, onHover }:
         }
       }}
       onPointerEnter={() => onHover(node, parent)}
-      className={cn('absolute overflow-hidden rounded-[6px] text-left transition-[filter] duration-150 hover:brightness-110 focus-visible:z-10', FILL[kind], INK[kind], shade(kind, index))}
+      className={cn('absolute overflow-hidden rounded-[6px] text-left transition-[filter] duration-150 hover:brightness-110 focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--fg)', FILL[kind], INK[kind], shade(kind, index))}
       style={{ left: rect.x + 1, top: rect.y + 1, width: Math.max(0, w), height: Math.max(0, h) }}
     >
       {inner.map(({ r, item }, j) =>

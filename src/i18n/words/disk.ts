@@ -22,7 +22,7 @@ export const vi = {
   "disk.kind.doc": "Tài liệu",
   "disk.kind.code": "Mã nguồn",
   "disk.kind.file": "Tệp khác",
-  "disk.kind.other": "Các mục nhỏ",
+  "disk.kind.other": "Các mục khác",
   diskShare: "{0} trong \"{1}\"",
 } as const;
 
@@ -49,6 +49,6 @@ export const en = {
   "disk.kind.doc": "Documents",
   "disk.kind.code": "Code",
   "disk.kind.file": "Other files",
-  "disk.kind.other": "Smaller items",
+  "disk.kind.other": "Other items",
   diskShare: "{0} of \"{1}\"",
 } as const;
