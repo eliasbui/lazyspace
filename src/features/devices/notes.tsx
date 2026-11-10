@@ -108,7 +108,7 @@ function Note({ note, busy, onClose }: { note: NoteBase; busy: boolean; onClose:
     </Button>
   );
   return (
-    <div className="group glass-pop relative grid w-(--width) grid-cols-[36px_minmax(0,1fr)] items-start gap-x-3 rounded-[16px] py-3 pr-3.5 pl-3 text-fg">
+    <div className="group glass-pop relative grid w-(--width) grid-cols-[36px_minmax(0,1fr)] items-start gap-x-3 rounded-pop py-3 pr-3.5 pl-3 text-fg">
       <span className="row-span-4 grid size-9 place-items-center text-fg-2">{note.img ? <img src={note.img} alt="" className="size-9" /> : Glyph ? <Glyph className="size-7" /> : null}</span>
       <b className="truncate pr-5 text-[13px] leading-snug font-semibold">{note.title}</b>
       {note.text ? <p className={cn('mt-0.5 text-[12px] leading-snug [overflow-wrap:anywhere]', note.bad ? 'text-bad' : 'text-fg-2')}>{note.text}</p> : null}
