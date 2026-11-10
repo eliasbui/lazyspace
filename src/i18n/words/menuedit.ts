@@ -7,6 +7,9 @@ export const vi = {
   line: "Vạch",
   chooseIcon: "Chọn biểu tượng",
   editMenu: "Sửa menu...",
+  showItem: "Hiện mục này",
+  moveUp: "Lên trên",
+  moveDown: "Xuống dưới",
 } as const;
 
 export const en = {
@@ -17,4 +20,7 @@ export const en = {
   line: "Line",
   chooseIcon: "Choose an Icon",
   editMenu: "Edit Menu...",
+  showItem: "Show this item",
+  moveUp: "Move Up",
+  moveDown: "Move Down",
 } as const;

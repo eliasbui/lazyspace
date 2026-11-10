@@ -41,3 +41,11 @@ export function fmtSize(bytes: number | null | undefined): string {
 
 /** The device pixel ratio the pictures are asked at, 1 to 3. */
 export const pixelRatio = (): number => Math.min(3, Math.max(1, Math.round(typeof window === 'undefined' ? 2 : window.devicePixelRatio || 2)));
+
+/** A text folded for matching: lower case, without Vietnamese accents, so "thu muc moi" finds "Thư mục mới". */
+export const fold = (text: string): string =>
+  text
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/đ/gi, 'd')
+    .toLowerCase();
