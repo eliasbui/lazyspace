@@ -46,6 +46,14 @@
   --good: light-dark(#1f9d4d, #32d74b);
   --warn: light-dark(#c77700, #ff9f0a);
   --bad: light-dark(#d70015, #ff453a);
+  /* Finder's colours for tags and for tabs marked with a colour. */
+  --mark-red: #ff453a;
+  --mark-orange: #ff9f0a;
+  --mark-yellow: #ffd60a;
+  --mark-green: #30d158;
+  --mark-blue: #0a84ff;
+  --mark-purple: #bf5af2;
+  --mark-gray: #98989d;
 
   --fg: light-dark(rgb(18 20 26 / 0.92), rgb(255 255 255 / 0.92));
   --fg-2: light-dark(rgb(18 20 26 / 0.6), rgb(255 255 255 / 0.62));
@@ -208,6 +216,13 @@
   --color-good: var(--good);
   --color-warn: var(--warn);
   --color-bad: var(--bad);
+  --color-mark-red: var(--mark-red);
+  --color-mark-orange: var(--mark-orange);
+  --color-mark-yellow: var(--mark-yellow);
+  --color-mark-green: var(--mark-green);
+  --color-mark-blue: var(--mark-blue);
+  --color-mark-purple: var(--mark-purple);
+  --color-mark-gray: var(--mark-gray);
   --color-fg: var(--fg);
   --color-fg-2: var(--fg-2);
   --color-fg-3: var(--fg-3);

@@ -53,6 +53,11 @@ export const vi = {
   deleteText: "Các mục này sẽ bị xóa ngay, không qua Thùng rác. Không hoàn tác được.",
   deleteNow: "Xóa",
   notAPath: "Hãy nhập một đường dẫn bắt đầu bằng / hoặc ~",
+  paneTabs: "Các tab",
+  paneItems: "Các mục",
+  pathBar: "Đường dẫn",
+  foldersIn: "Các thư mục trong {0}",
+  resizePanes: "Kéo để đổi cỡ các khung",
 } as const;
 
 export const en = {
@@ -109,4 +114,9 @@ export const en = {
   deleteText: "These items will be deleted at once, without the Trash. This cannot be undone.",
   deleteNow: "Delete",
   notAPath: "Type a path that starts with / or ~",
+  paneTabs: "Tabs",
+  paneItems: "Items",
+  pathBar: "Path",
+  foldersIn: "Folders in {0}",
+  resizePanes: "Drag to resize the panes",
 } as const;
