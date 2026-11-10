@@ -14,6 +14,7 @@ git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null && { echo "v$VERSION 
 gh auth status >/dev/null 2>&1 || { echo "sign in to GitHub first: gh auth login" >&2; exit 1; }
 
 sed -i.bak "1,/^version = /s/^version = \".*\"/version = \"$VERSION\"/" src-tauri/Cargo.toml && rm src-tauri/Cargo.toml.bak
+sed -i.bak "s/\"version\": \"[^\"]*\"/\"version\": \"$VERSION\"/" package.json && rm package.json.bak
 cargo update --workspace --offline -q --manifest-path src-tauri/Cargo.toml 2>/dev/null || true
 
 # Built and tested before anything is pushed, so a broken build never leaves a tag behind.
@@ -26,7 +27,7 @@ ZIP="dist/LazySpace-$VERSION-macos.zip"
 rm -f "$ZIP"
 ditto -c -k --keepParent "dist/LazySpace.app" "$ZIP"
 
-git diff --quiet src-tauri/Cargo.toml src-tauri/Cargo.lock || git commit -q -m "Release $VERSION" src-tauri/Cargo.toml src-tauri/Cargo.lock
+git diff --quiet src-tauri/Cargo.toml src-tauri/Cargo.lock package.json || git commit -q -m "Release $VERSION" src-tauri/Cargo.toml src-tauri/Cargo.lock package.json
 git tag "v$VERSION"
 git push origin HEAD "v$VERSION"
 
