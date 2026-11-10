@@ -11,6 +11,7 @@ import { errorText } from '@/lib/ui';
 import { isLocal } from '@/lib/uri';
 import { cn } from '@/lib/utils';
 import { api, type ArchiveFormat, type Row, type Targets } from '@/services';
+import { offeredName } from './kinds';
 
 export interface CompressProps {
   target: Extract<Targets, { view: string }>;
@@ -24,7 +25,7 @@ export function compressBatch(tab: TabView, entries: Row[], count: number): Comp
   const local = entries.filter((e) => isLocal(e.uri));
   if (!local.length) return null;
   const one = local.length === 1 ? local[0] : null;
-  return { target: tab.selection(), count, name: one ? one.name.replace(/\.[^.]+$/, '') || one.name : '' };
+  return { target: tab.selection(), count, name: one ? offeredName(one.name) : '' };
 }
 
 function focusedBatch(): CompressProps | null {
